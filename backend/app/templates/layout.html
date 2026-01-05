@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title or "TourBot" }}</title>
+    {% include 'partials/css.html' %}
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="hold-transition sidebar-mini">
+
+<div class="wrapper">
+    <!-- Header -->
+    {% include 'partials/header.html' %}
+
+    <!-- Sidebar -->
+    {% include 'partials/sidebar.html' %}
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    {% include 'partials/footer.html' %}
+    {% include 'partials/js.html' %}
+</div>
+
+{% block extra_js %}
+
+{% endblock %}
+
+</body>
+</html>

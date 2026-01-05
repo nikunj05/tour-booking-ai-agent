@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.log
+
+# Virtual environment
+venv/
+env/
+.venv/
+.env/
+
+# Database files (if using SQLite)
+*.db
+*.sqlite3
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node / frontend (if exists)
+node_modules/
+dist/

@@ -1,0 +1,39 @@
+1️⃣ Virtual Environment Setup (Windows)
+python -m venv venv
+venv\Scripts\activate
+
+2️⃣ Install Dependencies
+pip install -r requirements.txt
+pip freeze > requirements.txt
+
+3️⃣ PostgreSQL Setup
+Create database in pgAdmin:
+Database name: tour
+
+Update alembic.ini:
+sqlalchemy.url = postgresql://postgres:<PASSWORD>@localhost:5432/tour
+
+4️⃣ Initialize Alembic (Only Once)
+alembic init alembic
+
+5️⃣ Create Migration (After Model Change)
+alembic revision --autogenerate -m "migration message"
+Example:
+alembic revision --autogenerate -m "create users and agents table"
+
+6️⃣ Apply Migration to Database
+alembic upgrade head
+
+7️⃣ Downgrade Migration (If Needed)
+alembic downgrade -1
+
+8️⃣ Run Backend Server
+uvicorn app.main:app --reload
+Server : http://127.0.0.1:8000
+API Docs : http://127.0.0.1:8000/docs
+
+9️⃣ Verify Tables (pgAdmin Query Tool)
+SELECT * FROM agents;
+
+-> Create Super Admin User
+(venv) C:\xampp\htdocs\tourbot\backend>python -m app.seeds.create_super_admin

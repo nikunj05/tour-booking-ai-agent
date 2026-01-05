@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row align-items-center g-2">
+
+            <!-- Title -->
+            <div class="col-lg-5 col-md-5">
+                <h4 class="fw-bold mb-0">Tour & Travel Agents</h4>
+            </div>
+
+            <!-- Live Search -->
+            <div class="col-lg-5 col-md-5">
+                <input
+                    type="text"
+                    id="search"
+                    class="form-control"
+                    placeholder="Search by company or phone..."
+                    value="{{ search }}"
+                >
+            </div>
+
+            <!-- Add Button -->
+            <div class="col-lg-2 col-md-2 text-end">
+                <a href="{{ url_for('agent_create_page') }}"
+                   class="btn btn-submit w-100 w-md-auto">
+                    Create Agent 
+                </a>
+            </div>
+
+            <div class="card-body p-0" id="agent-table">
+                {% include "agents/_table.html" %}
+            </div>
+            
+
+        </div>
+    </div>
+</div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(function () {
+    let timer = null;
+
+    $("#search").on("keyup", function () {
+        clearTimeout(timer);
+        const value = $(this).val();
+
+        timer = setTimeout(function () {
+            $.ajax({
+                url: "{{ url_for('agent_list') }}",
+                data: { search: value },
+                headers: { "X-Requested-With": "XMLHttpRequest" },
+                success: function (html) {
+                    $("#agent-table").html(html);
+                }
+            });
+        }, 400);
+    });
+});
+</script>
+{% endblock %}
