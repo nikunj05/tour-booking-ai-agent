@@ -13,8 +13,15 @@ class Agent(Base):
     logo = Column(String(255), nullable=True)  
     phone = Column(String(20))
     status = Column(String(20), default="active")
+    currency = Column(String(10), default="USD")
     is_deleted = Column(Boolean, default=False)
-    
+
+
     user = relationship("User", back_populates="agent")
+    tour_packages = relationship(
+        "TourPackage",
+        back_populates="agent",
+        cascade="all, delete-orphan"
+    )
 
 

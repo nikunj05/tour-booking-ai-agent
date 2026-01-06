@@ -1,8 +1,13 @@
 import math
+from sqlalchemy import func
 
 def paginate(query, page: int, per_page: int = 10):
-    total = query.count()
-    total_pages = math.ceil(total / per_page)
+    # ✅ SAFE count
+    total = query.session.query(func.count()) \
+        .select_from(query.subquery()) \
+        .scalar()
+
+    total_pages = math.ceil(total / per_page) if total else 1
 
     items = (
         query

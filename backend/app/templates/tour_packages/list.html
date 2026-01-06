@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="content-header px-1">
+    <div class="container-fluid">
+
+        <!-- Heading + Search + Add Button -->
+        <div class="row align-items-center g-2 mb-3">
+
+            <!-- Heading -->
+            <div class="col-lg-6">
+                <h1 class="mb-0">My Tour Packages</h1>
+            </div>
+
+            <!-- Live Search -->
+            <div class="col-lg-4">
+                <input
+                    type="text"
+                    id="live-search"
+                    class="form-control"
+                    placeholder="Search by title, city, country..."
+                    value="{{ search }}"
+                >
+            </div>
+
+            <!-- Add Button -->
+            <div class="col-lg-2 text-end">
+                <a href="{{ url_for('tour_package_create_page') }}"
+                   class="btn btn-submit">
+                    Add Tour Package
+                </a>
+            </div>
+
+        </div>
+
+        <hr>
+
+        <!-- Table Container -->
+        <div id="table-container">
+            {% include "tour_packages/_table.html" %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let searchTimer = null;
+
+document.getElementById("live-search").addEventListener("keyup", function () {
+    const query = this.value;
+
+    // debounce to avoid too many requests
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        fetch(`?search=${encodeURIComponent(query)}`, {
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById("table-container").innerHTML = html;
+        })
+        .catch(err => console.error("Search error:", err));
+    }, 400); // wait 400ms after typing stops
+});
+</script>
+{% endblock %}

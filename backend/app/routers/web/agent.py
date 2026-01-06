@@ -1,3 +1,4 @@
+from locale import currency
 import os
 from fastapi import APIRouter, Depends, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -17,7 +18,9 @@ from fastapi import HTTPException
 from fastapi import UploadFile, File
 import os, uuid
 from fastapi.responses import RedirectResponse
-
+from app.core.constants import CURRENCIES
+from fastapi.responses import JSONResponse
+from fastapi import Query
 
 
 router = APIRouter(prefix="/agents", tags=["Agents"])
@@ -34,31 +37,32 @@ def render_form(
     errors=None,
     is_my_profile: bool = False,  
     status_code=200,
+    **context       
+
 ):
     return templates.TemplateResponse(
         "agents/form.html",
         {
             "request": request,
             "agent": agent,
-            "form": form or {"company_name": "", "email": "", "phone": ""},
+            "form": form or {"company_name": "", "email": "", "phone": "", "currency": ""},
             "errors": errors or {},
-            "is_my_profile": is_my_profile
+            "is_my_profile": is_my_profile,
+            **context
         },
         status_code=status_code
     )
 
-# -------------------------------------------------
-# List Agents
-# -------------------------------------------------
-@router.get("/", response_class=HTMLResponse, name="agent_list")
-def list_agents(
+@router.get("/datatable", name="agent_datatable")
+def agent_datatable(
     request: Request,
-    search: str = "",
-    page: int = 1,
-    db: Session = Depends(get_db),
-    _=Depends(admin_only)
+    draw: int = Query(1),
+    start: int = Query(0),
+    length: int = Query(10),
+    search: str = Query(""),
+    db: Session = Depends(get_db)
 ):
-    query = db.query(Agent).filter(Agent.is_deleted == False).order_by(Agent.id.desc())
+    query = db.query(Agent).filter(Agent.is_deleted == False)
 
     if search:
         query = query.filter(
@@ -70,21 +74,48 @@ def list_agents(
             )
         )
 
-    pagination = paginate(query, page)
+    total = query.count()
+    agents = query.offset(start).limit(length).all()
 
-    template = (
-        "agents/_table.html"
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest"
-        else "agents/list.html"
-    )
+    data = []
+    for agent in agents:
+        edit_url = request.url_for("agent_edit_page", agent_id=agent.id)
+        delete_url = request.url_for("agent_delete", agent_id=agent.id)
 
-    return templates.TemplateResponse(
-        template,
+        data.append({
+            "id": agent.id,
+            "company_name": agent.company_name,
+            "email": agent.user.email,
+            "phone": agent.phone,
+            "status": agent.status,
+            "actions": f"""
+                <a href="{edit_url}" class="btn btn-sm btn-primary">Edit</a>
+                <form method="post" action="{delete_url}" style="display:inline">
+                    <button class="btn btn-sm btn-danger" onclick="return confirm('Delete?')">Delete</button>
+                </form>
+            """
+        })
+
+    return JSONResponse(
         {
-            "request": request,
-            "agents": pagination["items"],
-            "pagination": pagination,
-            "search": search
+            "draw": draw,
+            "recordsTotal": total,
+            "recordsFiltered": total,
+            "data": data
+        }
+    )
+# -------------------------------------------------
+# List Agents
+# -------------------------------------------------
+@router.get("/", response_class=HTMLResponse, name="agent_list")
+def agent_list(
+    request: Request,
+):
+    # This just renders the template; the DataTable will fetch JSON via AJAX
+    return templates.TemplateResponse(
+        "agents/list.html",
+        {
+            "request": request
         }
     )
 
@@ -95,7 +126,7 @@ def list_agents(
 # -------------------------------------------------
 @router.get("/create", response_class=HTMLResponse, name="agent_create_page")
 def create_page(request: Request, _=Depends(admin_only)):
-    return render_form(request)
+    return render_form(request,currencies=CURRENCIES)
 
 # -------------------------------------------------
 # Create Agent
@@ -106,6 +137,7 @@ def create_agent(
     company_name: str = Form(...),
     email: str = Form(...),
     phone: str = Form(),
+    currency: str = Form(...),
     db: Session = Depends(get_db),
     _=Depends(admin_only)
 ):
@@ -113,7 +145,8 @@ def create_agent(
     form_data = {
         "company_name": company_name,
         "email": email,
-        "phone": phone
+        "phone": phone,
+        "currency": currency
     }
 
     # Pydantic validation
@@ -121,7 +154,8 @@ def create_agent(
         validated = AgentCreate(
             company_name=company_name,
             email=email,
-            phone=phone
+            phone=phone,
+            currency=currency
         )
     except ValidationError as e:
         errors = {err["loc"][0]: err["msg"] for err in e.errors()}
@@ -129,7 +163,8 @@ def create_agent(
             request,
             form=form_data,
             errors=errors,
-            status_code=400
+            status_code=400,
+            currencies=CURRENCIES
         )
 
     # Email unique check
@@ -138,7 +173,8 @@ def create_agent(
             request,
             form=form_data,
             errors={"email": "Email already exists"},
-            status_code=400
+            status_code=400,
+            currencies=CURRENCIES
         )
 
     # Create user
@@ -157,8 +193,8 @@ def create_agent(
         user_id=user.id,
         company_name=validated.company_name,
         phone=validated.phone,
+        currency=validated.currency,
         status="active",
-        is_deleted=False
     )
     db.add(agent)
     db.commit()
@@ -178,17 +214,18 @@ def edit_page(
 ):
     agent = db.query(Agent).filter(
         Agent.id == agent_id,
-        Agent.is_deleted == False
     ).first()
 
     return render_form(
         request,
         agent=agent,
         is_my_profile=False,
+        currencies=CURRENCIES,
         form={
             "company_name": agent.company_name,
             "email": agent.user.email,
-            "phone": agent.phone
+            "phone": agent.phone,
+            "currency": agent.currency
         }
     )
 
@@ -202,6 +239,7 @@ def update_agent(
     company_name: str = Form(...),
     phone: str = Form(),
     status: str = Form(...),
+    currency: str = Form(...),
     db: Session = Depends(get_db),
     _=Depends(admin_only)
 ):
@@ -209,7 +247,8 @@ def update_agent(
         form = AgentUpdate(
             company_name=company_name,
             phone=phone,
-            status=status
+            status=status,
+            currency=currency
         )
     except ValidationError as e:
         errors = {err["loc"][0]: err["msg"] for err in e.errors()}
@@ -220,6 +259,7 @@ def update_agent(
     agent.company_name = form.company_name
     agent.phone = form.phone
     agent.status = form.status
+    agent.currency = form.currency
 
     db.commit()
     return RedirectResponse(url=f"{request.url_for('agent_list')}?success=Agent updated successfully", status_code=303)
@@ -235,8 +275,14 @@ def delete_agent(
     _=Depends(admin_only)
 ):
     agent = db.query(Agent).get(agent_id)
-    agent.is_deleted = True
     
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    
+    user = agent.user
+
+    db.delete(agent)
+    db.delete(user)    
     db.commit()
     return RedirectResponse(url=f"{request.url_for('agent_list')}?success=Agent deleted successfully", status_code=303)
 
@@ -254,12 +300,13 @@ def my_profile(
     return render_form(
         request,
         agent=agent,
-        is_my_profile=True,   # 👈 flag
+        is_my_profile=True,   
+        currencies=CURRENCIES,
         form={
             "company_name": agent.company_name,
             "email": current_user.email,
             "phone": agent.phone,
-            
+            "currency": agent.currency
         }
     )
     
@@ -270,8 +317,8 @@ def update_my_profile(
 
     company_name: str = Form(...),
     phone: str = Form(None),
-
-    profile_picture: UploadFile = File(None),  # ✅ logo upload
+    currency: str = Form(...),
+    logo: UploadFile = File(None), 
 
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -286,13 +333,15 @@ def update_my_profile(
         form = AgentUpdate(
             company_name=company_name,
             phone=phone or None,
-            status=agent.status  # keep existing status
+            status=agent.status,
+            currency=currency
         )
     except ValidationError as e:
         errors = {err["loc"][0]: err["msg"] for err in e.errors()}
         return render_form(
             request,
             agent=agent,
+            currencies=CURRENCIES,
             form={
                 "company_name": company_name,
                 "phone": phone
@@ -302,19 +351,20 @@ def update_my_profile(
         )
 
     # ✅ Handle logo upload (optional)
-    if profile_picture and profile_picture.filename:
-        ext = profile_picture.filename.split(".")[-1].lower()
+    if logo and logo.filename:
+        ext = logo.filename.split(".")[-1].lower()
         filename = f"agent_{agent.id}_{uuid.uuid4().hex}.{ext}"
         filepath = os.path.join(UPLOAD_DIR, filename)
 
         with open(filepath, "wb") as f:
-            f.write(profile_picture.file.read())
+            f.write(logo.file.read())
 
         agent.logo = f"uploads/agents/{filename}"
 
     # ✅ Update fields
     agent.company_name = form.company_name
     agent.phone = form.phone
+    agent.currency = form.currency
 
     db.commit()
 

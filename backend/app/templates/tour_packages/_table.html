@@ -1,0 +1,188 @@
+<style>
+.tour-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    transition: all 0.25s ease;
+    height: 100%;
+}
+
+.tour-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 32px rgba(0,0,0,0.12);
+}
+
+.tour-cover {
+    position: relative;
+    height: 200px;
+    background: #f4f6f8;
+}
+
+.tour-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.no-image {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 14px;
+}
+
+.status-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 10px;
+    font-size: 11px;
+    border-radius: 20px;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.status-badge.active { background: #28a745; }
+.status-badge.inactive { background: #6c757d; }
+
+.tour-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 200px);
+}
+
+.tour-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.tour-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 12px;
+}
+
+.price {
+    font-weight: 600;
+    color: #000;
+}
+
+.tour-gallery {
+    display: flex;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.tour-gallery img {
+    width: 44px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-right: 6px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+}
+
+.more-count {
+    font-size: 12px;
+    color: #555;
+}
+
+.tour-actions {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+}
+
+.btn-xs {
+    padding: 4px 10px;
+    font-size: 12px;
+}
+</style>
+
+<div class="row g-4">
+
+{% if tours %}
+{% for tour in tours %}
+<div class="col-lg-4 col-md-6">
+
+<div class="tour-card">
+
+    {# -------- COVER IMAGE -------- #}
+    {% set cover_img = tour.gallery_images | selectattr("image_type", "equalto", "cover") | list %}
+
+    <div class="tour-cover">
+        {% if cover_img %}
+            <img src="{{ url_for('static', path=cover_img[0].image_path) }}" alt="cover">
+        {% else %}
+            <div class="no-image">No Image</div>
+        {% endif %}
+
+        <span class="status-badge {{ tour.status }}">
+            {{ tour.status|capitalize }}
+        </span>
+    </div>
+
+    <div class="tour-body">
+
+        <h5 class="tour-title">{{ tour.title }}</h5>
+
+        <div class="tour-meta">
+            <span>📍 {{ tour.city }}, {{ tour.country }}</span>
+            <span class="price">₹{{ tour.price }}</span>
+        </div>
+
+        {# -------- GALLERY -------- #}
+        {% set gallery_imgs = tour.gallery_images | selectattr("image_type", "equalto", "gallery") | list %}
+        {% if gallery_imgs %}
+        <div class="tour-gallery">
+            {% for img in gallery_imgs[:5] %}
+            <img src="{{ url_for('static', path=img.image_path) }}"
+                 class="gallery-thumb"
+                 data-bs-toggle="modal"
+                 data-bs-target="#galleryModal"
+                 data-img="{{ url_for('static', path=img.image_path) }}">
+            {% endfor %}
+            {% if gallery_imgs|length > 5 %}
+                <span class="more-count">+{{ gallery_imgs|length - 5 }}</span>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {# -------- ACTIONS -------- #}
+        <div class="tour-actions">
+            <a href="{{ url_for('tour_package_edit_page', package_id=tour.id) }}"
+               class="btn btn-edit btn-xs">
+                Edit
+            </a>
+
+            <form method="post"
+                  action="{{ url_for('tour_package_delete', package_id=tour.id) }}">
+                <button class="btn btn-delete btn-xs"
+                        onclick="return confirm('Delete this package?')">
+                    Delete
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    
+</div>
+
+</div>
+{% endfor %}
+{% else %}
+<div class="col-12 text-center py-5">
+    <h5>No tour packages found</h5>
+</div>
+{% endif %}
+
+</div>

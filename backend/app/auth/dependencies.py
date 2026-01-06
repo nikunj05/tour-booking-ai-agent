@@ -46,3 +46,11 @@ def admin_only(current_user: User = Depends(get_current_user)):
             detail="Admin access only"
         )
     return current_user
+
+def agent_only(current_user: User = Depends(get_current_user)):
+    if current_user.role != "agent":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Agent access only"
+        )
+    return current_user

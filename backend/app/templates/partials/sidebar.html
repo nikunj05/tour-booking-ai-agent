@@ -60,6 +60,32 @@
                 </li>
 
                 <li class="nav-item role-agent" style="display:none;">
+                    <a href="{{ url_for('my_tour_list') }}"
+                    class="nav-link d-flex align-items-center
+                    {% if request.url.path.startswith(url_for('my_tour_list').path) %}active{% endif %}">
+
+                        <div class="sidebar-nav-icon me-2">
+                            <!-- Tour Package SVG -->
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            fill="none">
+                            <path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13Z"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"/>
+                            <circle cx="12" cy="9" r="2.5"
+                                    stroke="currentColor"
+                                    stroke-width="2"/>
+                        </svg>
+                        </div>
+                        <p class="mb-0">Tour Packages</p>
+                    </a>
+                </li>
+
+                <li class="nav-item role-agent" style="display:none;">
                     <a href="{{ url_for('my_profile') }}"
                     class="nav-link d-flex align-items-center">
 
@@ -77,9 +103,8 @@
 
                 <li class="nav-item logout-btn d-flex align-items-center">
                     <a href="{{ url_for('logout') }}"
-                    class="nav-link logout-user d-flex align-items-center"
-                    onclick="return confirm('Are you sure you want to logout?');">
-
+                    class="nav-link logout-user" onclick="confirmLogout(event)"
+                    >
                         <div class="sidebar-nav-icon me-2">
                             <svg xmlns="http://www.w3.org/2000/svg"
                                 width="22"
