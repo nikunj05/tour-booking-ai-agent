@@ -159,7 +159,6 @@
 
 </div>
 
-
     <!-- Gallery Images -->
  <div class="col-md-6 mb-4">
     <label class="form-label fw-semibold">Gallery Images</label>
@@ -199,7 +198,6 @@
     <h6>New Images</h6>
     <div id="newGallery" class="d-flex gap-2 flex-wrap mt-2"></div>
 </div>
-
 
 </div>
 
@@ -273,8 +271,18 @@ $('#tour-form').on('submit', function () {
 /* ======================
    JQUERY VALIDATION
 ====================== */
-const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 MB
 let selectedGalleryFiles = [];
+
+function showImageError(elementId, message) {
+    const el = document.getElementById(elementId);
+    el.textContent = message;
+    el.classList.remove("d-none");
+
+    setTimeout(() => {
+        el.classList.add("d-none");
+    }, 4000);
+}
 
 
 $("#tour-form").validate({
@@ -282,7 +290,7 @@ $("#tour-form").validate({
         title: { required: true, minlength: 3 },
         price: { required: true, number: true, min: 1 },
         city: { required: true },
-        cover_image: { required: {{ 'false' if package else 'true' }}, extension: "jpg|jpeg|png|gif", filesize: MAX_SIZE },
+        cover_image: { required: {{ 'false' if package else 'true' }}, extension: "jpg|jpeg|png|gif", filesize: MAX_IMAGE_SIZE },
     },
     errorElement: "span",
     errorClass: "invalid-feedback",
@@ -302,23 +310,26 @@ $('#coverImageInput').on('change', function () {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-        alert("Only image files allowed");
+        toastr.error("Please select a valid image file");
         this.value = "";
         return;
     }
 
-    if (file.size > MAX_SIZE) {
-        alert("Image must be less than 10 MB");
+    if (file.size > MAX_IMAGE_SIZE) {
+        toastr.error("Cover image must be less than 10 MB");
         this.value = "";
         return;
     }
 
     const reader = new FileReader();
     reader.onload = e => {
-        $('#coverPreview').attr('src', e.target.result).removeClass('d-none');
+        $('#coverPreview')
+            .attr('src', e.target.result)
+            .removeClass('d-none');
     };
     reader.readAsDataURL(file);
 });
+
 
 // Gallery preview
 $(document).ready(function () {
@@ -335,14 +346,20 @@ function updateGalleryHeaders() {
 
 // Handle new gallery image selection
 $('#galleryInput').on('change', function () {
+
     Array.from(this.files).forEach(file => {
-        if (!file.type.startsWith('image/')) return;
-        if (file.size > 10 * 1024 * 1024) { // 10 MB
-            alert("Each image must be under 10 MB");
+
+        if (!file.type.startsWith('image/')) {
+            toastr.error("Only image files are allowed");
             return;
         }
 
-        // Prevent duplicate files by name
+        if (file.size > MAX_IMAGE_SIZE) {
+            toastr.error("Some images were skipped because they exceed the 10 MB size limit");
+            
+            return;
+        }
+
         if (selectedGalleryFiles.some(f => f.name === file.name)) return;
 
         selectedGalleryFiles.push(file);
@@ -352,8 +369,8 @@ $('#galleryInput').on('change', function () {
             $('#newGallery').append(`
                 <div class="gallery-image-wrapper" data-name="${file.name}">
                     <img src="${e.target.result}"
-                         style="width:70px;height:70px;object-fit:cover;"
-                         class="rounded border">
+                         class="rounded border"
+                         style="width:70px;height:70px;object-fit:cover;">
                     <button type="button"
                             class="remove-btn remove-new-image">
                         &times;
@@ -367,6 +384,7 @@ $('#galleryInput').on('change', function () {
 
     syncGalleryInput();
 });
+
 
 // Remove new images
 $('#newGallery').on('click', '.remove-new-image', function () {
