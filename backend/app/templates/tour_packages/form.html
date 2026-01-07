@@ -168,6 +168,16 @@
         <input type="file" name="gallery_images" id="galleryInput" accept="image/*" multiple>
         <p>Upload multiple images</p>
     </div>
+      <div id="existingGalleryWrapper" class="mt-3" style="display: none;">
+        <h6>Existing Images</h6>
+        <div id="existingGallery" class="d-flex gap-2 flex-wrap mt-2"></div>
+    </div>
+
+    <!-- New Images -->
+    <div id="newGalleryWrapper" class="mt-3" style="display: none;">
+        <h6>New Images</h6>
+        <div id="newGallery" class="d-flex gap-2 flex-wrap mt-2"></div>
+    </div>
 
 <h6 class="mt-3">Existing Images</h6>
 <div id="existingGallery" class="d-flex gap-2 flex-wrap mt-2">
@@ -191,10 +201,6 @@
 {% endif %}
 
 </div>
-<h6 class="mt-3">New Images</h6>
-<div id="newGallery" class="d-flex gap-2 flex-wrap mt-2"></div>
-
-
 </div>
 
 </div>
@@ -306,15 +312,29 @@ $('#coverImageInput').on('change', function () {
 });
 
 // Gallery preview
+$(document).ready(function () {
+    if ($('#existingGallery .gallery-image-wrapper').length > 0) {
+        $('#existingGalleryWrapper').show();
+    }
+});
 
+// Update visibility of headers
+function updateGalleryHeaders() {
+    $('#existingGalleryWrapper').toggle($('#existingGallery .gallery-image-wrapper').length > 0);
+    $('#newGalleryWrapper').toggle($('#newGallery .gallery-image-wrapper').length > 0);
+}
+
+// Handle new gallery image selection
 $('#galleryInput').on('change', function () {
     Array.from(this.files).forEach(file => {
-
         if (!file.type.startsWith('image/')) return;
-        if (file.size > MAX_SIZE) {
+        if (file.size > 10 * 1024 * 1024) { // 10 MB
             alert("Each image must be under 10 MB");
             return;
         }
+
+        // Prevent duplicate files by name
+        if (selectedGalleryFiles.some(f => f.name === file.name)) return;
 
         selectedGalleryFiles.push(file);
 
@@ -331,6 +351,7 @@ $('#galleryInput').on('change', function () {
                     </button>
                 </div>
             `);
+            updateGalleryHeaders();
         };
         reader.readAsDataURL(file);
     });
@@ -338,22 +359,18 @@ $('#galleryInput').on('change', function () {
     syncGalleryInput();
 });
 
-
-
+// Remove new images
 $('#newGallery').on('click', '.remove-new-image', function () {
     const wrapper = $(this).closest('.gallery-image-wrapper');
     const fileName = wrapper.data('name');
 
-    selectedGalleryFiles = selectedGalleryFiles.filter(
-        f => f.name !== fileName
-    );
-
+    selectedGalleryFiles = selectedGalleryFiles.filter(f => f.name !== fileName);
     wrapper.remove();
     syncGalleryInput();
+    updateGalleryHeaders();
 });
 
-
-
+// Delete existing DB images
 $('#existingGallery').on('click', '.delete-db-image', function () {
     const btn = $(this);
     const imageId = btn.data('image-id');
@@ -366,6 +383,7 @@ $('#existingGallery').on('click', '.delete-db-image', function () {
         success: function () {
             btn.closest('.gallery-image-wrapper').fadeOut(200, function () {
                 $(this).remove();
+                updateGalleryHeaders();
             });
         },
         error: function () {
@@ -374,11 +392,15 @@ $('#existingGallery').on('click', '.delete-db-image', function () {
     });
 });
 
+// Sync selected files to input for form submission
 function syncGalleryInput() {
     const dt = new DataTransfer();
     selectedGalleryFiles.forEach(file => dt.items.add(file));
     document.getElementById('galleryInput').files = dt.files;
+    updateGalleryHeaders();
 }
 
+// Initial call for page load
+updateGalleryHeaders();
 </script>
 {% endblock %}
