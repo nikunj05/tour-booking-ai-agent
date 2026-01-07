@@ -359,7 +359,7 @@ def tour_detail(
         raise HTTPException(status_code=404, detail="Tour not found")
 
     return templates.TemplateResponse(
-        "tour_packages/tour_detail.html",
+        "tour_packages/public_tour_detail.html",
         {
             "request": request,
             "tour": tour
