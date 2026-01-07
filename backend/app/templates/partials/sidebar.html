@@ -4,7 +4,6 @@
     <!-- Brand -->
     <div class="brand-section">
         <a href="#" class="user-panel brand-logo d-flex align-items-center">
-
                 <div class="info brand-name ms-2">
                     <span id="sidebar-role"></span>
                 </div>
@@ -39,12 +38,12 @@
                 
                 <!-- Pickup Sheet -->
                 <li class="nav-item role-admin" style="display:none;">
-                    <a href="{{ url_for('agent_list') }}"
+                    <a href="{{ url_for('company_list') }}"
                     class="nav-link d-flex align-items-center
-                    {% if request.url.path.startswith(url_for('agent_list').path) %}active{% endif %}">
+                    {% if request.url.path.startswith(url_for('company_list').path) %}active{% endif %}">
 
                         <div class="sidebar-nav-icon me-2">
-                            <!-- Agent / User SVG -->
+                            <!-- Company / User SVG -->
                             <svg xmlns="http://www.w3.org/2000/svg"
                                 width="22"
                                 height="22"
@@ -55,11 +54,11 @@
                             </svg>
                         </div>
 
-                        <p class="mb-0">Tour & Travel Agents</p>
+                        <p class="mb-0">Tours & Travel Companies</p>
                     </a>
                 </li>
 
-                <li class="nav-item role-agent" style="display:none;">
+                <li class="nav-item role-company" style="display:none;">
                     <a href="{{ url_for('my_tour_list') }}"
                     class="nav-link d-flex align-items-center
                     {% if request.url.path.startswith(url_for('my_tour_list').path) %}active{% endif %}">
@@ -85,7 +84,7 @@
                     </a>
                 </li>
 
-                <li class="nav-item role-agent" style="display:none;">
+                <li class="nav-item role-company" style="display:none;">
                     <a href="{{ url_for('my_profile') }}"
                     class="nav-link d-flex align-items-center">
 

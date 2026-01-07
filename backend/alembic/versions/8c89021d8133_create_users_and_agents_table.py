@@ -1,8 +1,8 @@
 """create users and agents table
 
-Revision ID: f9cca8687f14
+Revision ID: 8c89021d8133
 Revises: 
-Create Date: 2026-01-06 14:43:00.769516
+Create Date: 2026-01-07 11:16:33.209403
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'f9cca8687f14'
+revision: str = '8c89021d8133'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,11 +26,10 @@ def upgrade() -> None:
     sa.Column('email', sa.String(length=150), nullable=False),
     sa.Column('password_hash', sa.String(length=255), nullable=False),
     sa.Column('role', sa.String(length=50), nullable=False),
-    sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
-    op.create_table('agents',
+    op.create_table('companies',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('company_name', sa.String(length=150), nullable=False),
@@ -38,15 +37,16 @@ def upgrade() -> None:
     sa.Column('phone', sa.String(length=20), nullable=True),
     sa.Column('status', sa.String(length=20), nullable=True),
     sa.Column('currency', sa.String(length=10), nullable=True),
+    sa.Column('country', sa.String(length=100), nullable=True),
     sa.Column('is_deleted', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('user_id')
     )
-    op.create_index(op.f('ix_agents_id'), 'agents', ['id'], unique=False)
+    op.create_index(op.f('ix_companies_id'), 'companies', ['id'], unique=False)
     op.create_table('tour_packages',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('agent_id', sa.Integer(), nullable=False),
+    sa.Column('company_id', sa.Integer(), nullable=False),
     sa.Column('title', sa.String(length=200), nullable=False),
     sa.Column('description', sa.Text(), nullable=False),
     sa.Column('country', sa.String(length=100), nullable=False),
@@ -56,7 +56,7 @@ def upgrade() -> None:
     sa.Column('excludes', sa.Text(), nullable=True),
     sa.Column('status', sa.String(length=20), nullable=True),
     sa.Column('is_deleted', sa.Boolean(), nullable=True),
-    sa.ForeignKeyConstraint(['agent_id'], ['agents.id'], ),
+    sa.ForeignKeyConstraint(['company_id'], ['companies.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_tour_packages_id'), 'tour_packages', ['id'], unique=False)
@@ -79,8 +79,8 @@ def downgrade() -> None:
     op.drop_table('tour_package_gallery_images')
     op.drop_index(op.f('ix_tour_packages_id'), table_name='tour_packages')
     op.drop_table('tour_packages')
-    op.drop_index(op.f('ix_agents_id'), table_name='agents')
-    op.drop_table('agents')
+    op.drop_index(op.f('ix_companies_id'), table_name='companies')
+    op.drop_table('companies')
     op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')
     # ### end Alembic commands ###

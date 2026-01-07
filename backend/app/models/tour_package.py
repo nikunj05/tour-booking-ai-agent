@@ -10,7 +10,7 @@ class TourPackage(Base):
     __tablename__ = "tour_packages"
 
     id = Column(Integer, primary_key=True, index=True)
-    agent_id = Column(Integer, ForeignKey("agents.id"), nullable=False)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
 
     title = Column(String(200), nullable=False)
     description = Column(Text, nullable=False)
@@ -25,7 +25,7 @@ class TourPackage(Base):
 
     is_deleted = Column(Boolean, default=False)
 
-    agent = relationship("Agent", back_populates="tour_packages")
+    company = relationship("Company", back_populates="tour_packages")
     gallery_images = relationship(
         "TourPackageGalleryImage",
         back_populates="tour_package",

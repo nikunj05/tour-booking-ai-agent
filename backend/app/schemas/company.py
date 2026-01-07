@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 
-class AgentCreate(BaseModel):
+class CompanyCreate(BaseModel):
     company_name: str = Field(..., min_length=2, max_length=150)
     email: EmailStr
     phone: Optional[str] = Field(
@@ -9,13 +9,15 @@ class AgentCreate(BaseModel):
         max_length=15,
         description="Optional phone number"
     )
+    country: Optional[str] = Field(None)
     currency: str
 
-class AgentUpdate(BaseModel):
+class CompanyUpdate(BaseModel):
     company_name: str = Field(..., min_length=2, max_length=150)
     phone: Optional[str] = Field(
         min_length=10,
         max_length=15,
     )
+    country: Optional[str] = Field(None)
     status: str = Field(..., pattern="^(active|inactive)$")
     currency: str

@@ -9,15 +9,19 @@
 <body class="hold-transition sidebar-mini">
 
 <div class="wrapper">
+    
     <!-- Header -->
     {% include 'partials/header.html' %}
 
     <!-- Sidebar -->
     {% include 'partials/sidebar.html' %}
 
+    {% include 'partials/pop-up.html' %}
+
     <!-- Content Wrapper -->
     <div class="content-wrapper">
-        {% block content %}{% endblock %}
+        {% block content %}
+        {% endblock %}
     </div>
 
     <!-- Footer -->

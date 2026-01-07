@@ -8,7 +8,7 @@ import os
 
 from app.database.session import get_db
 from app.core.templates import templates
-from app.auth.dependencies import agent_only, get_current_user
+from app.auth.dependencies import company_only, get_current_user
 from app.utils.pagination import paginate
 from app.models.tour_package import TourPackage, TourPackageGalleryImage
 from app.schemas.tour_package import TourPackageCreate, TourPackageUpdate
@@ -38,10 +38,10 @@ def my_tour_list(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    agent = current_user.agent
+    company = current_user.company
 
     query = db.query(TourPackage).filter(
-        TourPackage.agent_id == agent.id,
+        TourPackage.company_id == company.id,
         TourPackage.is_deleted == False
     )
 
@@ -74,7 +74,7 @@ def my_tour_list(
 
     
 @router.get("/create", response_class=HTMLResponse, name="tour_package_create_page")
-def create_page(request: Request, _=Depends(agent_only)):
+def create_page(request: Request, _=Depends(company_only)):
     return render_form(request)
 @router.post("/create" , response_class=HTMLResponse, name="tour_package_create")
 def create_package(
@@ -91,7 +91,7 @@ def create_package(
     gallery_images: Optional[List[UploadFile]] = File(None),
 
     db: Session = Depends(get_db),
-    current_user=Depends(agent_only)
+    current_user=Depends(company_only)
 ):
     form_data = {
         "title": title,
@@ -110,7 +110,7 @@ def create_package(
         return render_form(request, form=form_data, errors=errors, status_code=400)
     # Save cover image
     package = TourPackage(
-    agent_id=current_user.agent.id,
+    company_id=current_user.company.id,
     **validated.dict()
     )
     db.add(package)
@@ -146,11 +146,11 @@ def edit_page(
     package_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    current_user=Depends(agent_only)
+    current_user=Depends(company_only)
 ):
     package = db.query(TourPackage).filter(
         TourPackage.id == package_id,
-        TourPackage.agent_id == current_user.agent.id,
+        TourPackage.company_id == current_user.company.id,
         TourPackage.is_deleted == False
     ).first()
 
@@ -189,14 +189,14 @@ def update_package(
     gallery_images: Optional[List[UploadFile]] = File(None),
 
     db: Session = Depends(get_db),
-    current_user=Depends(agent_only)
+    current_user=Depends(company_only)
 ):
     # -------------------------------------------------
     # 1. Fetch package (ownership + not deleted)
     # -------------------------------------------------
     package = db.query(TourPackage).filter(
         TourPackage.id == package_id,
-        TourPackage.agent_id == current_user.agent.id,
+        TourPackage.company_id == current_user.company.id,
         TourPackage.is_deleted == False
     ).first()
 
@@ -278,11 +278,11 @@ def update_package(
 def delete_package(
     package_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(agent_only)
+    current_user=Depends(company_only)
 ):
     package = db.query(TourPackage).filter(
         TourPackage.id == package_id,
-        TourPackage.agent_id == current_user.agent.id
+        TourPackage.company_id == current_user.company.id
     ).first()
 
     if package:

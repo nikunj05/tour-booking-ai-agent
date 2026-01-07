@@ -1,3 +1,3 @@
 from .user import User
-from .agent import Agent
+from .company import Company
 from .tour_package import TourPackage

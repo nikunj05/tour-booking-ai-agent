@@ -31,7 +31,12 @@
 <script src="{{ url_for('static', path='assets/dist/js/adminlte.min.js') }}"></script>
 <script src="{{ url_for('static', path='assets/dist/js/jquery.validate.min.js') }}"></script>
 <script src="{{ url_for('static', path='assets/plugins/toastr/toastr.min.js') }}"></script>
-
+{% if request.cookies.get('flash_error') %}
+<script>
+    toastr.error("{{ request.cookies.get('flash_error') }}");
+    document.cookie = "flash_error=; Max-Age=0; path=/";
+</script>
+{% endif %}
 {% block extra_js %}{% endblock %}
 </body>
 </html>

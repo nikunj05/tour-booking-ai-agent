@@ -8,7 +8,7 @@ from app.core.security import verify_password, create_access_token
 from app.schemas.user import LoginForm
 from app.auth.dependencies import get_current_user
 from fastapi.responses import HTMLResponse
-
+from app.auth.dependencies import redirect_to_login
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -37,24 +37,10 @@ def login(
     user = db.query(User).filter(User.email == form.email).first()
 
     if not user or not verify_password(form.password, user.password_hash):
-        return templates.TemplateResponse(
-            "auth/login.html",
-            {
-                "request": request,
-                "error": "Invalid email or password"
-            },
-            status_code=400
-        )
-
-    if not user.is_active:
-        return templates.TemplateResponse(
-            "auth/login.html",
-            {
-                "request": request,
-                "error": "Account disabled"
-            },
-            status_code=403
-        )
+        return redirect_to_login(request, "Invalid email or password")
+        
+    if user.company.status == "inactive":
+        return redirect_to_login(request, "Your company account is inactive. Please contact support.")
 
     token = create_access_token({
         "user_id": user.id,

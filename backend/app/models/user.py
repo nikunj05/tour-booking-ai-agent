@@ -10,9 +10,8 @@ class User(Base):
     email = Column(String(150), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
     role = Column(String(50), nullable=False)  
-    is_active = Column(Boolean, default=True)
-    
-    agent = relationship("Agent", back_populates="user", uselist=False)
+
+    company = relationship("Company", back_populates="user", uselist=False)
 
 
 
