@@ -10,7 +10,9 @@ __pycache__/
 venv/
 env/
 .venv/
-.env/
+.env
+alembic.ini
+uploads/
 
 # Database files (if using SQLite)
 *.db
@@ -29,3 +31,4 @@ Thumbs.db
 # Node / frontend (if exists)
 node_modules/
 dist/
+
