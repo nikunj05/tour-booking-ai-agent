@@ -6,7 +6,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 SECRET_KEY = "CHANGE_ME_SECRET"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 2500
+ACCESS_TOKEN_EXPIRE_MINUTES = 25000
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)

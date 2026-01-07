@@ -46,6 +46,20 @@
 
 {% block extra_js %}
 <script>
+$(document).on('click', '.confirm-tour-delete', function (e) {
+    e.preventDefault();
+
+    confirmDelete(
+        $(this).data('route'),
+        'Are you sure you want to delete this tour package?',
+        'POST',
+        function () {
+            location.reload(); 
+        }
+    );
+});
+
+
 let searchTimer = null;
 
 document.getElementById("live-search").addEventListener("keyup", function () {

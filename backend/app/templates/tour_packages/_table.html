@@ -163,13 +163,11 @@
                 Edit
             </a>
 
-            <form method="post"
-                  action="{{ url_for('tour_package_delete', package_id=tour.id) }}">
-                <button class="btn btn-delete btn-xs"
-                        onclick="return confirm('Delete this package?')">
-                    Delete
-                </button>
-            </form>
+            <a href="javascript:void(0)"
+            class="confirm-tour-delete btn btn-sm btn-delete"
+            data-route="{{ request.url_for('tour_package_delete', package_id=tour.id) }}">
+            Delete
+            </a>
         </div>
 
     </div>

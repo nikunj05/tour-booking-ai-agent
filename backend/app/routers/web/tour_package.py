@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, Form, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Request, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from pydantic import ValidationError
@@ -14,6 +14,8 @@ from app.models.tour_package import TourPackage, TourPackageGalleryImage
 from app.schemas.tour_package import TourPackageCreate, TourPackageUpdate
 from sqlalchemy import or_
 
+from app.core.constants import COUNTRIES
+
 router = APIRouter(prefix="/tour-packages", tags=["Tour Packages"])
 
 UPLOAD_DIR = "app/static/uploads/tours"
@@ -25,6 +27,7 @@ def render_form(request: Request, *, package=None, form=None, errors=None, statu
         {
             "request": request,
             "package": package,
+            "countries": COUNTRIES,
             "form": form or {},
             "errors": errors or {},
         },
@@ -36,7 +39,7 @@ def my_tour_list(
     search: str = "",
     page: int = 1,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(company_only),
 ):
     company = current_user.company
 
@@ -107,7 +110,7 @@ def create_package(
         validated = TourPackageCreate(**form_data)
     except ValidationError as e:
         errors = {err["loc"][0]: err["msg"] for err in e.errors()}
-        return render_form(request, form=form_data, errors=errors, status_code=400)
+        return render_form(request, form=form_data, errors=errors, countries=COUNTRIES, status_code=400)
     # Save cover image
     package = TourPackage(
     company_id=current_user.company.id,
@@ -168,6 +171,7 @@ def edit_page(
             "package": package,
             "gallery_images": images,
             "form": package.__dict__,
+            "countries": COUNTRIES
         }
     )
 
@@ -320,3 +324,29 @@ def public_tour_list(request: Request, db: Session = Depends(get_db), search: st
         "tour_packages/public_list.html",
         {"request": request, "tours": tours, "search": search}
     )
+    
+@router.post("/gallery-image/{image_id}/delete", name="delete_gallery_image")
+def delete_gallery_image(
+    image_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(company_only)
+):
+    image = db.query(TourPackageGalleryImage).join(
+        TourPackage
+    ).filter(
+        TourPackageGalleryImage.id == image_id,
+        TourPackage.company_id == current_user.company.id
+    ).first()
+
+    if not image:
+        raise HTTPException(status_code=404, detail="Image not found")
+
+    # delete file from disk (optional but recommended)
+    file_path = f"static/{image.image_path}"
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    db.delete(image)
+    db.commit()
+
+    return {"success": True}

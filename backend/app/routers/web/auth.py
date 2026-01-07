@@ -68,18 +68,6 @@ def login(
 
     return response
 
-
-# @router.get("/logout", name="logout")
-# def logout(request: Request):
-#     response = RedirectResponse(
-#         url=request.url_for("login_page"),
-#         status_code=status.HTTP_302_FOUND
-#     )
-#     response.delete_cookie(key="access_token")
-#     response.delete_cookie(key="user_role")
-    
-#     return response
-
 @router.post("/logout", name="logout")
 def logout(request: Request):
     """
