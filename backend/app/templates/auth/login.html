@@ -1,4 +1,5 @@
 {% extends "partials/authmaster.html" %}
+
 {% block content %}
 <div class="card authentication-field">
     <div class="card-body login-card-body">
@@ -13,38 +14,47 @@
         {% endif %}
 
         <form id="loginForm"
-            action="{{ request.url_for('login_submit') }}"
-            method="post"
-            class="form-fields"
-            novalidate>
+              action="{{ request.url_for('login_submit') }}"
+              method="post"
+              novalidate>
+
             <div class="input-field">
-                <div class="input-group">
-                    <input name="email" type="email" value=""
-                        class="form-control" placeholder="Enter your email" required>
+                <div class="input-group ">
+                <input name="email"
+                       type="email"
+                       class="form-control"
+                       placeholder="Enter your email"
+                       required>
                 </div>
             </div>
 
-            <div class="input-field">
+            <div class="input-field mt-3">
                 <div class="input-group">
-                    <input name="password" type="password"
-                        class="form-control password_field" placeholder="Password" required minlength="6">
+                    <input name="password"
+                           type="password"
+                           class="form-control password_field"
+                           placeholder="Password"
+                           required minlength="6">
+
                     <button type="button" class="pass-show-hide-btn">
-                        <img src="{{ url_for('static', path='assets/icon/eye-hide-icon.svg') }}" class="toggle_password">
+                        <img src="{{ url_for('static', path='assets/icon/eye-hide-icon.svg') }}"
+                             class="toggle_password">
                     </button>
                 </div>
             </div>
 
-            <div class="action">
-                <button type="submit" class="btn button-default btn-block">LogIn</button>
-            </div>
+            <button type="submit"
+                    class="btn button-default w-100 mt-4">
+                Log In
+            </button>
+            <div class="login-forget-password">
+						<div class="my-1 text-right">
+						<a href="{{ request.url_for('forgot_password_page') }}">
+                    Forgot password?
+                </a>
+			</div>
+			</div>
 
-            <div class="forget-password-field text-end">
-                <div class="login-forget-password">
-                    <div class="m-0 d-flex justify-content-between">
-                        <a href="">Forgot password?</a>
-                    </div>
-                </div>
-            </div>
         </form>
 
     </div>
@@ -53,33 +63,26 @@
 
 {% block extra_js %}
 <script>
-$(document).ready(function() {
-    $('#loginForm').validate({
-        rules: {
-            email: { required: true, email: true },
-            password: { required: true }
-        },
-        errorElement: 'span',
-        errorClass: 'invalid-feedback',
-        highlight: function(element) { $(element).addClass('is-invalid'); },
-        unhighlight: function(element) { $(element).removeClass('is-invalid'); }
-    });
+$("#loginForm").validate({
+    rules: {
+        email: { required: true, email: true },
+        password: { required: true, minlength: 6 }
+    },
+    errorElement: "span",
+    errorClass: "invalid-feedback",
+    highlight: el => $(el).addClass("is-invalid"),
+    unhighlight: el => $(el).removeClass("is-invalid")
 });
 
-window.addEventListener("DOMContentLoaded", () => {
-    const toggles = document.querySelectorAll(".toggle_password");
-    const inputs = document.querySelectorAll(".password_field");
+/* Password show / hide */
+document.querySelector(".toggle_password").addEventListener("click", function () {
+    const input = document.querySelector(".password_field");
+    const hidden = input.type === "password";
 
-    toggles.forEach((toggle, index) => {
-        toggle.addEventListener("click", () => {
-            const input = inputs[index];
-            const isHidden = input.type === "password";
-            input.type = isHidden ? "text" : "password";
-            toggle.src = isHidden
-                ? "{{ url_for('static', path='assets/icon/eye-show-icon.svg') }}"
-                : "{{ url_for('static', path='assets/icon/eye-hide-icon.svg') }}";
-        });
-    });
+    input.type = hidden ? "text" : "password";
+    this.src = hidden
+        ? "{{ url_for('static', path='assets/icon/eye-show-icon.svg') }}"
+        : "{{ url_for('static', path='assets/icon/eye-hide-icon.svg') }}";
 });
 </script>
 {% endblock %}

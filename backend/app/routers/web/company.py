@@ -1,6 +1,7 @@
 import os, uuid
 from fastapi import (
-    APIRouter, Depends, Request, Form, UploadFile, File, Query
+    APIRouter, Depends, Request, Form, UploadFile, File, Query, BackgroundTasks
+
 )
 from fastapi.responses import (
     HTMLResponse, RedirectResponse, JSONResponse
@@ -18,6 +19,7 @@ from app.models.user import User
 from app.schemas.company import CompanyCreate, CompanyUpdate
 from app.core.constants import COUNTRIES, CURRENCIES
 from app.utils.flash import flash_redirect
+from app.services.email_service import send_company_created_email
 
 # -------------------------------------------------
 # Router config
@@ -139,21 +141,22 @@ def create_page(
     return render_form(request, currencies=CURRENCIES, countries=COUNTRIES)
 
 @router.post("/create", name="company_create")
-def create_company(
+async def create_company(
     request: Request,
+    background_tasks: BackgroundTasks,
     company_name: str = Form(...),
     email: str = Form(...),
     phone: str = Form(""),
     currency: str = Form(...),
     country: str = Form(None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(admin_only)
+    current_user: User = Depends(admin_only),
 ):
     if isinstance(current_user, RedirectResponse):
         return current_user
 
     try:
-        validated = CompanyCreate(
+        CompanyCreate(
             company_name=company_name,
             country=country,
             email=email,
@@ -167,7 +170,7 @@ def create_company(
             errors={err["loc"][0]: err["msg"] for err in e.errors()},
             currencies=CURRENCIES,
             countries=COUNTRIES,
-            status_code=400
+            status_code=400,
         )
 
     if db.query(User).filter(User.email == email).first():
@@ -177,32 +180,45 @@ def create_company(
             errors={"email": "Email already exists"},
             currencies=CURRENCIES,
             countries=COUNTRIES,
-            status_code=400
+            status_code=400,
         )
+
+    # ✅ Create user
+    temp_password = "12345678"
 
     user = User(
         email=email,
-        password_hash=hash_password("12345678"),
+        password_hash=hash_password(temp_password),
         role="company",
     )
     db.add(user)
     db.commit()
     db.refresh(user)
 
+    # ✅ Create company
     company = Company(
         user_id=user.id,
         company_name=company_name,
         country=country,
         phone=phone,
         currency=currency,
-        status="active"
+        status="active",
     )
     db.add(company)
     db.commit()
 
+    # ✅ SEND EMAIL AFTER DB COMMIT (BACKGROUND)
+    background_tasks.add_task(
+        send_company_created_email,
+        email,
+        company_name,
+        temp_password,
+        login_url=request.url_for("login_page"),
+    )
+
     return flash_redirect(
         url=request.url_for("company_list"),
-        message="Company created successfully"
+        message="Company created successfully and email sent",
     )
 
 # =================================================

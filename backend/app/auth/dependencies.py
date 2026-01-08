@@ -17,6 +17,14 @@ def redirect_to_login(request: Request, message: str):
     response.set_cookie("flash_error", message)
     return response
 
+def redirect_to_login_success(request: Request, message: str):
+    response = RedirectResponse(
+        url=request.url_for("login_page")
+    )
+    response.set_cookie("flash_success", message)
+    return response
+
+
 def get_current_user(
     request: Request,
     db: Session = Depends(get_db)
