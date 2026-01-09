@@ -1911,8 +1911,16 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 /* tour-packages-card css start */
 
 .tour-packages-card {
-    margin-top: 24px;
+    margin-top: 0px;
 }
+
+.tour-packages-card .tour-packages-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.tour-packages-item {}
 
 .tour-packages-card .tour-card {
     background: #fff;
@@ -1951,8 +1959,8 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 
 .tour-packages-card .status-badge {
     position: absolute;
-    top: 12px;
-    right: 12px;
+    top: 16px;
+    right: 16px;
     padding: 4px 10px;
     font-size: 11px;
     border-radius: 20px;
@@ -1972,7 +1980,6 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
     padding: 16px;
     display: flex;
     flex-direction: column;
-    height: calc(100% - 200px);
 }
 
 .tour-packages-card .tour-title {
@@ -2037,6 +2044,54 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
     height: 40px;
     max-width: 260px;
     margin-left: auto;
+}
+
+.rich-editor {
+    height: 180px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+}
+
+.upload-box {
+    border: 2px dashed #ced4da;
+    border-radius: 6px;
+    padding: 15px;
+    min-height: 110px;
+    text-align: center;
+    cursor: pointer;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+.upload-box p {
+    margin: 0px;
+}
+
+.upload-box input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.gallery-image-wrapper {
+    position: relative;
+}
+
+.gallery-image-wrapper .remove-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: rgba(255, 0, 0, 0.7);
+    border: none;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
 }
 
 @media (max-width: 1499.55px) {
@@ -2143,6 +2198,10 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 
     .content-header h1 {
         font-size: 24px;
+    }
+
+    .tour-packages-card .tour-packages-list {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
@@ -3096,11 +3155,50 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
     .tour-packages-header .btn-submit {
         margin-left: auto;
     }
+
+    .upload-box {
+        min-height: 80px;
+    }
+
+    .upload-box p {
+        font-size: 14px;
+    }
+
+    .tour-packages-card .tour-body {
+        padding: 12px;
+    }
+
+    .tour-packages-card .tour-title {
+        font-size: 18px;
+    }
+
+    .tour-packages-card .tour-meta {
+        font-size: 13px;
+        margin-bottom: 12px;
+    }
+
+    .tour-packages-card .price {
+        font-size: 15px;
+    }
+
+    .tour-packages-card .tour-gallery img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .tour-packages-card .tour-packages-list {
+
+        gap: 15px;
+    }
 }
 
 @media (max-width: 575px) {
     .driver-side-header-button .header-add-new-box-button {
         width: 100% !important;
         justify-content: end;
+    }
+
+    .tour-packages-card .tour-packages-list {
+        grid-template-columns: repeat(1, 1fr);
     }
 }
