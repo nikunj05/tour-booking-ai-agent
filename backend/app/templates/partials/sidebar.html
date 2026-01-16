@@ -65,6 +65,26 @@
                 </li>
 
                 <li class="nav-item role-company" style="display:none;">
+                   
+                    <a href="{{ url_for('manual_booking_list') }}" class="nav-link d-flex align-items-center
+                    {% if request.url.path.startswith(url_for('manual_booking_list').path) %}active{% endif %}">
+
+
+                        <div class="sidebar-nav-icon">
+                            <!-- Manual Booking SVG -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none">
+                                <path
+                                    d="M3 4h18v2H3V4zm0 6h18v2H3v-2zm0 6h12v2H3v-2z"
+                                    fill="currentColor" />
+                            </svg>
+                        </div>
+
+                        <p class="mb-0">Tour Bookings</p>
+                    </a>
+                </li>
+
+                <li class="nav-item role-company" style="display:none;">
                     <a href="{{ url_for('my_tour_list') }}" class="nav-link d-flex align-items-center
                     {% if request.url.path.startswith(url_for('my_tour_list').path) %}active{% endif %}">
 
@@ -79,7 +99,8 @@
                         </div>
                         <p class="mb-0">Tour Packages</p>
                     </a>
-                </li>
+                </li>                           
+                
 
                 <li class="nav-item role-company" style="display:none;">
                     <a href="{{ url_for('my_profile') }}" class="nav-link d-flex align-items-center">

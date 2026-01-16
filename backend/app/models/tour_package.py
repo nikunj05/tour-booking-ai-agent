@@ -1,3 +1,4 @@
+from locale import currency
 from sqlalchemy import (
     Column, Integer, String, Text, Float,
     Boolean, ForeignKey, Enum
@@ -17,7 +18,6 @@ class TourPackage(Base):
     country = Column(String(100), nullable=False)
     city = Column(String(100), nullable=False)
     price = Column(Float, nullable=False)
-
     itinerary = Column(Text, nullable=True)
     excludes = Column(Text, nullable=True)
 

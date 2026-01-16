@@ -9,18 +9,18 @@
 
             <div class="tour-packages-header d-flex align-items-center">
                 <!-- Heading -->
-
                 <h1 class="mb-0">My Tour Packages</h1>
 
-
                 <!-- Live Search -->
-
                 <input type="text" id="live-search" class="form-control" placeholder="Search by title, city, country..."
                     value="{{ search }}">
 
+                <input type="date"
+                    id="availability-date"
+                    class="form-control"
+                    value="{{ travel_date }}">
 
                 <!-- Add Button -->
-
                 <a href="{{ url_for('tour_package_create_page') }}" class="btn btn-submit">
                     Add Tour Package
                 </a>
@@ -63,25 +63,66 @@
     });
 
 
+    // let searchTimer = null;
+
+    // document.getElementById("live-search").addEventListener("keyup", function () {
+    //     const query = this.value;
+
+    //     // debounce to avoid too many requests
+    //     clearTimeout(searchTimer);
+    //     searchTimer = setTimeout(() => {
+    //         fetch(`?search=${encodeURIComponent(query)}`, {
+    //             headers: {
+    //                 "X-Requested-With": "XMLHttpRequest"
+    //             }
+    //         })
+    //             .then(response => response.text())
+    //             .then(html => {
+    //                 document.getElementById("table-container").innerHTML = html;
+    //             })
+    //             .catch(err => console.error("Search error:", err));
+    //     }, 400); // wait 400ms after typing stops
+    // });
+
+        // ---------------- SEARCH + DATE FILTER ----------------
+    const searchInput = document.getElementById("live-search");
+    const dateInput = document.getElementById("availability-date");
+    const tableContainer = document.getElementById("table-container");
+
     let searchTimer = null;
 
-    document.getElementById("live-search").addEventListener("keyup", function () {
-        const query = this.value;
+    function loadTours() {
+        const params = new URLSearchParams();
 
-        // debounce to avoid too many requests
+        if (searchInput.value.trim()) {
+            params.append("search", searchInput.value.trim());
+        }
+
+        if (dateInput.value) {
+            params.append("travel_date", dateInput.value);
+        }
+
+        fetch(`?${params.toString()}`, {
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            tableContainer.innerHTML = html;
+        })
+        .catch(err => console.error("Filter error:", err));
+    }
+
+    // 🔍 Live search (debounced)
+    searchInput.addEventListener("keyup", function () {
         clearTimeout(searchTimer);
-        searchTimer = setTimeout(() => {
-            fetch(`?search=${encodeURIComponent(query)}`, {
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest"
-                }
-            })
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById("table-container").innerHTML = html;
-                })
-                .catch(err => console.error("Search error:", err));
-        }, 400); // wait 400ms after typing stops
+        searchTimer = setTimeout(loadTours, 400);
+    });
+
+    // 📅 Date change
+    dateInput.addEventListener("change", function () {
+        loadTours();
     });
 </script>
 {% endblock %}

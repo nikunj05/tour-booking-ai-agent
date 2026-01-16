@@ -28,7 +28,7 @@
 
                     <div class="tour-meta">
                         <span>📍 {{ tour.city }}, {{ tour.country }}</span>
-                        <span class="price">₹{{ tour.price }}</span>
+                        <span class="price">{{current_user.company.currency}} {{ tour.price }}</span>
                     </div>
 
                     {# -------- GALLERY -------- #}
@@ -56,6 +56,10 @@
                         <a href="javascript:void(0)" class="confirm-tour-delete btn btn-sm btn-delete"
                             data-route="{{ request.url_for('tour_package_delete', package_id=tour.id) }}">
                             Delete
+                        </a>
+
+                        <a href="{{ url_for('manual_booking_create_page') }}?package_id={{ tour.id }}{% if travel_date %}&travel_date={{ travel_date }}{% endif %}">
+                            Book Package
                         </a>
                     </div>
 
