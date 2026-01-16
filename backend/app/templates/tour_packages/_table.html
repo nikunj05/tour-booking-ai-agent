@@ -58,6 +58,9 @@
                             Delete
                         </a>
 
+                        <a href="{{ url_for('manual_booking_create_page') }}?package_id={{ tour.id }}{% if travel_date %}&travel_date={{ travel_date }}{% endif %}">
+                            Book Package
+                        </a>
                     </div>
 
                 </div>

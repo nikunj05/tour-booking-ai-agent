@@ -15,17 +15,44 @@ router = APIRouter(prefix="/manual-bookings", tags=["Manual Booking"])
 # ----------------------------
 # 1️⃣ SHOW CREATE FORM (GET)
 # ----------------------------
-@router.get("/create", name="manual_booking_create_page")
-def manual_booking_create_page(request: Request, db: Session = Depends(get_db), current_user=Depends(company_only)):
+@router.get("/manual-bookings/create", name="manual_booking_create_page")
+def manual_booking_create_page(
+    request: Request,
+    package_id: int | None = None,
+    travel_date: str | None = None,
+    db: Session = Depends(get_db),
+    current_user=Depends(company_only),
+):
     company = current_user.company
-    packages = db.query(TourPackage).filter(
-        TourPackage.company_id == company.id,
-        TourPackage.is_deleted == False
+
+    packages = (
+        db.query(TourPackage)
+        .filter(
+            TourPackage.company_id == company.id,
+            TourPackage.is_deleted == False
+        )
+        .all()
     )
+
+    selected_package = None
+    if package_id:
+        selected_package = db.query(TourPackage).filter(
+            TourPackage.id == package_id,
+            TourPackage.company_id == company.id
+        ).first()
+
     return templates.TemplateResponse(
         "manual_booking/form.html",
-        {"request": request, "packages": packages, "company": company}
+        {
+            "request": request,
+            "packages": packages,
+            "company": company,
+            "selected_package": selected_package,
+            "travel_date": travel_date,
+            "is_edit": False
+        }
     )
+
 
 
 @router.post("/create", name="manual_booking_create")
@@ -182,6 +209,30 @@ def update_manual_booking(
     db: Session = Depends(get_db),
     current_user=Depends(admin_only),
 ):
+    
+    booking = db.query(ManualBooking).get(booking_id)
+
+    conflict = (
+        db.query(ManualBooking)
+        .filter(
+            ManualBooking.id != booking.id, 
+            ManualBooking.tour_package_id == booking.tour_package_id,
+            ManualBooking.travel_date == travel_date
+        )
+        .first()
+    )
+
+    if conflict:
+        return flash_redirect(
+            url=request.url_for(
+                "manual_booking_edit",
+                booking_id=booking.id
+            ),
+            message="This package is already booked for the selected date.",
+            category="error",
+        )
+        
+        
     booking = db.query(ManualBooking).get(booking_id)
 
     booking.guest_name = guest_name

@@ -64,30 +64,6 @@
     </div>
 </div>
 
-
-
-
-<select name="tour_package_id"
-        class="form-select select2"
-        {% if selected_package %}disabled{% endif %}>
-
-    <option value="">Select Package</option>
-
-    {% for package in packages %}
-        <option value="{{ package.id }}"
-            {% if selected_package and package.id == selected_package.id %}
-                selected
-            {% endif %}>
-            {{ package.title }} - {{ company.currency }} {{ package.price }}
-        </option>
-    {% endfor %}
-</select>
-
-{% if selected_package %}
-<input type="hidden" name="tour_package_id" value="{{ selected_package.id }}">
-{% endif %}
-
-
 <!-- ================= TOUR DETAILS ================= -->
 <h5 class="mt-4 mb-3 fw-semibold">Tour Details</h5>
 
@@ -97,6 +73,7 @@
 
         <select name="tour_package_id"
                 class="form-select select2"
+                {% if selected_package %}disabled{% endif %}
                 data-placeholder="Search tour package">
             <option value=""></option>
 
@@ -104,11 +81,19 @@
             <option value="{{ package.id }}"
                 {% if booking and booking.tour_package_id == package.id %}
                     selected
+                {% endif %}
+                
+                {% if selected_package and package.id == selected_package.id %}
+                selected
                 {% endif %}>
+            
                 {{ package.title }} - {{ company.currency }} {{ package.price }}
             </option>
             {% endfor %}
         </select>
+        {% if selected_package %}
+        <input type="hidden" name="tour_package_id" value="{{ selected_package.id }}">
+        {% endif %}
     </div>
 
     <div class="col-md-3 mb-3">
@@ -116,7 +101,8 @@
         <input type="date"
                name="travel_date"
                class="form-control"
-               value="{{ booking.travel_date if booking else '' }}">
+               value="{{ booking.travel_date if booking else travel_date }}"
+               {% if travel_date %}readonly{% endif %}>
     </div>
 
     <div class="col-md-3 mb-3">
