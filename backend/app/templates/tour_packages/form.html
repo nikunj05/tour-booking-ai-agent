@@ -1,9 +1,7 @@
 {% extends "layout.html" %}
 
 {% block extra_css %}
-<style>
 
-</style>
 {% endblock %}
 
 {% block content %}
@@ -464,41 +462,7 @@
 
             const reader = new FileReader();
             reader.onload = e => {
-                $('#coverPreview').attr('src', e.target.result).removeClass('d-none');
-            };
-            reader.readAsDataURL(file);
-        });
-
-        // Gallery preview
-        $(document).ready(function () {
-            if ($('#existingGallery .gallery-image-wrapper').length > 0) {
-                $('#existingGalleryWrapper').show();
-            }
-        });
-
-        // Update visibility of headers
-        function updateGalleryHeaders() {
-            $('#existingGalleryWrapper').toggle($('#existingGallery .gallery-image-wrapper').length > 0);
-            $('#newGalleryWrapper').toggle($('#newGallery .gallery-image-wrapper').length > 0);
-        }
-
-        // Handle new gallery image selection
-        $('#galleryInput').on('change', function () {
-            Array.from(this.files).forEach(file => {
-                if (!file.type.startsWith('image/')) return;
-                if (file.size > 10 * 1024 * 1024) { // 10 MB
-                    alert("Each image must be under 10 MB");
-                    return;
-                }
-
-                // Prevent duplicate files by name
-                if (selectedGalleryFiles.some(f => f.name === file.name)) return;
-
-                selectedGalleryFiles.push(file);
-
-                const reader = new FileReader();
-                reader.onload = e => {
-                    $('#newGallery').append(`
+                $('#newGallery').append(`
                 <div class="gallery-image-wrapper" data-name="${file.name}">
                     <img src="${e.target.result}"
                          class="rounded border"
@@ -509,77 +473,78 @@
                     </button>
                 </div>
             `);
-                    updateGalleryHeaders();
-                };
-                reader.readAsDataURL(file);
-            });
-
-            syncGalleryInput();
+                updateGalleryHeaders();
+            };
+            reader.readAsDataURL(file);
         });
 
-        // Remove new images
-        $('#newGallery').on('click', '.remove-new-image', function () {
-            const wrapper = $(this).closest('.gallery-image-wrapper');
-            const fileName = wrapper.data('name');
+        syncGalleryInput();
+    });
 
 
-            // Remove new images
-            $('#newGallery').on('click', '.remove-new-image', function () {
-                const wrapper = $(this).closest('.gallery-image-wrapper');
-                const fileName = wrapper.data('name');
+    // Remove new images
+    $('#newGallery').on('click', '.remove-new-image', function () {
+        const wrapper = $(this).closest('.gallery-image-wrapper');
+        const fileName = wrapper.data('name');
 
-                // Delete existing DB images
-                // $('#existingGallery').on('click', '.delete-db-image', function () {
-                //     const btn = $(this);
-                //     const imageId = btn.data('image-id');
+        selectedGalleryFiles = selectedGalleryFiles.filter(f => f.name !== fileName);
+        wrapper.remove();
+        syncGalleryInput();
+        updateGalleryHeaders();
+    });
 
-                //     if (!confirm("Delete this image permanently?")) return;
+    // Delete existing DB images
+    // $('#existingGallery').on('click', '.delete-db-image', function () {
+    //     const btn = $(this);
+    //     const imageId = btn.data('image-id');
 
-                //     $.ajax({
-                //         url: `/tour-packages/gallery-image/${imageId}/delete`,
-                //         type: 'POST',
-                //         success: function () {
-                //             btn.closest('.gallery-image-wrapper').fadeOut(200, function () {
-                //                 $(this).remove();
-                //                 updateGalleryHeaders();
-                //             });
-                //         },
-                //         error: function () {
-                //             alert("Failed to delete image");
-                //         }
-                //     });
-                // });
+    //     if (!confirm("Delete this image permanently?")) return;
 
-                $('#existingGallery').on('click', '.delete-db-image', function () {
+    //     $.ajax({
+    //         url: `/tour-packages/gallery-image/${imageId}/delete`,
+    //         type: 'POST',
+    //         success: function () {
+    //             btn.closest('.gallery-image-wrapper').fadeOut(200, function () {
+    //                 $(this).remove();
+    //                 updateGalleryHeaders();
+    //             });
+    //         },
+    //         error: function () {
+    //             alert("Failed to delete image");
+    //         }
+    //     });
+    // });
 
-                    const btn = $(this);
-                    const imageId = btn.data('image-id');
+    $('#existingGallery').on('click', '.delete-db-image', function () {
 
-                    confirmDelete(
-                        `/tour-packages/gallery-image/${imageId}/delete`,
-                        "Do you really want to delete this image permanently?",
-                        "POST",
-                        function () {
-                            btn.closest('.gallery-image-wrapper')
-                                .fadeOut(200, function () {
-                                    $(this).remove();
-                                    updateGalleryHeaders();
-                                });
-                        }
-                    );
+        const btn = $(this);
+        const imageId = btn.data('image-id');
 
-                });
+        confirmDelete(
+            `/tour-packages/gallery-image/${imageId}/delete`,
+            "Do you really want to delete this image permanently?",
+            "POST",
+            function () {
+                btn.closest('.gallery-image-wrapper')
+                    .fadeOut(200, function () {
+                        $(this).remove();
+                        updateGalleryHeaders();
+                    });
+            }
+        );
+
+    });
 
 
-                // Sync selected files to input for form submission
-                function syncGalleryInput() {
-                    const dt = new DataTransfer();
-                    selectedGalleryFiles.forEach(file => dt.items.add(file));
-                    document.getElementById('galleryInput').files = dt.files;
-                    updateGalleryHeaders();
-                }
+    // Sync selected files to input for form submission
+    function syncGalleryInput() {
+        const dt = new DataTransfer();
+        selectedGalleryFiles.forEach(file => dt.items.add(file));
+        document.getElementById('galleryInput').files = dt.files;
+        updateGalleryHeaders();
+    }
 
-                // Initial call for page load
-                updateGalleryHeaders();
+    // Initial call for page load
+    updateGalleryHeaders();
 </script>
 {% endblock %}
