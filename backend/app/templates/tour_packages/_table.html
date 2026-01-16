@@ -28,7 +28,7 @@
 
                     <div class="tour-meta">
                         <span>📍 {{ tour.city }}, {{ tour.country }}</span>
-                        <span class="price">₹{{ tour.price }}</span>
+                        <span class="price">{{current_user.company.currency}} {{ tour.price }}</span>
                     </div>
 
                     {# -------- GALLERY -------- #}
@@ -57,6 +57,7 @@
                             data-route="{{ request.url_for('tour_package_delete', package_id=tour.id) }}">
                             Delete
                         </a>
+
                     </div>
 
                 </div>

@@ -19,7 +19,7 @@ alembic init alembic
 5️⃣ Create Migration (After Model Change)
 alembic revision --autogenerate -m "migration message"
 Example:
-alembic revision --autogenerate -m "create users and agents table"
+alembic revision --autogenerate -m "create user, tour package, manual booking table"
 
 6️⃣ Apply Migration to Database
 alembic upgrade head

@@ -5,7 +5,8 @@ from pydantic import ValidationError
 from typing import List, Optional
 from uuid import uuid4
 import os
-
+from datetime import date
+from sqlalchemy import or_
 from app.database.session import get_db
 from app.core.templates import templates
 from app.auth.dependencies import company_only, get_current_user
@@ -16,6 +17,7 @@ from sqlalchemy import or_
 
 from app.core.constants import COUNTRIES
 from app.utils.flash import flash_redirect
+from app.models.manual_booking import ManualBooking
 
 router = APIRouter(prefix="/tour-packages", tags=["Tour Packages"])
 
@@ -34,10 +36,54 @@ def render_form(request: Request, *, package=None, form=None, errors=None, statu
         },
         status_code=status_code
     )
+# @router.get("/", response_class=HTMLResponse, name="my_tour_list")
+# def my_tour_list(
+#     request: Request,
+#     search: str = "",
+#     page: int = 1,
+#     db: Session = Depends(get_db),
+#     current_user=Depends(company_only),
+# ):
+#     company = current_user.company
+
+#     query = db.query(TourPackage).filter(
+#         TourPackage.company_id == company.id,
+#         TourPackage.is_deleted == False
+#     )
+
+#     if search:
+#         query = query.filter(
+#             or_(
+#                 TourPackage.title.ilike(f"%{search}%"),
+#                 TourPackage.city.ilike(f"%{search}%"),
+#                 TourPackage.country.ilike(f"%{search}%"),
+#             )
+#         )
+
+#     pagination = paginate(query.order_by(TourPackage.id.desc()), page)
+
+#     template = (
+#         "tour_packages/_table.html"
+#         if request.headers.get("X-Requested-With") == "XMLHttpRequest"
+#         else "tour_packages/list.html"
+#     )
+
+#     return templates.TemplateResponse(
+#         template,
+#         {
+#             "current_user": current_user,
+#             "request": request,
+#             "tours": pagination["items"],
+#             "pagination": pagination,
+#             "search": search,
+#         }
+#     )
+
 @router.get("/", response_class=HTMLResponse, name="my_tour_list")
 def my_tour_list(
     request: Request,
     search: str = "",
+    travel_date: date | None = None,
     page: int = 1,
     db: Session = Depends(get_db),
     current_user=Depends(company_only),
@@ -49,6 +95,7 @@ def my_tour_list(
         TourPackage.is_deleted == False
     )
 
+    # 🔍 SEARCH FILTER
     if search:
         query = query.filter(
             or_(
@@ -58,7 +105,24 @@ def my_tour_list(
             )
         )
 
-    pagination = paginate(query.order_by(TourPackage.id.desc()), page)
+    # 📅 AVAILABILITY FILTER (IMPORTANT)
+    if travel_date:
+        booked_subquery = (
+            db.query(ManualBooking.tour_package_id)
+            .filter(
+                ManualBooking.travel_date == travel_date
+                )
+            .subquery()
+        )
+
+        query = query.filter(
+            TourPackage.id.notin_(booked_subquery)
+        )
+
+    pagination = paginate(
+        query.order_by(TourPackage.id.desc()),
+        page
+    )
 
     template = (
         "tour_packages/_table.html"
@@ -70,12 +134,13 @@ def my_tour_list(
         template,
         {
             "request": request,
+            "current_user": current_user,
             "tours": pagination["items"],
             "pagination": pagination,
             "search": search,
+            "travel_date": travel_date,
         }
     )
-
     
 @router.get("/create", response_class=HTMLResponse, name="tour_package_create_page")
 def create_page(request: Request, _=Depends(company_only)):

@@ -5,7 +5,7 @@ class CompanyCreate(BaseModel):
     company_name: str = Field(..., min_length=2, max_length=150)
     email: EmailStr
     phone: Optional[str] = Field(
-        min_length=10,
+        min_length=7,
         max_length=15,
         description="Optional phone number"
     )
@@ -15,7 +15,7 @@ class CompanyCreate(BaseModel):
 class CompanyUpdate(BaseModel):
     company_name: str = Field(..., min_length=2, max_length=150)
     phone: Optional[str] = Field(
-        min_length=10,
+        min_length=7,
         max_length=15,
     )
     country: Optional[str] = Field(None)
