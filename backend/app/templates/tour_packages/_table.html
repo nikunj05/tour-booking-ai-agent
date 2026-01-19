@@ -85,7 +85,7 @@
         </div>
         {% endfor %}
         <div class="modal fade" id="availabilityModal" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-dialog modal-dialog-centered modal-md">
                 <div class="modal-content availability-modal">
 
                     <div class="modal-header text-white">
@@ -99,7 +99,19 @@
 
                 </div>
             </div>
-</div>
+        </div>
+
+        <form id="autoBookingForm"
+            method="post"
+            action="{{ url_for('autofill_booking_create_page') }}"
+            style="display:none;">
+
+            <input type="hidden" name="package_id" id="auto_package_id">
+            <input type="hidden" name="travel_date" id="auto_travel_date">
+
+        </form>
+
+    </div>
 
         {% else %}
         <div class="col-12 text-center py-5">

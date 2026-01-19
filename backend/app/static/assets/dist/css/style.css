@@ -3222,18 +3222,159 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
     font-size: 16px;
 }
 
-/* Flatpickr UI */
-.flatpickr-calendar.inline {
+/* =========================================================
+   FLATPICKR – PRO RESPONSIVE / PIXEL PERFECT THEME
+   Scope: .custom-flatpickr
+========================================================= */
+
+.custom-flatpickr {
     width: 100%;
-    box-shadow: none;
+    max-width: 560px;
+    margin: 0 auto;
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.flatpickr-day.selected,
-.flatpickr-day.selected:hover {
+/* ---------- Calendar Container ---------- */
+.custom-flatpickr .flatpickr-calendar {
+    width: 100% !important;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    padding: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* ---------- Month Header ---------- */
+.custom-flatpickr .flatpickr-months {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.custom-flatpickr .flatpickr-month {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.custom-flatpickr .flatpickr-prev-month,
+.custom-flatpickr .flatpickr-next-month {
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+.custom-flatpickr .flatpickr-prev-month:hover,
+.custom-flatpickr .flatpickr-next-month:hover {
+    background: #f3f4f6;
+}
+
+/* ---------- Weekdays ---------- */
+.custom-flatpickr .flatpickr-weekdays {
+    margin-bottom: 6px;
+}
+
+.custom-flatpickr .flatpickr-weekday {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b8074;
+    text-transform: uppercase;
+}
+
+/* ---------- Days Grid ---------- */
+.custom-flatpickr .flatpickr-days {
+    padding-top: 8px;
+}
+
+/* ---------- Day Cell ---------- */
+.custom-flatpickr .flatpickr-day {
+    width: 56px;
+    height: 56px;
+    line-height: 56px;
+    margin: 2px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #1f2937;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+/* ---------- Hover ---------- */
+.custom-flatpickr .flatpickr-day:hover {
+    background: #eef2ff;
+}
+
+/* ---------- Today ---------- */
+.custom-flatpickr .flatpickr-day.today {
+    border: 2px solid #155799;
+}
+
+/* ---------- Selected ---------- */
+.custom-flatpickr .flatpickr-day.selected,
+.custom-flatpickr .flatpickr-day.selected:hover {
     background: #159957;
     border-color: #159957;
+    color: #ffffff;
 }
 
-.flatpickr-day.today {
-    border-color: #155799;
+/* ---------- Disabled ---------- */
+.custom-flatpickr .flatpickr-day.disabled,
+.custom-flatpickr .flatpickr-day.flatpickr-disabled {
+    background: #f9fafb;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+/* ---------- Outside Month ---------- */
+.custom-flatpickr .flatpickr-day.prevMonthDay,
+.custom-flatpickr .flatpickr-day.nextMonthDay {
+    color: #d1d5db;
+}
+
+/* ---------- Modal Spacing ---------- */
+.availability-modal .modal-body {
+    padding: 24px 32px 32px;
+}
+
+/* =========================================================
+   RESPONSIVE BREAKPOINTS
+========================================================= */
+
+/* ---------- Tablets ---------- */
+@media (max-width: 991px) {
+    .custom-flatpickr {
+        max-width: 480px;
+    }
+
+    .custom-flatpickr .flatpickr-day {
+        width: 50px;
+        height: 50px;
+        line-height: 50px;
+        font-size: 14px;
+    }
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 576px) {
+    .custom-flatpickr {
+        max-width: 100%;
+    }
+
+    .custom-flatpickr .flatpickr-calendar {
+        padding: 12px;
+        border-radius: 14px;
+    }
+
+    .custom-flatpickr .flatpickr-month {
+        font-size: 16px;
+    }
+
+    .custom-flatpickr .flatpickr-day {
+        width: 44px;
+        height: 44px;
+        line-height: 44px;
+        font-size: 14px;
+        border-radius: 10px;
+    }
 }

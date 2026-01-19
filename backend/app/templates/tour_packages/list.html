@@ -103,52 +103,62 @@
         loadTours();
     });
 
-    let availabilityPicker = null;
+let availabilityPicker = null;
+let selectedPackageId = null;
 
 $(document).on('click', '.check-availability-btn', function () {
 
-    const packageId = $(this).data('package-id');
+    selectedPackageId = $(this).data('package-id');
     const title = $(this).data('package-title');
 
     $('#availabilityTitle').text(`Availability – ${title}`);
 
-    // Show modal
     const modalEl = document.getElementById('availabilityModal');
     const modal = new bootstrap.Modal(modalEl);
     modal.show();
 
-    // Wait for modal to fully open
     modalEl.addEventListener('shown.bs.modal', function () {
 
-        // Destroy old picker safely
+        // Destroy previous picker
         if (availabilityPicker) {
             availabilityPicker.destroy();
             availabilityPicker = null;
         }
 
-        // Init flatpickr (IMPORTANT FIX)
+        // Init flatpickr
         availabilityPicker = flatpickr(
             document.getElementById('availabilityCalendar'),
             {
                 inline: true,
                 dateFormat: "Y-m-d",
                 minDate: "today",
-                disableMobile: true
+                disableMobile: true,
+                onReady: function(selectedDates, dateStr, instance) {
+                    instance.calendarContainer.classList.add('custom-flatpickr');
+                },
+
+                // ✅ AUTO REDIRECT ON DATE SELECT
+                onChange: function (selectedDates, dateStr) {
+
+                    // Set values
+                    document.getElementById('auto_package_id').value = selectedPackageId;
+                    document.getElementById('auto_travel_date').value = dateStr;
+
+                    // Submit form
+                    document.getElementById('autoBookingForm').submit();
+                }
             }
         );
 
         // Fetch booked dates
-        fetch(`/manual-bookings/booked-dates/${packageId}`)
+        fetch(`/manual-bookings/booked-dates/${selectedPackageId}`)
             .then(res => res.json())
             .then(data => {
-
                 const bookedDates = Array.isArray(data.booked_dates)
                     ? data.booked_dates
                     : [];
 
-                // ✅ THIS WILL NOW WORK
                 availabilityPicker.set('disable', bookedDates);
-
             })
             .catch(err => {
                 console.error("Error fetching booked dates:", err);

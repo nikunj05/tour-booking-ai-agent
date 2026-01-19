@@ -20,6 +20,7 @@
                style="width:100%">
             <thead>
                 <tr>
+                    <th>ID</th>
                     <th>Guest Details</th>
                     <th>Travel Details</th>
                     <th>Payment</th>
@@ -52,7 +53,12 @@ $(document).ready(function () {
             type: "GET",
             dataSrc: "data"
         },
+        columnDefs: [
+            { targets: 0, visible: false } // hide ID
+        ],
+        order: [[0, 'desc']], 
         columns: [
+            { data: "id" },
             { data: "guest_details" },
             { data: "travel_details" },
             { data: "payment_details" },

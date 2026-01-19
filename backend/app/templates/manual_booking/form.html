@@ -101,9 +101,10 @@
         <input type="date"
                name="travel_date"
                class="form-control"
-               value="{{ booking.travel_date if booking else travel_date }}"
-               {% if travel_date %}readonly{% endif %}>
+               value="{{ booking.travel_date if booking else '' }}">
     </div>
+
+    
 
     <div class="col-md-3 mb-3">
         <label class="form-label fw-semibold">Travel Time</label>
@@ -168,7 +169,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- <script>
+<script>
 $(document).ready(function () {
 
     /* Select2 */
@@ -208,97 +209,31 @@ $(document).ready(function () {
 
     $('[name="total_amount"], [name="advance_amount"]').on("input", calculateRemaining);
 
-    
-    // Initialize flatpickr
-    let travelDatePicker = flatpickr('[name="travel_date"]', {
-        dateFormat: "Y-m-d",
-            disableMobile: false,
-
-        inline: false,
-        minDate: "today",
-    });
-
-    // On package select change
-    $('[name="tour_package_id"]').on('change', function () {
-        const packageId = $(this).val();
-
-        fetch(`/manual-bookings/booked-dates/${packageId}`)
-            .then(res => res.json())
-            .then(data => {
-                const dates = Array.isArray(data.booked_dates) ? data.booked_dates : [];
-                travelDatePicker.set('disable', dates);
-                travelDatePicker.clear();
-            })
-            .catch(err => {
-                console.error("Error fetching booked dates:", err);
-            });
-    });
-
-    // If prefilled package, trigger change to disable dates
-    const selectedPackage = $('[name="tour_package_id"]').val();
-    if (selectedPackage) {
-        $('[name="tour_package_id"]').trigger('change');
-    }
-
-    let preselectedDate = '{{ travel_date if travel_date else "" }}';
-    if (preselectedDate) {
-        travelDatePicker.setDate(preselectedDate);
-    }
-});
-</script> -->
-
-<script>
-$(document).ready(function () {
-
-    /* Select2 */
-    $('.select2').select2({
-        width: '100%',
-        allowClear: true,
-        placeholder: function(){
-            return $(this).data('placeholder');
-        }
-    });
-
-        /* Validation */
-    $("#manual-booking-form").validate({
-        rules: {
-            guest_name: { required: true },
-            phone: { required: true, minlength: 7, maxlength: 15 },
-            email: { email: true },
-            pickup_location: { required: true },
-            tour_package_id: { required: true },
-            travel_date: { required: true },
-            total_amount: { required: true, number: true },
-            advance_amount: { number: true }
-        },
-        errorElement: "span",
-        errorClass: "invalid-feedback",
-        highlight: e => $(e).addClass("is-invalid"),
-        unhighlight: e => $(e).removeClass("is-invalid"),
-        errorPlacement: (error, element) => error.insertAfter(element)
-    });
-
-    /* Remaining amount auto calc */
-    function calculateRemaining() {
-        const total = parseFloat($('[name="total_amount"]').val()) || 0;
-        const advance = parseFloat($('[name="advance_amount"]').val()) || 0;
-        $('[name="remaining_amount"]').val(Math.max(total - advance, 0).toFixed(2));
-    }
-
-    $('[name="total_amount"], [name="advance_amount"]').on("input", calculateRemaining);
-
     /* ===== FLATPICKR FIX ===== */
+
+    const PREFILLED_TRAVEL_DATE = "{{ travel_date or '' }}";
+    const CURRENT_BOOKING_DATE = "{{ booking.travel_date if booking else '' }}";
 
     const travelInput = document.querySelector('[name="travel_date"]');
     const initialDate = travelInput.value; // date from DB (edit)
     let isFirstLoad = true;
-
+    
+    
     const travelDatePicker = flatpickr(travelInput, {
         dateFormat: "Y-m-d",
         minDate: "today",
         disableMobile: true,
-        defaultDate: initialDate || null
+        allowInput: true,
+        defaultDate: travelInput.value || null,
+        onReady: function(selectedDates, dateStr, instance) {
+            instance.calendarContainer.classList.add('custom-flatpickr');
+        }
     });
+
+    console.log(PREFILLED_TRAVEL_DATE);
+    if (PREFILLED_TRAVEL_DATE) {
+        travelDatePicker.setDate(PREFILLED_TRAVEL_DATE, true);
+    }
 
     $('[name="tour_package_id"]').on('change', function () {
         const packageId = $(this).val();
@@ -307,14 +242,25 @@ $(document).ready(function () {
         fetch(`/manual-bookings/booked-dates/${packageId}`)
             .then(res => res.json())
             .then(data => {
-                const disabledDates = Array.isArray(data.booked_dates)
+                let disabledDates = Array.isArray(data.booked_dates)
                     ? data.booked_dates
                     : [];
 
+                if (CURRENT_BOOKING_DATE) {
+                    disabledDates = disabledDates.filter(
+                        d => d !== CURRENT_BOOKING_DATE
+                    );
+                }   
+
                 travelDatePicker.set('disable', disabledDates);
 
-                // ✅ Clear date ONLY when user changes package
-                if (!isFirstLoad) {
+                // ✅ SET PREFILLED DATE ONLY ON FIRST LOAD
+                if (isFirstLoad && PREFILLED_TRAVEL_DATE) {
+                    travelDatePicker.setDate(PREFILLED_TRAVEL_DATE, true);
+                }
+
+                // ✅ Clear ONLY when user changes package
+                if (!isFirstLoad && !PREFILLED_TRAVEL_DATE) {
                     travelDatePicker.clear();
                 }
 
@@ -324,6 +270,7 @@ $(document).ready(function () {
                 console.error("Error fetching booked dates:", err);
             });
     });
+
 
     const packageSelect = $('[name="tour_package_id"]');
 

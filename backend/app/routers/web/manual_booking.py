@@ -35,6 +35,9 @@ def manual_booking_create_page(
 ):
     company = current_user.company
 
+    print(package_id)
+    print(travel_date)
+
     # Get all packages for dropdown
     packages = (
         db.query(TourPackage)
@@ -140,6 +143,7 @@ def manual_booking_datatable(
     data = []
     for booking in bookings:
         data.append({
+            "id": booking.id,
            "guest_details": f"""
                 <strong>{booking.guest_name}</strong><br>
                 📞 {booking.phone}<br>
