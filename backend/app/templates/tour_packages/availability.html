@@ -1,0 +1,168 @@
+
+{% extends "layout.html" %}
+
+
+{% block extra_css %}
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/tui-calendar@1.15.3/dist/tui-calendar.min.css">
+
+<style>
+/* ===== Calendar Wrapper ===== */
+.calendar-wrapper {
+  background: #fff;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+/* ===== Header ===== */
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.calendar-title {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* ===== Buttons ===== */
+.calendar-actions button {
+  border: 1px solid #dee2e6;
+  background: #f8f9fa;
+  padding: 6px 12px;
+  margin-left: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.calendar-actions button:hover {
+  background: #e9ecef;
+}
+
+/* ===== Calendar ===== */
+#calendar {
+  height: 75vh;
+}
+
+/* ===== Booked Date Style ===== */
+.toastui-calendar-allday {
+  cursor: pointer;
+  font-size: 12px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="content-header mb-3">
+  <h2 class="fw-bold">{{ package.title }} – Availability</h2>
+</section>
+
+<div class="calendar-wrapper">
+
+  <!-- HEADER -->
+  <div class="calendar-header">
+    <div class="calendar-title" id="calendarTitle"></div>
+
+    <div class="calendar-actions">
+      <button id="prevBtn">‹</button>
+      <button id="todayBtn">Today</button>
+      <button id="nextBtn">›</button>
+    </div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div id="calendar"></div>
+</div>
+
+<!-- Hidden Auto Booking Form -->
+<form id="autoBookingForm" method="post"
+      action="{{ url_for('autofill_booking_create_page') }}">
+  <input type="hidden" name="package_id" value="{{ package.id }}">
+  <input type="hidden" name="travel_date" id="auto_travel_date">
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tui-code-snippet/1.5.2/tui-code-snippet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tui-calendar@1.15.3/dist/tui-calendar.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  const calendar = new tui.Calendar('#calendar', {
+    defaultView: 'month',
+    taskView: false,
+    scheduleView: ['allday'],
+    useCreationPopup: false,
+    useDetailPopup: true,
+
+    calendars: [{
+      id: '1',
+      name: 'Booked',
+      bgColor: '#dc3545',
+      borderColor: '#dc3545',
+      color: '#fff'
+    }]
+  });
+
+  /* ===== Update Header Title ===== */
+  function updateTitle() {
+    const date = calendar.getDate();
+    document.getElementById('calendarTitle').innerText =
+      moment(date).format('MMMM YYYY');
+  }
+  updateTitle();
+
+  /* ===== Header Buttons ===== */
+  document.getElementById('prevBtn').onclick = () => {
+    calendar.prev();
+    updateTitle();
+  };
+
+  document.getElementById('nextBtn').onclick = () => {
+    calendar.next();
+    updateTitle();
+  };
+
+  document.getElementById('todayBtn').onclick = () => {
+    calendar.today();
+    updateTitle();
+  };
+
+  /* ===== Load Booked Dates ===== */
+  fetch(`/manual-bookings/booked-dates/{{ package.id }}`)
+    .then(res => res.json())
+    .then(data => {
+
+      const schedules = (data.bookings || []).map((b, i) => ({
+        id: String(i + 1),
+        calendarId: '1',
+        title: `${b.guest_name} – ${b.pickup_location}`,
+        category: 'allday',
+        start: b.travel_date,
+        end: b.travel_date
+      }));
+
+      calendar.createSchedules(schedules);
+    });
+
+  /* ===== Click on Booked Date ===== */
+  calendar.on('clickSchedule', function(e) {
+    alert(
+      `Guest: ${e.schedule.title}\nDate: ${moment(e.schedule.start).format('YYYY-MM-DD')}`
+    );
+  });
+
+  /* ===== Click on Empty Date ===== */
+  calendar.on('clickDayname', function(e) {
+    const date = moment(e.date).format('YYYY-MM-DD');
+    document.getElementById('auto_travel_date').value = date;
+    document.getElementById('autoBookingForm').submit();
+  });
+
+});
+</script>
+{% endblock %}
