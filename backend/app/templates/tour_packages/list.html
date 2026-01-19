@@ -62,28 +62,6 @@
         );
     });
 
-
-    // let searchTimer = null;
-
-    // document.getElementById("live-search").addEventListener("keyup", function () {
-    //     const query = this.value;
-
-    //     // debounce to avoid too many requests
-    //     clearTimeout(searchTimer);
-    //     searchTimer = setTimeout(() => {
-    //         fetch(`?search=${encodeURIComponent(query)}`, {
-    //             headers: {
-    //                 "X-Requested-With": "XMLHttpRequest"
-    //             }
-    //         })
-    //             .then(response => response.text())
-    //             .then(html => {
-    //                 document.getElementById("table-container").innerHTML = html;
-    //             })
-    //             .catch(err => console.error("Search error:", err));
-    //     }, 400); // wait 400ms after typing stops
-    // });
-
         // ---------------- SEARCH + DATE FILTER ----------------
     const searchInput = document.getElementById("live-search");
     const dateInput = document.getElementById("availability-date");
@@ -124,5 +102,59 @@
     dateInput.addEventListener("change", function () {
         loadTours();
     });
+
+    let availabilityPicker = null;
+
+$(document).on('click', '.check-availability-btn', function () {
+
+    const packageId = $(this).data('package-id');
+    const title = $(this).data('package-title');
+
+    $('#availabilityTitle').text(`Availability – ${title}`);
+
+    // Show modal
+    const modalEl = document.getElementById('availabilityModal');
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+
+    // Wait for modal to fully open
+    modalEl.addEventListener('shown.bs.modal', function () {
+
+        // Destroy old picker safely
+        if (availabilityPicker) {
+            availabilityPicker.destroy();
+            availabilityPicker = null;
+        }
+
+        // Init flatpickr (IMPORTANT FIX)
+        availabilityPicker = flatpickr(
+            document.getElementById('availabilityCalendar'),
+            {
+                inline: true,
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                disableMobile: true
+            }
+        );
+
+        // Fetch booked dates
+        fetch(`/manual-bookings/booked-dates/${packageId}`)
+            .then(res => res.json())
+            .then(data => {
+
+                const bookedDates = Array.isArray(data.booked_dates)
+                    ? data.booked_dates
+                    : [];
+
+                // ✅ THIS WILL NOW WORK
+                availabilityPicker.set('disable', bookedDates);
+
+            })
+            .catch(err => {
+                console.error("Error fetching booked dates:", err);
+            });
+
+    }, { once: true });
+});
 </script>
 {% endblock %}

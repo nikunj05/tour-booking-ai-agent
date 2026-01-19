@@ -9,22 +9,33 @@ from app.schemas.manual_booking import ManualBookingCreate
 from app.core.templates import templates
 from app.auth.dependencies import admin_only, company_only
 from app.utils.flash import flash_redirect
+from fastapi import Form
+from typing import Optional
+
 
 router = APIRouter(prefix="/manual-bookings", tags=["Manual Booking"])
 
-# ----------------------------
-# 1️⃣ SHOW CREATE FORM (GET)
-# ----------------------------
-@router.get("/manual-bookings/create", name="manual_booking_create_page")
+# -------------------------------
+# Route WITHOUT package_id
+# -------------------------------
+@router.post(
+    "/manual-bookings/create",
+    name="autofill_booking_create_page"
+)
+@router.get(
+    "/manual-bookings/create",
+    name="manual_booking_create_page"
+)
 def manual_booking_create_page(
     request: Request,
-    package_id: int | None = None,
-    travel_date: str | None = None,
+    package_id: Optional[int] = Form(None),
+    travel_date: Optional[str] = Form(None),
     db: Session = Depends(get_db),
     current_user=Depends(company_only),
 ):
     company = current_user.company
 
+    # Get all packages for dropdown
     packages = (
         db.query(TourPackage)
         .filter(
@@ -34,12 +45,17 @@ def manual_booking_create_page(
         .all()
     )
 
+    # Pre-select package if package_id exists
     selected_package = None
     if package_id:
-        selected_package = db.query(TourPackage).filter(
-            TourPackage.id == package_id,
-            TourPackage.company_id == company.id
-        ).first()
+        selected_package = (
+            db.query(TourPackage)
+            .filter(
+                TourPackage.id == package_id,
+                TourPackage.company_id == company.id
+            )
+            .first()
+        )
 
     return templates.TemplateResponse(
         "manual_booking/form.html",
@@ -49,10 +65,9 @@ def manual_booking_create_page(
             "company": company,
             "selected_package": selected_package,
             "travel_date": travel_date,
-            "is_edit": False
+            "is_edit": False,
         }
     )
-
 
 
 @router.post("/create", name="manual_booking_create")
@@ -182,7 +197,7 @@ def edit_manual_booking(
 ):
     booking = db.query(ManualBooking).get(booking_id)
     company = current_user.company
-    packages = db.query(TourPackage).all()
+    packages = db.query(TourPackage).filter(TourPackage.is_deleted == False).all()
 
     return templates.TemplateResponse(
         "manual_booking/form.html",
@@ -199,6 +214,7 @@ def update_manual_booking(
     request: Request,
     booking_id: int,
     guest_name: str = Form(...),
+    tour_package_id: int = Form(...),
     phone: str = Form(...),
     email: str = Form(None),
     pickup_location: str = Form(None),
@@ -238,6 +254,7 @@ def update_manual_booking(
     booking.guest_name = guest_name
     booking.phone = phone
     booking.email = email
+    booking.tour_package_id = tour_package_id
     booking.pickup_location = pickup_location
     booking.travel_date = travel_date
     booking.travel_time = travel_time
@@ -270,3 +287,15 @@ def delete_manual_booking(
     db.commit()
 
     return {"success": True}
+
+
+@router.get("/booked-dates/{package_id}", name="get_booked_dates")
+def get_booked_dates(package_id: int, db: Session = Depends(get_db)):
+    bookings = db.query(ManualBooking).filter(
+        ManualBooking.tour_package_id == package_id,
+        ManualBooking.is_deleted == False
+    ).all()
+
+
+    booked_dates = [b.travel_date.strftime("%Y-%m-%d") for b in bookings] if bookings else []
+    return {"booked_dates": booked_dates}

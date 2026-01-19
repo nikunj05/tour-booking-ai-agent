@@ -3202,3 +3202,38 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
         grid-template-columns: repeat(1, 1fr);
     }
 }
+
+.availability-modal {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.availability-modal .modal-header {
+    background: linear-gradient(174.78deg, #159957 -39.25%, #155799 179.4%);
+    border-bottom: none;
+}
+
+.availability-modal .modal-title {
+    font-weight: 600;
+}
+
+#availabilityCalendar {
+    width: 100%;
+    font-size: 16px;
+}
+
+/* Flatpickr UI */
+.flatpickr-calendar.inline {
+    width: 100%;
+    box-shadow: none;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover {
+    background: #159957;
+    border-color: #159957;
+}
+
+.flatpickr-day.today {
+    border-color: #155799;
+}

@@ -57,10 +57,24 @@
                             data-route="{{ request.url_for('tour_package_delete', package_id=tour.id) }}">
                             Delete
                         </a>
+                        <button type="button"
+                            class="btn btn-outline-primary btn-sm check-availability-btn"
+                            data-package-id="{{ tour.id }}"
+                            data-package-title="{{ tour.title }}">
+                            Availability
+                        </button>
 
-                        <a href="{{ url_for('manual_booking_create_page') }}?package_id={{ tour.id }}{% if travel_date %}&travel_date={{ travel_date }}{% endif %}">
-                            Book Package
-                        </a>
+                        <form method="post" action="{{ url_for('autofill_booking_create_page') }}">
+                            <input type="hidden" name="package_id" value="{{ tour.id }}">
+
+                            {% if travel_date %}
+                                <input type="hidden" name="travel_date" value="{{ travel_date }}">
+                            {% endif %}
+
+                            <button type="submit" class="btn btn-submit">Book Package</button>
+                        </form>
+
+
                     </div>
 
                 </div>
@@ -70,6 +84,23 @@
 
         </div>
         {% endfor %}
+        <div class="modal fade" id="availabilityModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content availability-modal">
+
+                    <div class="modal-header text-white">
+                        <h5 class="modal-title" id="availabilityTitle">Check Availability</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body text-center">
+                        <input type="text" id="availabilityCalendar" class="form-control">
+                    </div>
+
+                </div>
+            </div>
+</div>
+
         {% else %}
         <div class="col-12 text-center py-5">
             <h5>No tour packages found</h5>

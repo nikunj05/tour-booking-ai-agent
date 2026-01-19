@@ -168,7 +168,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<!-- <script>
 $(document).ready(function () {
 
     /* Select2 */
@@ -207,6 +207,139 @@ $(document).ready(function () {
     }
 
     $('[name="total_amount"], [name="advance_amount"]').on("input", calculateRemaining);
+
+    
+    // Initialize flatpickr
+    let travelDatePicker = flatpickr('[name="travel_date"]', {
+        dateFormat: "Y-m-d",
+            disableMobile: false,
+
+        inline: false,
+        minDate: "today",
+    });
+
+    // On package select change
+    $('[name="tour_package_id"]').on('change', function () {
+        const packageId = $(this).val();
+
+        fetch(`/manual-bookings/booked-dates/${packageId}`)
+            .then(res => res.json())
+            .then(data => {
+                const dates = Array.isArray(data.booked_dates) ? data.booked_dates : [];
+                travelDatePicker.set('disable', dates);
+                travelDatePicker.clear();
+            })
+            .catch(err => {
+                console.error("Error fetching booked dates:", err);
+            });
+    });
+
+    // If prefilled package, trigger change to disable dates
+    const selectedPackage = $('[name="tour_package_id"]').val();
+    if (selectedPackage) {
+        $('[name="tour_package_id"]').trigger('change');
+    }
+
+    let preselectedDate = '{{ travel_date if travel_date else "" }}';
+    if (preselectedDate) {
+        travelDatePicker.setDate(preselectedDate);
+    }
+});
+</script> -->
+
+<script>
+$(document).ready(function () {
+
+    /* Select2 */
+    $('.select2').select2({
+        width: '100%',
+        allowClear: true,
+        placeholder: function(){
+            return $(this).data('placeholder');
+        }
+    });
+
+        /* Validation */
+    $("#manual-booking-form").validate({
+        rules: {
+            guest_name: { required: true },
+            phone: { required: true, minlength: 7, maxlength: 15 },
+            email: { email: true },
+            pickup_location: { required: true },
+            tour_package_id: { required: true },
+            travel_date: { required: true },
+            total_amount: { required: true, number: true },
+            advance_amount: { number: true }
+        },
+        errorElement: "span",
+        errorClass: "invalid-feedback",
+        highlight: e => $(e).addClass("is-invalid"),
+        unhighlight: e => $(e).removeClass("is-invalid"),
+        errorPlacement: (error, element) => error.insertAfter(element)
+    });
+
+    /* Remaining amount auto calc */
+    function calculateRemaining() {
+        const total = parseFloat($('[name="total_amount"]').val()) || 0;
+        const advance = parseFloat($('[name="advance_amount"]').val()) || 0;
+        $('[name="remaining_amount"]').val(Math.max(total - advance, 0).toFixed(2));
+    }
+
+    $('[name="total_amount"], [name="advance_amount"]').on("input", calculateRemaining);
+
+    /* ===== FLATPICKR FIX ===== */
+
+    const travelInput = document.querySelector('[name="travel_date"]');
+    const initialDate = travelInput.value; // date from DB (edit)
+    let isFirstLoad = true;
+
+    const travelDatePicker = flatpickr(travelInput, {
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        disableMobile: true,
+        defaultDate: initialDate || null
+    });
+
+    $('[name="tour_package_id"]').on('change', function () {
+        const packageId = $(this).val();
+        if (!packageId) return;
+
+        fetch(`/manual-bookings/booked-dates/${packageId}`)
+            .then(res => res.json())
+            .then(data => {
+                const disabledDates = Array.isArray(data.booked_dates)
+                    ? data.booked_dates
+                    : [];
+
+                travelDatePicker.set('disable', disabledDates);
+
+                // ✅ Clear date ONLY when user changes package
+                if (!isFirstLoad) {
+                    travelDatePicker.clear();
+                }
+
+                isFirstLoad = false;
+            })
+            .catch(err => {
+                console.error("Error fetching booked dates:", err);
+            });
+    });
+
+    const packageSelect = $('[name="tour_package_id"]');
+
+    if (!packageSelect.val()) {
+        const firstOption = packageSelect.find('option[value!=""]').first();
+        if (firstOption.length) {
+            packageSelect.val(firstOption.val()).trigger('change');
+        }
+    }
+
+    // Trigger once on page load (edit mode)
+    const selectedPackage = $('[name="tour_package_id"]').val();
+    if (selectedPackage) {
+        $('[name="tour_package_id"]').trigger('change');
+    }
 });
 </script>
+
 {% endblock %}
