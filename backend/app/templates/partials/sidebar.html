@@ -99,7 +99,25 @@
                         </div>
                         <p class="mb-0">Tour Packages</p>
                     </a>
-                </li>                           
+                </li>  
+                
+                <li class="nav-item role-company" style="display:none;">
+                    <a href="{{ url_for('driver_list') }}" class="nav-link d-flex align-items-center
+                    {% if request.url.path.startswith(url_for('driver_list').path) %}active{% endif %}">
+
+                        <div class="sidebar-nav-icon">
+                            <!-- Driver SVG -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none">
+                                <path
+                                    d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13Z"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <circle cx="12" cy="9" r="2.5" stroke="#fff" stroke-width="2" />
+                            </svg>
+                        </div>
+                        <p class="mb-0">Drivers</p>
+                    </a>
+                </li>
                 
 
                 <li class="nav-item role-company" style="display:none;">

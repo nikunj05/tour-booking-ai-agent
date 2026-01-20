@@ -4,14 +4,13 @@ from sqlalchemy.orm import Session
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from app.database.session import get_db
 from app.models.manual_booking import ManualBooking
-from app.models.tour_package import TourPackage
+from app.models.tour_package import TourPackage,TourPackageDriver
+from app.models.driver import Driver
 from app.schemas.manual_booking import ManualBookingCreate
 from app.core.templates import templates
 from app.auth.dependencies import admin_only, company_only
 from app.utils.flash import flash_redirect
-from fastapi import Form
-from typing import Optional
-
+from typing import Optional, List
 
 router = APIRouter(prefix="/manual-bookings", tags=["Manual Booking"])
 
@@ -35,10 +34,6 @@ def manual_booking_create_page(
 ):
     company = current_user.company
 
-    print(package_id)
-    print(travel_date)
-
-    # Get all packages for dropdown
     packages = (
         db.query(TourPackage)
         .filter(
@@ -192,7 +187,6 @@ def manual_booking_list(
         {"request": request}
     )
 
-
 @router.get("/{booking_id}/edit", name="manual_booking_edit")
 def edit_manual_booking(
     booking_id: int,
@@ -202,7 +196,12 @@ def edit_manual_booking(
 ):
     booking = db.query(ManualBooking).get(booking_id)
     company = current_user.company
-    packages = db.query(TourPackage).filter(TourPackage.is_deleted == False).all()
+
+    packages = (
+        db.query(TourPackage)
+        .filter(TourPackage.is_deleted == False)
+        .all()
+    )
 
     return templates.TemplateResponse(
         "manual_booking/form.html",
@@ -210,7 +209,7 @@ def edit_manual_booking(
             "request": request,
             "booking": booking,
             "packages": packages,
-            "company": company
+            "company": company,
         }
     )
 

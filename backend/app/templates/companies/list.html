@@ -43,11 +43,11 @@
 
         let companiesTable = $('#companiesTable').DataTable({
             processing: true,
-            serverSide: false,   // ✅ CLIENT SIDE
+            serverSide: false,   
             ajax: {
                 url: "{{ url_for('company_datatable') }}",
                 type: "GET",
-                dataSrc: "data"  // ✅ VERY IMPORTANT
+                dataSrc: "data"  
             },
             columns: [
                 { data: "company_name" },

@@ -11,10 +11,10 @@ from app.database.session import get_db
 from app.core.templates import templates
 from app.auth.dependencies import company_only, get_current_user
 from app.utils.pagination import paginate
-from app.models.tour_package import TourPackage, TourPackageGalleryImage
+from app.models.tour_package import TourPackage, TourPackageGalleryImage, TourPackageDriver
 from app.schemas.tour_package import TourPackageCreate, TourPackageUpdate
 from sqlalchemy import or_
-
+from app.models.driver import Driver
 from app.core.constants import COUNTRIES
 from app.utils.flash import flash_redirect
 from app.models.manual_booking import ManualBooking
@@ -102,11 +102,35 @@ def my_tour_list(
     )
     
 @router.get("/create", response_class=HTMLResponse, name="tour_package_create_page")
-def create_page(request: Request, _=Depends(company_only)):
-    return render_form(request)
+def create_page(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user=Depends(company_only)
+):
+    drivers = (
+        db.query(Driver)
+        .filter(
+            Driver.company_id == current_user.company.id,
+            Driver.is_deleted == False
+        )
+        .all()
+    )
+
+    return templates.TemplateResponse(
+        "tour_packages/form.html",
+        {
+            "request": request,
+            "drivers": drivers,
+            "assigned_driver_ids": [],
+            "countries": COUNTRIES
+        }
+    )
+
+
 @router.post("/create" , response_class=HTMLResponse, name="tour_package_create")
 def create_package(
     request: Request,
+    driver_ids: List[int] = Form([]),
     title: str = Form(...),
     description: str = Form(...),
     country: str = Form(...),
@@ -167,6 +191,17 @@ def create_package(
             )
 
     db.commit()
+
+    for driver_id in driver_ids:
+        db.add(
+            TourPackageDriver(
+                tour_package_id=package.id,
+                driver_id=driver_id
+            )
+        )
+
+    db.commit()
+
     return flash_redirect(
         url=request.url_for("my_tour_list"),
         message="Tour Package created successfully"
@@ -185,29 +220,36 @@ def edit_page(
         TourPackage.is_deleted == False
     ).first()
 
-    if not package:
-        return RedirectResponse("/tour-packages", status_code=303)
+    drivers = (
+        db.query(Driver)
+        .filter(
+            Driver.company_id == current_user.company.id,
+            Driver.is_deleted == False
+        )
+        .all()
+    )
 
-    images = db.query(TourPackageGalleryImage).filter(
-        TourPackageGalleryImage.tour_package_id == package.id
-    ).all()
+    assigned_driver_ids = [
+        d.driver_id for d in package.drivers
+    ]
 
     return templates.TemplateResponse(
         "tour_packages/form.html",
         {
             "request": request,
             "package": package,
-            "gallery_images": images,
-            "form": package.__dict__,
+            "drivers": drivers,
+            "assigned_driver_ids": assigned_driver_ids,
             "countries": COUNTRIES
         }
     )
+
 
 @router.post("/{package_id}/edit", name="tour_package_update")
 def update_package(
     package_id: int,
     request: Request,
-
+    driver_ids: List[int] = Form([]),
     title: str = Form(...),
     description: str = Form(...),
     country: str = Form(...),
@@ -283,6 +325,21 @@ def update_package(
                         image_type="gallery"
                     )
                 )
+
+    db.commit()
+
+    # Update drivers
+    db.query(TourPackageDriver).filter(
+        TourPackageDriver.tour_package_id == package.id
+    ).delete()
+
+    for driver_id in driver_ids:
+        db.add(
+            TourPackageDriver(
+                tour_package_id=package.id,
+                driver_id=driver_id
+            )
+        )
 
     db.commit()
 
