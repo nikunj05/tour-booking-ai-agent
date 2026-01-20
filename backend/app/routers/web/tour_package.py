@@ -36,48 +36,7 @@ def render_form(request: Request, *, package=None, form=None, errors=None, statu
         },
         status_code=status_code
     )
-# @router.get("/", response_class=HTMLResponse, name="my_tour_list")
-# def my_tour_list(
-#     request: Request,
-#     search: str = "",
-#     page: int = 1,
-#     db: Session = Depends(get_db),
-#     current_user=Depends(company_only),
-# ):
-#     company = current_user.company
 
-#     query = db.query(TourPackage).filter(
-#         TourPackage.company_id == company.id,
-#         TourPackage.is_deleted == False
-#     )
-
-#     if search:
-#         query = query.filter(
-#             or_(
-#                 TourPackage.title.ilike(f"%{search}%"),
-#                 TourPackage.city.ilike(f"%{search}%"),
-#                 TourPackage.country.ilike(f"%{search}%"),
-#             )
-#         )
-
-#     pagination = paginate(query.order_by(TourPackage.id.desc()), page)
-
-#     template = (
-#         "tour_packages/_table.html"
-#         if request.headers.get("X-Requested-With") == "XMLHttpRequest"
-#         else "tour_packages/list.html"
-#     )
-
-#     return templates.TemplateResponse(
-#         template,
-#         {
-#             "current_user": current_user,
-#             "request": request,
-#             "tours": pagination["items"],
-#             "pagination": pagination,
-#             "search": search,
-#         }
-#     )
 
 @router.get("/", response_class=HTMLResponse, name="my_tour_list")
 def my_tour_list(

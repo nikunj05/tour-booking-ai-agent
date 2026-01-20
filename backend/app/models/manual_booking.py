@@ -11,6 +11,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.sql import func
 from app.database.base import Base
+from sqlalchemy.orm import relationship
 
 class ManualBooking(Base):
     __tablename__ = "manual_bookings"
@@ -36,3 +37,5 @@ class ManualBooking(Base):
     ) 
     is_deleted = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    tour_package = relationship("TourPackage")

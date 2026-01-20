@@ -49,21 +49,18 @@
                     {# -------- ACTIONS -------- #}
                     <div class="tour-actions">
                         <a href="{{ url_for('tour_package_edit_page', package_id=tour.id) }}"
-                            class="btn btn-edit btn-xs">
+                            class="btn btn-default btn-xs">
                             Edit
                         </a>
 
-                        <a href="javascript:void(0)" class="confirm-tour-delete btn btn-sm btn-delete"
+                        <a href="javascript:void(0)" class="confirm-tour-delete btn btn-sm btn-cancel"
                             data-route="{{ request.url_for('tour_package_delete', package_id=tour.id) }}">
                             Delete
                         </a>
-                        <button type="button"
-                            class="btn btn-outline-primary btn-sm check-availability-btn"
-                            data-package-id="{{ tour.id }}"
-                            data-package-title="{{ tour.title }}">
-                            Availability
-                        </button>
-
+                        <a href="{{ url_for('tour_package_availability_page', package_id=tour.id) }}"
+                        class="btn btn-submit">
+                        Availability
+                        </a>
                         <form method="post" action="{{ url_for('autofill_booking_create_page') }}">
                             <input type="hidden" name="package_id" value="{{ tour.id }}">
 

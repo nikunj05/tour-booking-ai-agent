@@ -151,6 +151,7 @@ def manual_booking_datatable(
             """,
 
             "travel_details": f"""
+                <strong>{booking.tour_package.title}</strong><br>
                 📅 {booking.travel_date.strftime("%d-%m-%Y")}<br>
                 ⏰ {booking.travel_time or "-"}<br>
                 📍 {booking.pickup_location or "-"}
@@ -293,13 +294,95 @@ def delete_manual_booking(
     return {"success": True}
 
 
+# @router.get("/booked-dates/{package_id}", name="get_booked_dates")
+# def get_booked_dates(package_id: int, db: Session = Depends(get_db)):
+#     bookings = db.query(ManualBooking).filter(
+#         ManualBooking.tour_package_id == package_id,
+#         ManualBooking.is_deleted == False
+#     ).all()
+
+
+#     booked_dates = [b.travel_date.strftime("%Y-%m-%d") for b in bookings] if bookings else []
+#     return {"booked_dates": booked_dates}
+
+
+@router.get(
+    "/tour-packages/{package_id}/availability",
+    name="tour_package_availability_page"
+)
+def tour_package_availability_page(
+    request: Request,
+    package_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(company_only),
+):
+    package = db.query(TourPackage).filter(
+        TourPackage.id == package_id,
+        TourPackage.is_deleted == False
+    ).first()
+
+    if not package:
+        raise HTTPException(status_code=404, detail="Package not found")
+
+    return templates.TemplateResponse(
+        "tour_packages/availability.html",
+        {
+            "request": request,
+            "package": package,
+            "company": current_user.company
+        }
+    )
+
+
+# @router.get("/booked-dates/{package_id}", name="get_booked_dates")
+# def booked_dates(package_id: int, db: Session = Depends(get_db)):
+#     bookings = (
+#         db.query(ManualBooking)
+#         .filter(
+#             ManualBooking.tour_package_id == package_id
+#         )
+#         .all()
+#     )
+
+#     data = []
+#     for b in bookings:
+#         data.append({
+#             "guest_name": b.guest_name,
+#             "pickup_location": b.pickup_location or "-",
+#             "travel_date": b.travel_date.strftime("%Y-%m-%d")
+#         })
+
+#     return {"bookings": data}
+
+
 @router.get("/booked-dates/{package_id}", name="get_booked_dates")
 def get_booked_dates(package_id: int, db: Session = Depends(get_db)):
-    bookings = db.query(ManualBooking).filter(
-        ManualBooking.tour_package_id == package_id,
-        ManualBooking.is_deleted == False
-    ).all()
+    bookings = (
+        db.query(ManualBooking)
+        .filter(
+            ManualBooking.tour_package_id == package_id,
+            ManualBooking.is_deleted == False
+        )
+        .all()
+    )
 
+    bookings_data = []
+    booked_dates = []
 
-    booked_dates = [b.travel_date.strftime("%Y-%m-%d") for b in bookings] if bookings else []
-    return {"booked_dates": booked_dates}
+    for b in bookings:
+        date_str = b.travel_date.strftime("%Y-%m-%d")
+
+        booked_dates.append(date_str)
+
+        bookings_data.append({
+            "guest_name": b.guest_name,
+            "pickup_location": b.pickup_location or "",
+            "travel_date": date_str,
+            "travel_time": b.travel_time or "",
+            
+        })
+
+    return {
+        "booked_dates": booked_dates,
+        "bookings": bookings_data
+    }

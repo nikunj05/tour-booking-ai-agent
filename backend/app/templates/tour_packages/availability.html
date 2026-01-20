@@ -1,0 +1,148 @@
+{% extends "layout.html" %}
+
+{% block title %}Package Availability{% endblock %}
+
+{% block content %}
+
+<section class="content-header px-1">
+    <div class="container-fluid ">
+                <h1 class="mb-0">{{ package.title }}</h1>
+        <hr>
+    </div>
+</section>
+
+<section class="content">
+  <div class="container-fluid">
+    <div id="calendar"></div>
+  </div>
+
+  <form id="autoBookingForm"
+      method="post"
+      action="{{ url_for('autofill_booking_create_page') }}"
+      style="display:none;">
+
+    <input type="hidden" name="package_id" id="auto_package_id">
+    <input type="hidden" name="travel_date" id="auto_travel_date">
+</form>
+
+</section>
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  const calendarEl = document.getElementById('calendar');
+  const bookedDateSet = new Set();
+  const today = new Date().toISOString().split('T')[0];
+
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+
+    headerToolbar: {
+      left: 'prev',
+      center: 'title',
+      right: 'next'
+    },
+
+    selectable: true,
+
+    /* 🔹 Load booked dates + events */
+    events: function(fetchInfo, successCallback, failureCallback) {
+
+      fetch(`/manual-bookings/booked-dates/{{ package.id }}`)
+        .then(res => res.json())
+        .then(data => {
+
+          const events = (data.bookings || []).map(b => {
+            bookedDateSet.add(b.travel_date);
+
+            return {
+              title: b.guest_name,         
+              start: b.travel_date,
+              allDay: true,
+              extendedProps: {
+                pickup: b.pickup_location,
+                travel_time: b.travel_time
+              }
+            };
+          });
+
+          successCallback(events);
+        })
+        .catch(err => failureCallback(err));
+    },
+
+    /* 🔹 Visual disable ONLY (do NOT block events) */
+    dayCellClassNames: function(arg) {
+      const dateStr = arg.date.toISOString().split('T')[0];
+
+      if (dateStr < today) {
+        return ['fc-disabled-day'];
+      }
+
+      if (bookedDateSet.has(dateStr)) {
+        return ['fc-booked-day'];
+      }
+
+      return [];
+    },
+
+    /* 🔹 Block click logic safely */
+    dateClick: function (info) {
+
+      const clickedDate = info.dateStr;
+
+      // ❌ Past date
+      if (clickedDate < today) return;
+
+      // ❌ Booked date
+      if (bookedDateSet.has(clickedDate)) return;
+
+      // ✅ Available date
+      document.getElementById('auto_package_id').value = "{{ package.id }}";
+      document.getElementById('auto_travel_date').value = clickedDate;
+      document.getElementById('autoBookingForm').submit();
+    },
+
+    eventDidMount(info) {
+      info.el.title = "Already booked";
+    },
+
+    /* 🔹 Render guest + pickup properly */
+eventContent: function(arg) {
+
+  const pickup = arg.event.extendedProps.pickup;
+  const travelTime = arg.event.extendedProps.travel_time;
+
+  // Format time → HH:MM
+  let formattedTime = '';
+  if (travelTime) {
+    formattedTime = travelTime.slice(0, 5); // "14:30:00" → "14:30"
+  }
+
+  return {
+    html: `
+      <div class="fc-booking-event">
+        <div class="fc-guest-name">${arg.event.title}</div>
+
+        ${pickup && pickup !== '-' ? `
+          <div class="fc-pickup">📍 ${pickup}</div>
+        ` : ''}
+
+        ${formattedTime ? `
+          <div class="fc-travel-time">⏰ ${formattedTime}</div>
+        ` : ''}
+      </div>
+    `
+  };
+}
+
+
+  });
+
+  calendar.render();
+});
+</script>
+{% endblock %}

@@ -3203,24 +3203,6 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
     }
 }
 
-.availability-modal {
-    border-radius: 16px;
-    overflow: hidden;
-}
-
-.availability-modal .modal-header {
-    background: linear-gradient(174.78deg, #159957 -39.25%, #155799 179.4%);
-    border-bottom: none;
-}
-
-.availability-modal .modal-title {
-    font-weight: 600;
-}
-
-#availabilityCalendar {
-    width: 100%;
-    font-size: 16px;
-}
 
 /* =========================================================
    FLATPICKR – PRO RESPONSIVE / PIXEL PERFECT THEME
@@ -3332,11 +3314,6 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
     color: #d1d5db;
 }
 
-/* ---------- Modal Spacing ---------- */
-.availability-modal .modal-body {
-    padding: 24px 32px 32px;
-}
-
 /* =========================================================
    RESPONSIVE BREAKPOINTS
 ========================================================= */
@@ -3377,4 +3354,160 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
         font-size: 14px;
         border-radius: 10px;
     }
+}
+/* =========================================================
+   Full Page Calendar
+========================================================= */
+#calendar {
+  width: 100%;
+  height: 90vh;
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+/* =========================================================
+   Header Toolbar
+========================================================= */
+.fc-toolbar {
+  background: linear-gradient(174.78deg, #159957 -39.25%, #155799 179.4%);
+  padding: 14px 18px;
+  border-radius: 8px 8px 0 0;
+  color: #ffffff;
+}
+
+.fc-toolbar-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* Buttons */
+.fc-button {
+  background: #ffffff !important;
+  color: #155799 !important;
+  border: none !important;
+  font-weight: 600;
+  border-radius: 6px !important;
+  padding: 6px 12px;
+}
+
+.fc-button:hover {
+  background: #ffffff !important;
+}
+
+.fc-button-active {
+  background: #ffffff !important;
+  color: #159957 !important;
+}
+
+/* =========================================================
+   Calendar Grid
+========================================================= */
+.fc-daygrid-day {
+  background: #f8fbff;
+  cursor: pointer;
+}
+
+.fc-daygrid-day:hover {
+  background: #e9f5ff;
+}
+
+/* Weekday header */
+.fc-col-header-cell {
+  background: #f1f8ff;
+  font-weight: 600;
+  color: #155799;
+}
+
+/* Date number */
+.fc-daygrid-day-number {
+  color: #155799;
+  font-weight: 600;
+}
+
+/* Today */
+.fc-day-today {
+  background: rgba(21, 153, 87, 0.15) !important;
+}
+
+.fc-day-today .fc-daygrid-day-number {
+  color: #159957;
+}
+
+/* =========================================================
+   Events (Bookings)
+========================================================= */
+.fc-event {
+  background: linear-gradient(174.78deg, #159957 -39.25%, #155799 179.4%) !important;
+  border: none !important;
+  border-radius: 6px;
+  padding: 2px 4px;
+  color: #ffffff !important;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.fc-event:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+  transition: 0.15s ease;
+}
+
+/* Booking card content */
+.fc-booking-event {
+  padding: 4px;
+  line-height: 1.3;
+}
+
+.fc-guest-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.fc-pickup {
+  font-size: 11px;
+  color: #ffeaa7;
+  opacity: 0.95;
+}
+
+/* =========================================================
+   Disabled States (PAST & BOOKED)
+========================================================= */
+
+/* Past dates */
+.fc-disabled-day {
+  background: #f3f3f3 !important;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Booked dates — SAME AS PAST */
+.fc-booked-day {
+  background: #f3f3f3 !important;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Make booked events look disabled */
+.fc-booked-day .fc-event {
+  background: #b5b5b5 !important;
+  color: #ffffff !important;
+  cursor: not-allowed;
+}
+
+/* 🔴 Sunday color */
+.fc .fc-day-sun .fc-col-header-cell-cushion,
+.fc .fc-day-sat .fc-col-header-cell-cushion {
+  color: #dc3545; /* red */
+}
+
+/* 🟢 Weekdays (Mon–Fri) */
+.fc .fc-day-mon .fc-col-header-cell-cushion,
+.fc .fc-day-tue .fc-col-header-cell-cushion,
+.fc .fc-day-wed .fc-col-header-cell-cushion,
+.fc .fc-day-thu .fc-col-header-cell-cushion,
+.fc .fc-day-fri .fc-col-header-cell-cushion {
+  color: #198754; /* green */
 }

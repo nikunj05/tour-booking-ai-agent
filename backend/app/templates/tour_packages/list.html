@@ -15,19 +15,17 @@
                 <input type="text" id="live-search" class="form-control" placeholder="Search by title, city, country..."
                     value="{{ search }}">
 
-                <input type="date"
+                <input type="text"
                     id="availability-date"
                     class="form-control"
-                    value="{{ travel_date }}">
+                    placeholder="Select date"
+                    value="{% if travel_date %}{{ travel_date }}{% endif %}">
 
                 <!-- Add Button -->
                 <a href="{{ url_for('tour_package_create_page') }}" class="btn btn-submit">
                     Add Tour Package
                 </a>
-
             </div>
-
-
         </div>
 
         <hr>
@@ -48,6 +46,8 @@
 {% endblock %}
 
 {% block extra_js %}
+<!--  -->
+
 <script>
     $(document).on('click', '.confirm-tour-delete', function (e) {
         e.preventDefault();
@@ -102,6 +102,22 @@
     dateInput.addEventListener("change", function () {
         loadTours();
     });
+
+    // ---------------- FILTER DATE PICKER ----------------
+    const availabilityFilterPicker = flatpickr(dateInput, {
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        disableMobile: true,
+        allowInput: true,
+        defaultDate: dateInput.value || null,
+        onReady: function (selectedDates, dateStr, instance) {
+            instance.calendarContainer.classList.add('custom-flatpickr');
+        },
+        onChange: function () {
+            loadTours(); // auto reload table
+        }
+    });
+
 
 let availabilityPicker = null;
 let selectedPackageId = null;
