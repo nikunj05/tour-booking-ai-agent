@@ -5,10 +5,25 @@
 {% block content %}
 
 <section class="content-header px-1">
-    <div class="container-fluid ">
-                <h1 class="mb-0">{{ package.title }}</h1>
-        <hr>
+  <div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <h1 class="mb-0">{{ package.title }}</h1>
+
+      <div class="d-flex flex-wrap gap-2">
+        {% for d in drivers %}
+          <div class="card px-3 py-2 shadow-sm">
+            <strong>{{ d.name }}</strong>
+            <small class="text-muted">
+              {{ d.vehicle_type }} • {{ d.seats }} seats
+            </small>
+          </div>
+        {% endfor %}
+      </div>
     </div>
+
+    <hr>
+  </div>
 </section>
 
 <section class="content">
@@ -16,28 +31,52 @@
     <div id="calendar"></div>
   </div>
 
+  <!-- Hidden Auto Booking Form -->
   <form id="autoBookingForm"
-      method="post"
-      action="{{ url_for('autofill_booking_create_page') }}"
-      style="display:none;">
-
+        method="post"
+        action="{{ url_for('autofill_booking_create_page') }}"
+        hidden>
     <input type="hidden" name="package_id" id="auto_package_id">
     <input type="hidden" name="travel_date" id="auto_travel_date">
-</form>
-
+  </form>
 </section>
+
 {% endblock %}
 
 {% block extra_js %}
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
   const calendarEl = document.getElementById('calendar');
   const bookedDateSet = new Set();
-  const today = new Date().toISOString().split('T')[0];
 
-  const calendar = new FullCalendar.Calendar(calendarEl, {
+  function formatDate(date) {
+    return date.toISOString().split('T')[0];
+  }
+
+  const today = formatDate(new Date());
+  let calendar;
+
+  /* ===============================
+     APPLY DAY CLASSES (KEY FIX)
+  =============================== */
+  function applyDayClasses() {
+    document.querySelectorAll('.fc-daygrid-day').forEach(dayEl => {
+      const dateStr = dayEl.getAttribute('data-date');
+
+      dayEl.classList.remove('fc-booked-day', 'fc-disabled-day');
+
+      if (dateStr < today) {
+        dayEl.classList.add('fc-disabled-day');
+      }
+
+      if (bookedDateSet.has(dateStr)) {
+        dayEl.classList.add('fc-booked-day');
+      }
+    });
+  }
+
+  calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: 'dayGridMonth',
 
     headerToolbar: {
@@ -48,97 +87,85 @@ document.addEventListener('DOMContentLoaded', function () {
 
     selectable: true,
 
-    /* 🔹 Load booked dates + events */
+    /* ===============================
+       FETCH BOOKINGS (ASYNC)
+    =============================== */
     events: function(fetchInfo, successCallback, failureCallback) {
+
+      bookedDateSet.clear();
 
       fetch(`/manual-bookings/booked-dates/{{ package.id }}`)
         .then(res => res.json())
         .then(data => {
 
-          const events = (data.bookings || []).map(b => {
-            bookedDateSet.add(b.travel_date);
+          (data.booked_dates || []).forEach(d => bookedDateSet.add(d));
 
-            return {
-              title: b.guest_name,         
-              start: b.travel_date,
-              allDay: true,
-              extendedProps: {
-                pickup: b.pickup_location,
-                travel_time: b.travel_time
-              }
-            };
-          });
+          const events = (data.bookings || []).map(b => ({
+            title: b.guest_name,
+            start: b.travel_date,
+            allDay: true,
+            extendedProps: {
+              bookingId: b.id,
+              pickup: b.pickup_location,
+              travel_time: b.travel_time
+            }
+          }));
 
           successCallback(events);
+
+          // 🔥 APPLY CLASSES AFTER DATA LOAD
+          setTimeout(applyDayClasses, 0);
         })
         .catch(err => failureCallback(err));
     },
 
-    /* 🔹 Visual disable ONLY (do NOT block events) */
-    dayCellClassNames: function(arg) {
-      const dateStr = arg.date.toISOString().split('T')[0];
-
-      if (dateStr < today) {
-        return ['fc-disabled-day'];
-      }
-
-      if (bookedDateSet.has(dateStr)) {
-        return ['fc-booked-day'];
-      }
-
-      return [];
+    /* ===============================
+       MONTH CHANGE / RERENDER
+    =============================== */
+    datesSet: function () {
+      setTimeout(applyDayClasses, 0);
     },
 
-    /* 🔹 Block click logic safely */
-    dateClick: function (info) {
+    /* ===============================
+       DATE CLICK
+    =============================== */
+    dateClick: function(info) {
+      if (info.dateStr < today) return;
+      if (bookedDateSet.has(info.dateStr)) return;
 
-      const clickedDate = info.dateStr;
-
-      // ❌ Past date
-      if (clickedDate < today) return;
-
-      // ❌ Booked date
-      if (bookedDateSet.has(clickedDate)) return;
-
-      // ✅ Available date
       document.getElementById('auto_package_id').value = "{{ package.id }}";
-      document.getElementById('auto_travel_date').value = clickedDate;
+      document.getElementById('auto_travel_date').value = info.dateStr;
       document.getElementById('autoBookingForm').submit();
     },
 
-    eventDidMount(info) {
-      info.el.title = "Already booked";
+    /* ===============================
+       EVENT CLICK (DETAIL PAGE)
+    =============================== */
+    eventClick: function(info) {
+      const bookingId = info.event.extendedProps.bookingId;
+      if (!bookingId) return;
+
+      window.location.href = `/manual-bookings/${bookingId}`;
     },
 
-    /* 🔹 Render guest + pickup properly */
-eventContent: function(arg) {
+    /* ===============================
+       EVENT UI
+    =============================== */
+    eventContent: function(arg) {
+      const pickup = arg.event.extendedProps.pickup;
+      const time = arg.event.extendedProps.travel_time;
+      const t = time ? time.slice(0, 5) : '';
 
-  const pickup = arg.event.extendedProps.pickup;
-  const travelTime = arg.event.extendedProps.travel_time;
-
-  // Format time → HH:MM
-  let formattedTime = '';
-  if (travelTime) {
-    formattedTime = travelTime.slice(0, 5); // "14:30:00" → "14:30"
-  }
-
-  return {
-    html: `
-      <div class="fc-booking-event">
-        <div class="fc-guest-name">${arg.event.title}</div>
-
-        ${pickup && pickup !== '-' ? `
-          <div class="fc-pickup">📍 ${pickup}</div>
-        ` : ''}
-
-        ${formattedTime ? `
-          <div class="fc-travel-time">⏰ ${formattedTime}</div>
-        ` : ''}
-      </div>
-    `
-  };
-}
-
+      return {
+        html: `
+          <div class="fc-booking-event">
+            <div class="fc-guest-name">${arg.event.title}</div>
+            ${pickup ? `<div class="fc-pickup">📍 ${pickup}</div>` : ''}
+            ${t ? `<div class="fc-pickup">⏰ ${t}</div>` : ''}
+          </div>
+        `
+      };
+    }
 
   });
 

@@ -26,3 +26,5 @@ class Driver(Base):
         back_populates="driver",
         cascade="all, delete-orphan"
     )
+
+    bookings = relationship("ManualBooking", back_populates="driver")

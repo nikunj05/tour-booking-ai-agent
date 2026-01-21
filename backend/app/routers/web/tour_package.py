@@ -325,7 +325,6 @@ def update_package(
                         image_type="gallery"
                     )
                 )
-
     db.commit()
 
     # Update drivers

@@ -1,0 +1,87 @@
+{% extends "layout.html" %}
+
+{% block title %}Booking Detail{% endblock %}
+
+{% block content %}
+<section class="content-header px-1">
+  <div class="container-fluid">
+    <h1 class="mb-3">Booking Detail</h1>
+    <hr>
+  </div>
+</section>
+
+<section class="content">
+  <div class="container-fluid">
+
+    <div class="row g-4">
+
+      <!-- Left Side: All Booking Info Cards -->
+      <div class="col-6 d-flex flex-column gap-3">
+
+        <!-- Guest Info Card -->
+        <div class="card shadow-sm rounded-3 p-3">
+          <h6 class="text-muted mb-2">Guest Info</h6>
+          <div class="fw-bold fs-5">{{ booking.guest_name }}</div>
+          <small class="text-muted d-block">📞 {{ booking.phone }}</small>
+          <small class="text-muted d-block">✉ {{ booking.email or '-' }}</small>
+          <small class="text-muted d-block">📍 {{ booking.pickup_location or '-' }}</small>
+        </div>
+
+        <!-- Payment Info Card -->
+        <div class="card shadow-sm rounded-3 p-3">
+          <h6 class="text-muted mb-2">Payment Info</h6>
+          <div class="fw-bold fs-5">₹{{ booking.total_amount }}</div>
+          <small class="text-success d-block">Paid: ₹{{ booking.advance_amount }}</small>
+          <small class="text-danger d-block">Remaining: ₹{{ booking.remaining_amount }}</small>
+        </div>
+
+        <!-- Tour Package Info Card -->
+        <div class="card shadow-sm rounded-3 p-3">
+          <h6 class="text-muted mb-2">Tour Package</h6>
+          <div class="fw-bold fs-5">{{ booking.tour_package.title }}</div>
+          <small class="text-muted d-block">📅 {{ booking.travel_date.strftime("%Y-%m-%d") }}</small>
+          <small class="text-muted d-block">⏰ {{ booking.travel_time or '-' }}</small>
+        </div>
+
+      </div>
+
+      <!-- Right Side: Driver Info Card -->
+      <div class="col-6">
+        <div class="card shadow-sm rounded-3 p-3">
+          <h6 class="text-muted mb-3">Assigned Driver</h6>
+          {% if booking.driver %}
+{% if booking.driver.image %}
+  <div class="rounded-circle overflow-hidden mx-auto mb-2" style="width:100px; height:100px;">
+    <img src="{{ url_for('static', path=booking.driver.image) }}" 
+         class="img-fluid h-100 w-100" 
+         style="object-fit: cover;" 
+         alt="{{ booking.driver.name }}">
+  </div>
+{% else %}
+  <div class="rounded-circle bg-secondary text-white d-flex justify-content-center align-items-center mx-auto mb-2 fw-bold fs-5" style="width:100px; height:100px;">
+    {{ booking.driver.name[:2]|upper }}
+  </div>
+{% endif %}
+
+            <div class="fw-bold text-center">{{ booking.driver.name }}</div>
+            <small class="text-muted d-block text-center">📞 {{ booking.driver.phone_number }}</small>
+            <small class="text-muted d-block text-center">🚗 {{ booking.driver.vehicle_type }} ({{ booking.driver.vehicle_number or '-' }})</small>
+            <small class="text-muted d-block text-center">🪑 Seats: {{ booking.driver.seats or '-' }}</small>
+          {% else %}
+            <small class="text-muted d-block text-center">No driver assigned</small>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-4">
+      <a href="{{ url_for('tour_package_availability_page', package_id=booking.tour_package_id) }}" class="btn btn-submit">
+        Back to Calendar
+      </a>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
