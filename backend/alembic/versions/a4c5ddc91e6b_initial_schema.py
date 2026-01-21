@@ -1,8 +1,8 @@
-"""create user, tour package, manual booking table
+"""initial schema
 
-Revision ID: acd1fc120d31
+Revision ID: a4c5ddc91e6b
 Revises: 
-Create Date: 2026-01-16 14:07:30.255293
+Create Date: 2026-01-20 13:54:54.888475
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'acd1fc120d31'
+revision: str = 'a4c5ddc91e6b'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -44,6 +44,21 @@ def upgrade() -> None:
     sa.UniqueConstraint('user_id')
     )
     op.create_index(op.f('ix_companies_id'), 'companies', ['id'], unique=False)
+    op.create_table('drivers',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('company_id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(), nullable=False),
+    sa.Column('phone_number', sa.String(), nullable=False),
+    sa.Column('vehicle_type', sa.String(), nullable=True),
+    sa.Column('vehicle_number', sa.String(), nullable=True),
+    sa.Column('seats', sa.Integer(), nullable=True),
+    sa.Column('image', sa.String(), nullable=True),
+    sa.Column('is_deleted', sa.Boolean(), nullable=True),
+    sa.ForeignKeyConstraint(['company_id'], ['companies.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_drivers_company_id'), 'drivers', ['company_id'], unique=False)
+    op.create_index(op.f('ix_drivers_id'), 'drivers', ['id'], unique=False)
     op.create_table('tour_packages',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('company_id', sa.Integer(), nullable=False),
@@ -100,6 +115,9 @@ def downgrade() -> None:
     op.drop_table('manual_bookings')
     op.drop_index(op.f('ix_tour_packages_id'), table_name='tour_packages')
     op.drop_table('tour_packages')
+    op.drop_index(op.f('ix_drivers_id'), table_name='drivers')
+    op.drop_index(op.f('ix_drivers_company_id'), table_name='drivers')
+    op.drop_table('drivers')
     op.drop_index(op.f('ix_companies_id'), table_name='companies')
     op.drop_table('companies')
     op.drop_index(op.f('ix_users_email'), table_name='users')

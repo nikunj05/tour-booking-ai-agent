@@ -25,6 +25,11 @@ class ManualBooking(Base):
         ForeignKey("tour_packages.id"),
         nullable=False
     )
+    driver_id = Column(
+        Integer,
+        ForeignKey("drivers.id"),
+        nullable=True    
+    )
     travel_date = Column(Date, nullable=False)
     travel_time = Column(Time, nullable=True)
     total_amount = Column(Numeric(10, 2), nullable=False)
@@ -39,3 +44,5 @@ class ManualBooking(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     tour_package = relationship("TourPackage")
+    driver = relationship("Driver", back_populates="bookings")
+

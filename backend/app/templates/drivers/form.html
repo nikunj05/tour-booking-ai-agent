@@ -1,0 +1,178 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="content-header px-1">
+    <div class="container-fluid">
+        <h1>{{ "Edit Driver" if driver else "Create Driver" }}</h1>
+        <hr>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+
+                <form id="driver-form"
+                      method="post"
+                      enctype="multipart/form-data"
+                      action="
+                        {% if driver %}
+                            {{ url_for('driver_update', driver_id=driver.id) }}
+                        {% else %}
+                            {{ url_for('driver_create') }}
+                        {% endif %}
+                      "
+                      class="shadow-sm p-4 rounded bg-white border"
+                      novalidate>
+
+                    <!-- Driver Image -->
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Driver Photo</label>
+                            <div class="profile-picture d-flex" id="uploadTrigger">
+                                <div>
+                                    <img id="upload-file"
+                                         src="{{ url_for('static', path='assets/icon/uploadFile.png') }}"
+                                         {% if driver and driver.image %}style="display:none"{% endif %} />
+
+                                    <input type="file"
+                                           id="fileInput"
+                                           name="image"
+                                           accept="image/*">
+
+                                    <img id="previewImage"
+                                         src="{% if driver and driver.image %}{{ url_for('static', path=driver.image) }}{% endif %}"
+                                         height="60"
+                                         width="60"
+                                         {% if not driver or not driver.image %}style="display:none"{% endif %}>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+
+                        <!-- Driver Name -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-semibold">Driver Name</label>
+                            <input type="text"
+                                   name="name"
+                                   class="form-control {% if errors.name %}is-invalid{% endif %}"
+                                   value="{{ form.name | default(driver.name if driver else '') }}">
+                            <span class="invalid-feedback">
+                                {{ errors.name | default('') }}
+                            </span>
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-semibold">Phone Number</label>
+                            <input type="text"
+                                   name="phone_number"
+                                   class="form-control {% if errors.phone_number %}is-invalid{% endif %}"
+                                   value="{{ form.phone_number | default(driver.phone_number if driver else '') }}">
+                            <span class="invalid-feedback">
+                                {{ errors.phone_number | default('') }}
+                            </span>
+                        </div>
+
+                        <!-- Vehicle Type -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-semibold">Vehicle Type</label>
+                            <input type="text"
+                                   name="vehicle_type"
+                                   class="form-control"
+                                   value="{{ form.vehicle_type | default(driver.vehicle_type if driver else '') }}">
+                        </div>
+
+                        <!-- Vehicle Number -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-semibold">Vehicle Number</label>
+                            <input type="text"
+                                   name="vehicle_number"
+                                   class="form-control"
+                                   value="{{ form.vehicle_number | default(driver.vehicle_number if driver else '') }}">
+                        </div>
+
+                        <!-- Seats -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-semibold">Seats</label>
+                            <input type="number"
+                                   name="seats"
+                                   min="1"
+                                   class="form-control"
+                                   value="{{ form.seats | default(driver.seats if driver else '') }}">
+                        </div>
+
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-submit">
+                            {{ "Update" if driver else "Create" }}
+                        </button>
+                        <a href="{{ url_for('driver_list') }}" class="btn btn-cancel ms-2">
+                            Cancel
+                        </a>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function () {
+
+    $("#driver-form").validate({
+        rules: {
+            name: { required: true },
+            phone_number: {
+                required: true,
+                minlength: 7,
+                maxlength: 15
+            }
+        },
+
+        errorElement: "span",
+        errorClass: "invalid-feedback",
+
+        highlight: function (element) {
+            $(element).addClass("is-invalid");
+        },
+        unhighlight: function (element) {
+            $(element).removeClass("is-invalid");
+        },
+        errorPlacement: function (error, element) {
+            error.insertAfter(element);
+        }
+    });
+
+    const trigger = document.getElementById("uploadTrigger");
+    const fileInput = document.getElementById("fileInput");
+    const previewImage = document.getElementById("previewImage");
+    const uploadIcon = document.getElementById("upload-file");
+
+    trigger.addEventListener("click", () => fileInput.click());
+
+    fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file || !file.type.startsWith("image/")) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            previewImage.src = reader.result;
+            previewImage.style.display = "block";
+            uploadIcon.style.display = "none";
+        };
+        reader.readAsDataURL(file);
+    });
+
+});
+</script>
+{% endblock %}

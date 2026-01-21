@@ -4,13 +4,16 @@ from sqlalchemy.orm import Session
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from app.database.session import get_db
 from app.models.manual_booking import ManualBooking
-from app.models.tour_package import TourPackage
+from app.models.tour_package import TourPackage,TourPackageDriver
+from app.models.driver import Driver
 from app.schemas.manual_booking import ManualBookingCreate
 from app.core.templates import templates
 from app.auth.dependencies import admin_only, company_only
 from app.utils.flash import flash_redirect
-from fastapi import Form
-from typing import Optional
+from typing import Optional, List
+from sqlalchemy import func,and_
+from datetime import date
+
 
 
 router = APIRouter(prefix="/manual-bookings", tags=["Manual Booking"])
@@ -35,15 +38,20 @@ def manual_booking_create_page(
 ):
     company = current_user.company
 
-    print(package_id)
-    print(travel_date)
-
-    # Get all packages for dropdown
     packages = (
         db.query(TourPackage)
         .filter(
             TourPackage.company_id == company.id,
             TourPackage.is_deleted == False
+        )
+        .all()
+    )
+
+    drivers = (
+        db.query(Driver)
+        .filter(
+            Driver.company_id == company.id,
+            Driver.is_deleted == False
         )
         .all()
     )
@@ -81,6 +89,7 @@ def create_manual_booking(
     email: str = Form(None),
     pickup_location: str = Form(None),
     tour_package_id: int = Form(...),
+    driver_id: int = Form(None),
     travel_date: str = Form(...),
     travel_time: str = Form(None),
     total_amount: float = Form(...),
@@ -102,6 +111,7 @@ def create_manual_booking(
         email=email,
         pickup_location=pickup_location,
         tour_package_id=tour_package_id,
+        driver_id=driver_id,
         travel_date=travel_date,
         travel_time=travel_time,
         total_amount=total_amount,
@@ -115,9 +125,8 @@ def create_manual_booking(
 
     return flash_redirect(
         url=request.url_for("manual_booking_list"),
-        message="booking created successfully.",
+        message="Booking created successfully.",
     )
-
 
 # =================================================
 # DATATABLE API
@@ -192,7 +201,6 @@ def manual_booking_list(
         {"request": request}
     )
 
-
 @router.get("/{booking_id}/edit", name="manual_booking_edit")
 def edit_manual_booking(
     booking_id: int,
@@ -202,7 +210,41 @@ def edit_manual_booking(
 ):
     booking = db.query(ManualBooking).get(booking_id)
     company = current_user.company
-    packages = db.query(TourPackage).filter(TourPackage.is_deleted == False).all()
+
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    packages = (
+        db.query(TourPackage)
+        .filter(TourPackage.is_deleted == False)
+        .all()
+    )
+
+    # 🔹 Drivers already booked on same date (except current booking)
+    booked_driver_ids = (
+        db.query(ManualBooking.driver_id)
+        .filter(
+            ManualBooking.travel_date == booking.travel_date,
+            ManualBooking.driver_id.isnot(None),
+            ManualBooking.id != booking.id,
+            ManualBooking.is_deleted == False
+        )
+        .all()
+    )
+    booked_driver_ids = [d[0] for d in booked_driver_ids]
+
+    # 🔹 Drivers assigned to selected package
+    drivers = (
+        db.query(Driver)
+        .join(TourPackageDriver, TourPackageDriver.driver_id == Driver.id)
+        .filter(
+            TourPackageDriver.tour_package_id == booking.tour_package_id,
+            Driver.company_id == company.id,
+            Driver.is_deleted == False,
+            ~Driver.id.in_(booked_driver_ids)
+        )
+        .all()
+    )
 
     return templates.TemplateResponse(
         "manual_booking/form.html",
@@ -210,7 +252,8 @@ def edit_manual_booking(
             "request": request,
             "booking": booking,
             "packages": packages,
-            "company": company
+            "drivers": drivers,   
+            "company": company,
         }
     )
 
@@ -220,6 +263,7 @@ def update_manual_booking(
     booking_id: int,
     guest_name: str = Form(...),
     tour_package_id: int = Form(...),
+    driver_id: int = Form(None),
     phone: str = Form(...),
     email: str = Form(None),
     pickup_location: str = Form(None),
@@ -260,6 +304,7 @@ def update_manual_booking(
     booking.phone = phone
     booking.email = email
     booking.tour_package_id = tour_package_id
+    booking.driver_id = driver_id
     booking.pickup_location = pickup_location
     booking.travel_date = travel_date
     booking.travel_time = travel_time
@@ -293,19 +338,6 @@ def delete_manual_booking(
 
     return {"success": True}
 
-
-# @router.get("/booked-dates/{package_id}", name="get_booked_dates")
-# def get_booked_dates(package_id: int, db: Session = Depends(get_db)):
-#     bookings = db.query(ManualBooking).filter(
-#         ManualBooking.tour_package_id == package_id,
-#         ManualBooking.is_deleted == False
-#     ).all()
-
-
-#     booked_dates = [b.travel_date.strftime("%Y-%m-%d") for b in bookings] if bookings else []
-#     return {"booked_dates": booked_dates}
-
-
 @router.get(
     "/tour-packages/{package_id}/availability",
     name="tour_package_availability_page"
@@ -324,39 +356,49 @@ def tour_package_availability_page(
     if not package:
         raise HTTPException(status_code=404, detail="Package not found")
 
+    # 🔹 Fetch drivers with details
+    drivers = (
+        db.query(TourPackageDriver)
+        .filter(
+            TourPackageDriver.tour_package_id == package.id
+        )
+        .all()
+    )
+
+    driver_data = []
+    for d in drivers:
+        driver = d.driver   # relation
+
+        driver_data.append({
+            "name": driver.name,
+            "vehicle_type": driver.vehicle_type,
+            "seats": driver.seats
+        })
+
     return templates.TemplateResponse(
         "tour_packages/availability.html",
         {
             "request": request,
             "package": package,
-            "company": current_user.company
+            "company": current_user.company,
+            "drivers": driver_data,
+            "total_drivers": len(driver_data)
         }
     )
 
-
-# @router.get("/booked-dates/{package_id}", name="get_booked_dates")
-# def booked_dates(package_id: int, db: Session = Depends(get_db)):
-#     bookings = (
-#         db.query(ManualBooking)
-#         .filter(
-#             ManualBooking.tour_package_id == package_id
-#         )
-#         .all()
-#     )
-
-#     data = []
-#     for b in bookings:
-#         data.append({
-#             "guest_name": b.guest_name,
-#             "pickup_location": b.pickup_location or "-",
-#             "travel_date": b.travel_date.strftime("%Y-%m-%d")
-#         })
-
-#     return {"bookings": data}
-
-
 @router.get("/booked-dates/{package_id}", name="get_booked_dates")
-def get_booked_dates(package_id: int, db: Session = Depends(get_db)):
+def get_booked_dates(
+    package_id: int,
+    db: Session = Depends(get_db)
+):
+    # 1️⃣ Total drivers assigned to package
+    total_drivers = (
+        db.query(TourPackageDriver)
+        .filter(TourPackageDriver.tour_package_id == package_id)
+        .count()
+    )
+
+    # 2️⃣ All bookings (for display)
     bookings = (
         db.query(ManualBooking)
         .filter(
@@ -367,22 +409,117 @@ def get_booked_dates(package_id: int, db: Session = Depends(get_db)):
     )
 
     bookings_data = []
-    booked_dates = []
-
     for b in bookings:
-        date_str = b.travel_date.strftime("%Y-%m-%d")
-
-        booked_dates.append(date_str)
-
         bookings_data.append({
+            "id": b.id, 
             "guest_name": b.guest_name,
             "pickup_location": b.pickup_location or "",
-            "travel_date": date_str,
+            "travel_date": b.travel_date.strftime("%Y-%m-%d"),
             "travel_time": b.travel_time or "",
-            
         })
 
+    # 3️⃣ Count bookings per date
+    booking_counts = (
+        db.query(
+            ManualBooking.travel_date,
+            func.count(ManualBooking.id).label("count")
+        )
+        .filter(
+            ManualBooking.tour_package_id == package_id,
+            ManualBooking.is_deleted == False
+        )
+        .group_by(ManualBooking.travel_date)
+        .all()
+    )
+
+    booked_dates = []
+    availability = {}
+
+    # 4️⃣ Calculate remaining drivers per date
+    for travel_date, count in booking_counts:
+        date_str = travel_date.strftime("%Y-%m-%d")
+        remaining = max(total_drivers - count, 0)
+
+        availability[date_str] = remaining
+
+        # disable date only if full
+        if remaining == 0:
+            booked_dates.append(date_str)
+
     return {
-        "booked_dates": booked_dates,
-        "bookings": bookings_data
+        "booked_dates": booked_dates,   # used by calendar
+        "bookings": bookings_data,      # used by popup/list
+        "availability": availability,   # ✅ NEW
+        "total_drivers": total_drivers  # optional but useful
     }
+
+@router.get("/available-drivers/{package_id}/{travel_date}")
+def get_available_drivers(
+    package_id: int,
+    travel_date: date,
+    db: Session = Depends(get_db),
+    current_user=Depends(company_only),
+):
+    company_id = current_user.company.id
+
+    # Step 1: Get drivers already booked on this date
+    booked_driver_ids = (
+        db.query(ManualBooking.driver_id)
+        .filter(
+            ManualBooking.travel_date == travel_date,
+            ManualBooking.driver_id.isnot(None),
+            ManualBooking.is_deleted == False
+        )
+        .all()
+    )
+    booked_driver_ids = [d[0] for d in booked_driver_ids]
+
+    # Step 2: Get drivers assigned to this package and company
+    drivers = (
+        db.query(Driver)
+        .join(TourPackageDriver, TourPackageDriver.driver_id == Driver.id)
+        .filter(
+            TourPackageDriver.tour_package_id == package_id,
+            Driver.company_id == company_id,
+            Driver.is_deleted == False,
+            ~Driver.id.in_(booked_driver_ids)
+        )
+        .all()
+    )
+
+    # Step 3: Return only the available drivers
+    return [
+        {
+            "id": d.id,
+            "name": d.name,
+            "phone": d.phone_number,
+            "vehicle_type": d.vehicle_type,
+            "vehicle_number": d.vehicle_number,
+            "seats": d.seats
+        }
+        for d in drivers
+    ]
+
+@router.get("/{booking_id}", response_class=HTMLResponse, name="manual_booking_detail")
+def booking_detail(
+    booking_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    booking = db.query(ManualBooking).filter(
+        ManualBooking.id == booking_id,
+        ManualBooking.is_deleted == False
+    ).first()
+
+
+
+    if not booking:
+        return RedirectResponse("/manual-bookings", status_code=303)
+
+    return templates.TemplateResponse(
+        "manual_booking/detail.html",
+        {
+            "request": request,
+            "booking": booking,
+        }
+    )

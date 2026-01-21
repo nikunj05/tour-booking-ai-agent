@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="content-header px-1">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+        <h1>Drivers</h1>
+
+        <a href="{{ url_for('driver_create_page') }}"
+           class="btn btn-submit">
+            Add Driver
+        </a>
+    </div>
+    <hr>
+</section>
+
+<section class="content">
+    <div class="container-fluid py-4">
+
+        <table id="driverTable"
+               class="table table-striped table-bordered"
+               style="width:100%">
+            <thead>
+                <tr>
+                    <th>Driver Name</th>
+                    <th>Driver Phone</th>
+                    <th>Vehicle Details</th>
+                    <th>Seats</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+    </div>
+</section>
+{% endblock %}
+
+
+{% block extra_js %}
+<link rel="stylesheet"
+      href="{{ url_for('static', path='assets/plugins/datatables-responsive/css/jquery.dataTables.min.css') }}" />
+
+<script src="{{ url_for('static', path='assets/plugins/datatables/jquery-3.6.0.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
+
+<script>
+$(document).ready(function () {
+
+  const table = $('#driverTable').DataTable({
+    processing: true,
+    serverSide: false,
+    ajax: "{{ url_for('driver_datatable') }}",
+    columns: [
+      { data: "name" },
+      { data: "phone" },
+      { data: "vehicle" },
+      { data: "seats" },
+      {
+        data: "actions",
+        orderable: false,
+        searchable: false,
+        className: "text-center"
+      }
+    ],
+    language: {
+      searchPlaceholder: "Search driver, phone, vehicle...",
+      search: ""
+    },
+  });
+
+  // Delete confirmation
+  $(document).on("click", ".confirm-driver-delete", function (e) {
+    e.preventDefault();
+    confirmDelete(
+            $(this).data('route'),
+            'Are you sure you want to delete this driver?',
+            'POST',
+            table
+        );
+  });
+
+});
+</script>
+{% endblock %}

@@ -130,6 +130,27 @@
     <input type="hidden" name="excludes" id="excludes">
 </div>
 
+<div class="col-md-12 mb-3">
+    <label class="form-label fw-semibold">Assign Drivers</label>
+
+    <select name="driver_ids"
+            class="form-select select2"
+            multiple
+            data-placeholder="Select drivers">
+        {% for driver in drivers %}
+        <option value="{{ driver.id }}"
+            {% if package and driver.id in assigned_driver_ids %}
+                selected
+            {% endif %}>
+            {{ driver.name }} —
+            {{ driver.vehicle_type }} ({{ driver.vehicle_number }})
+        </option>
+        {% endfor %}
+    </select>
+</div>
+
+
+
 <div class="row">
 {% set cover_img = (
     package.gallery_images
@@ -243,6 +264,14 @@ $(document).ready(function () {
         width: '100%'
     });
 });
+
+    $('.select2').select2({
+        width: '100%',
+        allowClear: true,
+        placeholder: function(){
+            return $(this).data('placeholder');
+        }
+    });
 
 /* ======================
    QUILL EDITORS

@@ -21,7 +21,7 @@ if config.config_file_name is not None:
 # target_metadata = None
 
 from app.database.base import Base
-from app.models import company,user
+from app.models import company,user,driver
 
 target_metadata = Base.metadata
 
