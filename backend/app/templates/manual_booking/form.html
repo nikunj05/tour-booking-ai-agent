@@ -23,44 +23,26 @@
       class="shadow-sm p-4 rounded bg-white border"
       novalidate>
 
-
-
 <!-- ================= GUEST DETAILS ================= -->
 <h5 class="mb-3 fw-semibold">Guest Details</h5>
 
 <div class="row">
     <div class="col-md-4 mb-3">
         <label class="form-label fw-semibold">Guest Name</label>
-        <input type="text"
-               name="guest_name"
-               class="form-control"
+        <input type="text" name="guest_name" class="form-control"
                value="{{ booking.guest_name if booking else '' }}">
     </div>
 
     <div class="col-md-4 mb-3">
         <label class="form-label fw-semibold">Phone Number</label>
-        <input type="text"
-               name="phone"
-               class="form-control"
+        <input type="text" name="phone" class="form-control"
                value="{{ booking.phone if booking else '' }}">
     </div>
 
     <div class="col-md-4 mb-3">
         <label class="form-label fw-semibold">Email</label>
-        <input type="email"
-               name="email"
-               class="form-control"
+        <input type="email" name="email" class="form-control"
                value="{{ booking.email if booking else '' }}">
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-12 mb-3">
-        <label class="form-label fw-semibold">Pickup Location</label>
-        <input type="text"
-               name="pickup_location"
-               class="form-control"
-               value="{{ booking.pickup_location if booking else '' }}">
     </div>
 </div>
 
@@ -76,21 +58,15 @@
                 {% if selected_package %}disabled{% endif %}
                 data-placeholder="Search tour package">
             <option value=""></option>
-
             {% for package in packages %}
             <option value="{{ package.id }}"
-                {% if booking and booking.tour_package_id == package.id %}
-                    selected
-                {% endif %}
-                
-                {% if selected_package and package.id == selected_package.id %}
-                selected
-                {% endif %}>
-            
+                {% if booking and booking.tour_package_id == package.id %}selected{% endif %}
+                {% if selected_package and package.id == selected_package.id %}selected{% endif %}>
                 {{ package.title }} - {{ company.currency }} {{ package.price }}
             </option>
             {% endfor %}
         </select>
+
         {% if selected_package %}
         <input type="hidden" name="tour_package_id" value="{{ selected_package.id }}">
         {% endif %}
@@ -98,43 +74,49 @@
 
     <div class="col-md-3 mb-3">
         <label class="form-label fw-semibold">Travel Date</label>
-        <input type="date"
-               name="travel_date"
-               class="form-control"
+        <input type="date" name="travel_date" class="form-control"
                value="{{ booking.travel_date if booking else '' }}">
     </div>
 
-    
-
     <div class="col-md-3 mb-3">
         <label class="form-label fw-semibold">Travel Time</label>
-        <input type="time"
-               name="travel_time"
-               class="form-control"
+        <input type="time" name="travel_time" class="form-control"
                value="{{ booking.travel_time if booking else '' }}">
     </div>
 </div>
 
 <div class="row">
     <div class="col-md-6 mb-3">
-        <label class="form-label fw-semibold">Driver</label>
-
-        <select name="driver_id"
-                class="form-select select2"
-                data-placeholder="Search driver">
-            <option value=""></option>
-
-            {% for driver in drivers %}
-            <option value="{{ driver.id }}"
-                {% if booking and booking.driver_id == driver.id %}selected{% endif %}>
-                {{ driver.name }} - {{ driver.phone_number }} ({{ driver.vehicle_type }} {{ driver.seats }} seater, {{ driver.vehicle_number }})
-            </option>
-            {% endfor %}
-        </select>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="showAllDrivers">
+            <label class="form-check-label fw-semibold" for="showAllDrivers">
+                Show other drivers
+            </label>
+        </div>
     </div>
 </div>
 
-
+<div class="row">
+    
+    <div class="col-md-6">
+        <label class="form-label fw-semibold">Driver</label>
+        <select name="driver_id" class="form-select select2"
+        data-placeholder="Search driver">
+        <option value=""></option>
+        {% for driver in drivers %}
+        <option value="{{ driver.id }}"
+        {% if booking and booking.driver_id == driver.id %}selected{% endif %}>
+        {{ driver.name }} - {{ driver.phone_number }}
+    </option>
+    {% endfor %}
+</select>
+</div>
+<div class="col-md-6">
+    <label class="form-label fw-semibold">Pickup Location</label>
+    <input type="text" name="pickup_location" class="form-control"
+           value="{{ booking.pickup_location if booking else '' }}">
+</div>
+</div>
 
 <!-- ================= PAYMENT DETAILS ================= -->
 <h5 class="mt-4 mb-3 fw-semibold">Payment Details</h5>
@@ -142,47 +124,35 @@
 <div class="row">
     <div class="col-md-4 mb-3">
         <label class="form-label fw-semibold">Total Amount</label>
-        <input type="number"
-               step="0.01"
-               name="total_amount"
+        <input type="number" step="0.01" name="total_amount"
                class="form-control"
                value="{{ booking.total_amount if booking else '' }}">
     </div>
 
     <div class="col-md-4 mb-3">
         <label class="form-label fw-semibold">Advance Paid</label>
-        <input type="number"
-               step="0.01"
-               name="advance_amount"
+        <input type="number" step="0.01" name="advance_amount"
                class="form-control"
                value="{{ booking.advance_amount if booking else 0 }}">
     </div>
 
     <div class="col-md-4 mb-3">
         <label class="form-label fw-semibold">Remaining Amount</label>
-        <input type="number"
-               step="0.01"
-               name="remaining_amount"
-               class="form-control"
-               readonly
+        <input type="number" step="0.01" name="remaining_amount"
+               class="form-control" readonly
                value="{{ booking.remaining_amount if booking else '' }}">
     </div>
 </div>
 
-<!-- ================= BUTTONS ================= -->
 <div class="mt-4">
     <button type="submit" class="btn btn-submit">
         {{ "Update Booking" if booking else "Book Tour" }}
     </button>
-
     <a href="{{ request.url_for('manual_booking_list') }}"
-       class="btn btn-cancel ms-2">
-        Cancel
-    </a>
+       class="btn btn-cancel ms-2">Cancel</a>
 </div>
 
 </form>
-
 </div>
 </div>
 </div>
@@ -192,17 +162,7 @@
 {% block extra_js %}
 <script>
 $(document).ready(function () {
-
-    /* Select2 */
-    $('.select2').select2({
-        width: '100%',
-        allowClear: true,
-        placeholder: function(){
-            return $(this).data('placeholder');
-        }
-    });
-
-    /* Validation */
+        /* Validation */
     $("#manual-booking-form").validate({
         rules: {
             guest_name: { required: true },
@@ -221,133 +181,133 @@ $(document).ready(function () {
         errorPlacement: (error, element) => error.insertAfter(element)
     });
 
-    /* Remaining amount auto calc */
-    function calculateRemaining() {
-        const total = parseFloat($('[name="total_amount"]').val()) || 0;
-        const advance = parseFloat($('[name="advance_amount"]').val()) || 0;
-        $('[name="remaining_amount"]').val(Math.max(total - advance, 0).toFixed(2));
+    $('.select2').select2({ width: '100%', allowClear: true });
+
+    const packageSelect = $('[name="tour_package_id"]');
+
+    if (!packageSelect.val()) {
+        const firstOption = packageSelect.find('option[value!=""]').first().val();
+
+        if (firstOption) {
+            packageSelect.val(firstOption).trigger('change');
+        }
     }
-
-    $('[name="total_amount"], [name="advance_amount"]').on("input", calculateRemaining);
-
-    /* ===== FLATPICKR FIX ===== */
-
     const PREFILLED_TRAVEL_DATE = "{{ travel_date or '' }}";
     const CURRENT_BOOKING_DATE = "{{ booking.travel_date if booking else '' }}";
 
     const travelInput = document.querySelector('[name="travel_date"]');
-    const initialDate = travelInput.value; // date from DB (edit)
     let isFirstLoad = true;
-    
-    
+
     const travelDatePicker = flatpickr(travelInput, {
         dateFormat: "Y-m-d",
         minDate: "today",
         disableMobile: true,
         allowInput: true,
-        defaultDate: travelInput.value || null,
-        onReady: function(selectedDates, dateStr, instance) {
-            instance.calendarContainer.classList.add('custom-flatpickr');
-        }
+        defaultDate: travelInput.value || null
     });
 
-    console.log(PREFILLED_TRAVEL_DATE);
     if (PREFILLED_TRAVEL_DATE) {
         travelDatePicker.setDate(PREFILLED_TRAVEL_DATE, true);
+    }
+
+    function applyBookedDates(packageId) {
+        fetch(`/manual-bookings/booked-dates/${packageId}`)
+            .then(res => res.json())
+            .then(data => {
+                let disabledDates = data.booked_dates || [];
+
+                if (CURRENT_BOOKING_DATE) {
+                    disabledDates = disabledDates.filter(
+                        d => d !== CURRENT_BOOKING_DATE
+                    );
+                }
+
+                travelDatePicker.set('disable', disabledDates);
+
+                if (isFirstLoad && PREFILLED_TRAVEL_DATE) {
+                    travelDatePicker.setDate(PREFILLED_TRAVEL_DATE, true);
+                }
+
+                isFirstLoad = false;
+            });
     }
 
     $('[name="tour_package_id"]').on('change', function () {
         const packageId = $(this).val();
         if (!packageId) return;
 
-        fetch(`/manual-bookings/booked-dates/${packageId}`)
-            .then(res => res.json())
-            .then(data => {
-                let disabledDates = Array.isArray(data.booked_dates)
-                    ? data.booked_dates
-                    : [];
-
-                if (CURRENT_BOOKING_DATE) {
-                    disabledDates = disabledDates.filter(
-                        d => d !== CURRENT_BOOKING_DATE
-                    );
-                }   
-
-                travelDatePicker.set('disable', disabledDates);
-
-                // ✅ SET PREFILLED DATE ONLY ON FIRST LOAD
-                if (isFirstLoad && PREFILLED_TRAVEL_DATE) {
-                    travelDatePicker.setDate(PREFILLED_TRAVEL_DATE, true);
-                }
-
-                // ✅ Clear ONLY when user changes package
-                if (!isFirstLoad && !PREFILLED_TRAVEL_DATE) {
-                    travelDatePicker.clear();
-                }
-
-                isFirstLoad = false;
-            })
-            .catch(err => {
-                console.error("Error fetching booked dates:", err);
-            });
+        if (!$('#showAllDrivers').is(':checked')) {
+            applyBookedDates(packageId);
+        } else {
+            travelDatePicker.set('disable', []);
+        }
     });
 
+    $('#showAllDrivers').on('change', function () {
+        const packageId = $('[name="tour_package_id"]').val();
+        if (!packageId) return;
 
-    const packageSelect = $('[name="tour_package_id"]');
-
-    if (!packageSelect.val()) {
-        const firstOption = packageSelect.find('option[value!=""]').first();
-        if (firstOption.length) {
-            packageSelect.val(firstOption.val()).trigger('change');
+        if (this.checked) {
+            travelDatePicker.set('disable', []);
+        } else {
+            applyBookedDates(packageId);
         }
-    }
 
-    // Trigger once on page load (edit mode)
-    const selectedPackage = $('[name="tour_package_id"]').val();
-    if (selectedPackage) {
-        $('[name="tour_package_id"]').trigger('change');
-    }
+        loadAvailableDrivers();
+    });
 
     function loadAvailableDrivers() {
-    const packageId = $('[name="tour_package_id"]').val();
-    const travelDate = $('[name="travel_date"]').val();
-    const driverSelect = $('[name="driver_id"]');
+        const packageId = $('[name="tour_package_id"]').val();
+        const travelDate = $('[name="travel_date"]').val();
+        const driverSelect = $('[name="driver_id"]');
 
-    if (!packageId || !travelDate) {
-        driverSelect.empty().append('<option value=""></option>');
-        return;
+        if (!packageId || !travelDate) return;
+
+        const url = $('#showAllDrivers').is(':checked')
+            ? `/manual-bookings/all-drivers/${packageId}/${travelDate}`
+            : `/manual-bookings/available-drivers/${packageId}/${travelDate}`;
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                driverSelect.empty().append('<option value=""></option>');
+
+                if (!data.length) {
+                    driverSelect.append('<option>No drivers available</option>');
+                    return;
+                }
+
+                data.forEach(d => {
+                    driverSelect.append(
+                        `<option value="${d.id}">${d.name} - ${d.phone}</option>`
+                    );
+                });
+
+                driverSelect.trigger('change');
+            });
     }
 
-    fetch(`/manual-bookings/available-drivers/${packageId}/${travelDate}`)
-        .then(res => res.json())
-        .then(data => {
-            driverSelect.empty().append('<option value=""></option>');
+    $('[name="tour_package_id"], [name="travel_date"]').on(
+        'change',
+        loadAvailableDrivers
+    );
 
-            if (data.length === 0) {
-                driverSelect.append(
-                    '<option value="">No drivers available</option>'
-                );
-                return;
-            }
+    function calculateRemaining() {
+        const total = parseFloat($('[name="total_amount"]').val()) || 0;
+        const advance = parseFloat($('[name="advance_amount"]').val()) || 0;
+        $('[name="remaining_amount"]').val(
+            Math.max(total - advance, 0).toFixed(2)
+        );
+    }
 
-            data.forEach(driver => {
-                driverSelect.append(
-                    `<option value="${driver.id}">
-                        ${driver.name} - ${driver.phone} (${driver.vehicle_type} ${driver.seats} seater, ${driver.vehicle_number})
-                    </option>`
-                );
-            });
+    $('[name="total_amount"], [name="advance_amount"]').on(
+        "input",
+        calculateRemaining
+    );
 
-            driverSelect.trigger('change');
-        })
-        .catch(err => console.error(err));
-}
-
-$('[name="tour_package_id"], [name="travel_date"]').on(
-    'change',
-    loadAvailableDrivers
-);
+        $(document).ready(function () {
+            calculateRemaining(); // 🔥 auto-fill on edit
+        });
 });
 </script>
-
 {% endblock %}
