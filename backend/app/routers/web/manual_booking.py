@@ -42,7 +42,8 @@ def manual_booking_create_page(
         db.query(TourPackage)
         .filter(
             TourPackage.company_id == company.id,
-            TourPackage.is_deleted == False
+            TourPackage.is_deleted == False,
+            TourPackage.status == "active"
         )
         .all()
     )
@@ -216,7 +217,7 @@ def edit_manual_booking(
 
     packages = (
         db.query(TourPackage)
-        .filter(TourPackage.is_deleted == False)
+        .filter(TourPackage.is_deleted == False,TourPackage.status == "active")
         .all()
     )
 

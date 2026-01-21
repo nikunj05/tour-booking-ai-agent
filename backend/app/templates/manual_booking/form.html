@@ -127,7 +127,7 @@
             {% for driver in drivers %}
             <option value="{{ driver.id }}"
                 {% if booking and booking.driver_id == driver.id %}selected{% endif %}>
-                {{ driver.name }} - {{ driver.phone_number }} (${{ driver.vehicle_type }} {{ driver.seats }} seater, {{ driver.vehicle_number }})
+                {{ driver.name }} - {{ driver.phone_number }} ({{ driver.vehicle_type }} {{ driver.seats }} seater, {{ driver.vehicle_number }})
             </option>
             {% endfor %}
         </select>

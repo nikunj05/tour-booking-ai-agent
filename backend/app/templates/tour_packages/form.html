@@ -100,8 +100,6 @@
 </select>
 
 </div>
-
-
     <!-- City -->
     <div class="col-md-6 mb-3">
         <label class="form-label fw-semibold">City</label>
@@ -143,7 +141,7 @@
                 selected
             {% endif %}>
             {{ driver.name }} —
-            {{ driver.vehicle_type }} ({{ driver.vehicle_number }})
+            {{ driver.vehicle_type }} {{driver.seats}} seats ({{ driver.vehicle_number }})
         </option>
         {% endfor %}
     </select>
@@ -319,6 +317,7 @@ $("#tour-form").validate({
         title: { required: true, minlength: 3 },
         price: { required: true, number: true, min: 1 },
         city: { required: true },
+        driver_ids: { required: true },
         cover_image: { required: {{ 'false' if package else 'true' }}, extension: "jpg|jpeg|png|gif", filesize: MAX_IMAGE_SIZE },
     },
     errorElement: "span",

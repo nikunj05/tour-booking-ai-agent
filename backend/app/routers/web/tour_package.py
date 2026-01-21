@@ -111,7 +111,7 @@ def create_page(
         db.query(Driver)
         .filter(
             Driver.company_id == current_user.company.id,
-            Driver.is_deleted == False
+            Driver.is_deleted == False,
         )
         .all()
     )
