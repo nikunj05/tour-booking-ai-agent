@@ -1,0 +1,57 @@
+<div class="card card-outline card-success">
+    <div class="card-header">
+        <h5 class="card-title">Booking Overview</h5>
+    </div>
+
+    <div class="card-body">
+        <canvas id="bookingChart" height="220"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const ctx = document.getElementById('bookingChart').getContext('2d');
+
+    fetch("{{ url_for('dashboard_stats') }}")  // dynamic backend API
+        .then(res => res.json())
+        .then(data => {
+            const monthNames = [
+                "Jan","Feb","Mar","Apr","May","Jun",
+                "Jul","Aug","Sep","Oct","Nov","Dec"
+            ];
+
+            const bookingChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: monthNames,
+                    datasets: [{
+                        label: 'Bookings',
+                        data: data.monthly_bookings_per_year, 
+                        backgroundColor: 'rgba(21, 153, 87, 1)',
+                        borderColor: 'rgba(21, 87, 153, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Month' } },
+                        y: { 
+                            beginAtZero: true,
+                            title: { display: true, text: 'Number of Bookings' },
+                            ticks: { stepSize: 5 }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(err => console.error("Error fetching dashboard stats:", err));
+});
+</script>

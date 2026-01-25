@@ -1,0 +1,141 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container-fluid py-3">
+
+    <!-- KPI Cards -->
+    <div class="row">
+        <div class="col-12">
+            {% include "company_dashboard/cards.html" %}
+        </div>
+    </div>
+    
+    <!-- Bottom Section -->
+    <div class="row">
+    
+        <!-- Booking Overview Chart -->
+        <div class="col-lg-12">
+            {% include "company_dashboard/booking_chart.html" %}
+        </div>
+    </div>
+    <div class="row">
+
+    <!-- Customers -->
+    <div class="col-lg-6">
+        {% include "company_dashboard/customers_table.html" %}
+    </div>
+
+    <!-- Active Packages -->
+    <div class="col-lg-6">
+        {% include "company_dashboard/active_packages.html" %}
+    </div>
+
+</div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+
+        <!-- RIGHT: Latest Bookings -->
+        <div class="col-lg-12">
+            {% include "company_dashboard/latest_bookings.html" %}
+        </div>
+
+    </div>
+
+
+</div>
+{% endblock %}
+{% block extra_js %}
+<link rel="stylesheet"
+      href="{{ url_for('static', path='assets/plugins/datatables-responsive/css/jquery.dataTables.min.css') }}" />
+
+<script src="{{ url_for('static', path='assets/plugins/datatables/jquery-3.6.0.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
+
+<script>
+$(document).ready(function () {
+
+    // Customers
+    $('#customersTable').DataTable({
+        ajax: '{{ url_for("dashboard_customers_datatable") }}',
+        paging: true,
+        searching: true,
+        lengthChange: false,
+        pageLength: 5,
+        responsive: true,
+        columns: [
+            { data: 'name' },
+            { data: 'contact' },
+        ],
+        language: {
+            searchPlaceholder: "Search guest, phone, date...",
+            search: ""
+        },
+    });
+
+    // Active Packages
+    $('#activePackagesTable').DataTable({
+        ajax: '{{ url_for("dashboard_active_packages") }}',
+        paging: true,
+        searching: true,
+        lengthChange: false,
+        pageLength: 5,
+        responsive: true,
+        columns: [
+            { data: 'name' },
+            { 
+                data: 'price',
+                render: data => `<strong>${data}</strong>`
+            },
+        ],
+        language: {
+            searchPlaceholder: "Search packages...",
+            search: ""
+        },
+    });
+
+    // Latest Bookings
+    let bookingTable = $('#manualBookingTable').DataTable({
+        processing: true,
+        serverSide: false,
+        pageLength: 5,
+        lengthChange: false,
+        responsive: true,
+        ajax: {
+            url: "{{ url_for('manual_booking_datatable') }}",
+            type: "GET",
+            dataSrc: "data"
+        },
+        columnDefs: [
+            { targets: 0, visible: false } // hide ID
+        ],
+        order: [[0, 'desc']], 
+        columns: [
+            { data: "id" },
+            { data: "guest_details" },
+            { data: "travel_details" },
+            { data: "payment_details" },
+            { data: "actions", orderable: false, searchable: false },
+        ],
+        language: {
+            searchPlaceholder: "Search guest, phone, date...",
+            search: ""
+        },
+        initComplete: function () {
+            $(this).wrap('<div class="table-responsive"></div>');
+        }
+    });
+
+    $(document).on('click', '.confirm-manual-booking-delete', function (e) {
+        e.preventDefault();
+        confirmDelete(
+            $(this).data('route'),
+            'Are you sure you want to delete this booking?',
+            'POST',
+            bookingTable
+        );
+    });
+
+});
+</script>
+{% endblock %}

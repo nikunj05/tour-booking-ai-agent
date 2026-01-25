@@ -21,17 +21,25 @@ def send_whatsapp_booking_confirmation(phone_number: str, booking):
         "to": phone_number,
         "type": "template",
         "template": {
-            "name": "booking_confirmed",
+            "name": "booking_confirmed",  # Your WhatsApp template name
             "language": {"code": "en_US"},
             "components": [
                 {
                     "type": "body",
                     "parameters": [
-                        {"type": "text", "text": booking.guest_name},                 
-                        {"type": "text", "text": booking.tour_package.title},         
-                        {"type": "text", "text": str(booking.travel_date)},          
-                        {"type": "text", "text": str(booking.travel_time or "-")},    
-                        {"type": "text", "text": booking.pickup_location or "-"},     
+                        {"type": "text", "text": booking.guest_name},                        # {{1}}
+                        {"type": "text", "text": booking.tour_package.title},                 # {{2}}
+                        {"type": "text", "text": str(booking.travel_date)},                   # {{3}}
+                        {"type": "text", "text": str(booking.travel_time or "-")},           # {{4}}
+                        {"type": "text", "text": booking.pickup_location or "-"},            # {{5}}
+                        {"type": "text", "text": str(booking.adults)},                        # {{6}}
+                        {"type": "text", "text": str(booking.kids)},                          # {{7}}
+                        {"type": "text", "text": str(booking.total_amount)},                  # {{8}}
+                        {"type": "text", "text": booking.tour_package.currency or ""},       # {{9}}
+                        {"type": "text", "text": str(booking.advance_amount)},                # {{10}}
+                        {"type": "text", "text": booking.tour_package.currency or ""},       # {{11}}
+                        {"type": "text", "text": str(booking.remaining_amount)},              # {{12}}
+                        {"type": "text", "text": booking.tour_package.currency or ""},       # {{13}}
                     ],
                 }
             ],

@@ -217,7 +217,6 @@ $("#manual-booking-form").validate({
     highlight: e => $(e).addClass("is-invalid"),
     unhighlight: e => $(e).removeClass("is-invalid"),
     errorPlacement: function (error, element) {
-        // Fix for input groups (country code + phone, adults + kids)
         if (element.parent().hasClass('input-group')) {
             error.insertAfter(element.parent());
         } else {

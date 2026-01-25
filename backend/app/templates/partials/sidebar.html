@@ -28,8 +28,8 @@
 
                 <!-- Dashboard -->
                 <li class="nav-item">
-                    <a href="{{ url_for('dashboard') }}" class="nav-link d-flex align-items-center
-                        {% if request.url.path.startswith(url_for('dashboard').path) %}active{% endif %}">
+                    <a href="{{ url_for('dashboard_index') }}" class="nav-link d-flex align-items-center
+                        {% if request.url.path.startswith(url_for('dashboard_index').path) %}active{% endif %}">
                         <div class="sidebar-nav-icon">
                             <!-- Dashboard SVG -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"

@@ -1,0 +1,97 @@
+<div class="row g-4">
+
+    <!-- Yearly Bookings -->
+    <div class="col-md-3">
+        <div class="card text-center shadow-sm card-outline card-info">
+            <div class="card-body">
+                <h6>
+                    Total Bookings (<span id="year-label"></span>)
+                </h6>
+                <h3 id="yearly-bookings">0</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Bookings -->
+    <div class="col-md-3">
+        <div class="card text-center shadow-sm card-outline card-danger">
+            <div class="card-body">
+                <h6>
+                    Bookings (<span id="month-label"></span>)
+                </h6>
+                <h3 id="monthly-bookings">0</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Yearly Revenue -->
+    <div class="col-md-3">
+        <div class="card text-center shadow-sm card-outline card-success">
+            <div class="card-body">
+                <h6>
+                    Total Revenue (<span id="year-label-revenue"></span>)
+                </h6>
+                <h3 id="yearly-revenue">₹0</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Revenue -->
+    <div class="col-md-3">
+        <div class="card text-center shadow-sm card-outline card-warning">
+            <div class="card-body">
+                <h6>
+                    Revenue (<span id="month-label-revenue"></span>)
+                </h6>
+                <h3 id="monthly-revenue">₹0</h3>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    fetch("{{ url_for('dashboard_stats') }}")
+        .then(res => res.json())
+        .then(data => {
+
+            console.log("Dashboard data:", data); // 🔍 debug
+
+            const monthNames = [
+                "January","February","March","April","May","June",
+                "July","August","September","October","November","December"
+            ];
+
+            const currency = (data.currency || "USD") + " ";
+
+            // Labels
+            document.getElementById("year-label").innerText = data.year;
+            document.getElementById("year-label-revenue").innerText = data.year;
+
+            document.getElementById("month-label").innerText =
+                monthNames[(data.month || 1) - 1];
+
+            document.getElementById("month-label-revenue").innerText =
+                monthNames[(data.month || 1) - 1];
+
+            // Values
+            document.getElementById("yearly-bookings").innerText =
+                data.yearly_bookings || 0;
+
+            document.getElementById("monthly-bookings").innerText =
+                data.monthly_bookings || 0;
+
+            document.getElementById("yearly-revenue").innerText =
+                currency + (data.yearly_revenue || 0);
+
+            document.getElementById("monthly-revenue").innerText =
+                currency + (data.monthly_revenue || 0);
+        })
+        .catch(err => console.error("Dashboard error:", err));
+
+});
+</script>
