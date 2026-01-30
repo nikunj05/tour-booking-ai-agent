@@ -11,6 +11,7 @@ venv/
 env/
 .venv/
 .env
+backend/.env
 alembic.ini
 uploads/
 
@@ -19,7 +20,6 @@ uploads/
 *.sqlite3
 
 # IDE / Editor files
-.vscode/
 .idea/
 *.sublime-project
 *.sublime-workspace
@@ -32,3 +32,6 @@ Thumbs.db
 node_modules/
 dist/
 
+temp_auto_push.bat
+temp_interactive_push.bat
+.gitignore
