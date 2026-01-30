@@ -11,6 +11,7 @@ venv/
 env/
 .venv/
 .env
+backend/.env
 alembic.ini
 uploads/
 
