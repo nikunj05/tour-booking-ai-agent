@@ -1,16 +1,46 @@
-GREETING_REPLY_PROMPT = """
-    Create a friendly WhatsApp greeting.
+def build_greeting(company_name: str):
+    return {
+        "text": (
+            f"Hi! Welcome to *{company_name}* ✨\n\n"
+            "How can I assist you today? Choose an option below:"
+        ),
+        "buttons": [
+            {"id": "book_tour", "title": "Book a Tour 🏖️"},
+            {"id": "ask_question", "title": "Ask About Tours?"}
+        ]
+    }
 
-    Rules:
-    - Greet the user
-    - Mention the company name
-    - Ask how you can help
-    - Give 2 clear options:
-    • Book a tour
-    • Ask a question
-    - Keep it SHORT
-    - Use emojis
-    """
+def build_city_selection(cities: list[str]) -> dict:
+    buttons = [
+        {"id": f"CITY_{city.lower()}", "title": city}
+        for city in cities
+    ]
+
+    return {
+        "text": "Where would you like to go?\nSelect a city from the options below:",
+        "buttons": buttons,
+    }
+
+def build_package_list(city: str, packages: list) -> str:
+    msg = f"*Available Tours in {city}*\n\n"
+
+    for i, p in enumerate(packages, start=1):
+        msg += (
+            f"{i}. *{p['name']}*\n"
+            f"💰 Price: AED {p['price']}\n\n"
+        )
+
+    msg += "👉 Reply with the *number* of the tour you want to book."
+    return msg
+
+def build_travel_date_buttons():
+    return {
+        "text": "📅 When would you like to travel?\n\n👉 Choose an option below\nor type the date (example: *13-05-2026*)",
+        "buttons": [
+            {"id": "DATE_TODAY", "title": "Today"},
+            {"id": "DATE_TOMORROW", "title": "Tomorrow"},
+        ]
+    }
 
 BASE_REPLY_PROMPT = """
     You are a WhatsApp tour booking assistant.
