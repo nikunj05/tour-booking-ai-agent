@@ -1,0 +1,239 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="content-header px-1">
+    <div class="container-fluid">
+        <h1>{{ "Edit Company" if company else "Create Company" }}</h1>
+        <hr>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+
+                <form id="company-form" method="post" enctype="multipart/form-data" action="
+                            {% if is_my_profile %}
+                                {{ url_for('my_profile_update') }}
+                            {% elif company %}
+                                {{ url_for('company_update', company_id=company.id) }}
+                            {% else %}
+                                {{ url_for('company_create') }}
+                            {% endif %}
+                        " class="shadow-sm p-4 rounded bg-white border" novalidate>
+
+                    {% if is_my_profile %}
+                    <div class="col-lg-12 profile-picture-upload mb-3">
+                        <label class="form-label fw-semibold">Company Logo</label>
+                        <div class="profile-picture d-flex" id="uploadTrigger">
+                            <div class="profile-picture-inner-box">
+
+                                <img id="upload-file" src="{{ url_for('static', path='assets/icon/uploadFile.png') }}"
+                                    {% if company.logo %}style="display:none" {% endif %} />
+                                <input type="file" id="fileInput" name="logo" accept="image/*">
+                                <img id="previewImage"
+                                    src="{% if company.logo %}{{ url_for('static', path=company.logo) }}{% endif %}"
+                                    height="60" width="60" alt="Profile Image" {% if not company.logo
+                                    %}style="display:none" {% endif %}>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="col-lg-12 ">
+
+                        <div class="row">
+                            <!-- Company Name -->
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-semibold">Company Name</label>
+                                <input type="text" name="company_name"
+                                    class="form-control {% if errors.company_name %}is-invalid{% endif %}"
+                                    value="{{ form.company_name | default(company.company_name if company else '') }}">
+                                <span class="invalid-feedback">
+                                    {{ errors.company_name | default('') }}
+                                </span>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-semibold">Currency</label>
+
+                                <select name="currency" class="form-select">
+                                    {% set selected_currency = form.currency
+                                    | default(company.currency if company else 'USD') %}
+
+                                    {% for code, name in currencies %}
+                                    <option value="{{ code }}" {% if code==selected_currency %}selected{% endif %}>
+                                        {{ code }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-semibold">Country</label>
+
+                                <select name="country" id="country"
+                                    class="form-control {% if errors.country %}is-invalid{% endif %}">
+                                    <option value="">Select Country</option>
+
+                                    {% for c in countries %}
+                                    <option value="{{ c }}" {% if form.country==c or (company and company.country==c) %}
+                                        selected {% endif %}>
+                                        {{ c }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+
+                                {% if errors.country %}
+                                <span class="invalid-feedback d-block">
+                                    {{ errors.country }}
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">Email</label>
+                                    <input type="email" name="email"
+                                        class="form-control {% if errors.email %}is-invalid{% endif %}"
+                                        value="{{ form.email | default(company.user.email if company else '') }}" {% if
+                                        company %}readonly{% endif %}>
+                                    <span class="invalid-feedback">
+                                        {{ errors.email | default('') }}
+                                    </span>
+                                </div>
+
+                                <!-- Phone -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">Phone</label>
+
+                                    <div class="input-group">
+                                        <!-- Country Code -->
+                                        <select name="country_code" id="country_code" class="form-select"
+                                            style="max-width: 110px;">
+                                            {% for code, name in country_codes %}
+                                            <option value="{{ code }}" {% if form.country_code==code or (company and
+                                                company.country_code==code) %} selected {% endif %}>
+                                                {{ code }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+
+                                        <!-- Phone Number -->
+                                        <input type="text" name="phone"
+                                            class="form-control {% if errors.phone %}is-invalid{% endif %}"
+                                            value="{{ form.phone | default(company.phone if company else '') }}"
+                                            placeholder="Phone number">
+                                    </div>
+
+                                    {% if errors.phone %}
+                                    <span class="invalid-feedback d-block">
+                                        {{ errors.phone }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+
+                            {% if company and not is_my_profile %}
+                            <div class="mb-3 admin-only">
+                                <label class="form-label fw-semibold">Status</label>
+                                <select name="status" class="form-select">
+                                    <option value="active" {{ 'selected' if company.status=='active' }}>
+                                        Active
+                                    </option>
+                                    <option value="inactive" {{ 'selected' if company.status=='inactive' }}>
+                                        Inactive
+                                    </option>
+                                </select>
+                            </div>
+                            {% endif %}
+                            <!-- Buttons -->
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-submit">
+                                    {{ "Update" if company else "Create" }}
+                                </button>
+                                <a href="{{ url_for('company_list') }}" class="btn btn-cancel ms-2">Cancel</a>
+                            </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        $('#country').select2({
+            placeholder: "Select country",
+            allowClear: true,
+            width: '100%'
+        });
+    });
+    $(document).ready(function () {
+
+        $("#company-form").validate({
+            rules: {
+                company_name: {
+                    required: true,
+                },
+                email: {
+                    required: true,
+                    email: true
+                },
+                phone: {
+                    required: true,
+                    minlength: 7,
+                    maxlength: 15
+                },
+                currency: {
+                    required: true,
+                },
+            },
+
+
+
+            errorElement: "span",
+            errorClass: "invalid-feedback",
+
+            highlight: function (element) {
+                $(element).addClass("is-invalid");
+            },
+
+            unhighlight: function (element) {
+                $(element).removeClass("is-invalid");
+            },
+
+            errorPlacement: function (error, element) {
+                error.insertAfter(element);
+            }
+        });
+
+        const trigger = document.getElementById("uploadTrigger");
+        const fileInput = document.getElementById("fileInput");
+        const previewImage = document.getElementById("previewImage");
+        const uploadIcon = document.getElementById("upload-file");
+
+        trigger.addEventListener("click", () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (!file || !file.type.startsWith("image/")) return;
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                previewImage.src = reader.result;
+                previewImage.style.display = "block";
+                uploadIcon.style.display = "none";
+                trigger.classList.add("has-image"); // works if CSS exists
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+</script>
+{% endblock %}

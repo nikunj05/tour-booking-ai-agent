@@ -1,0 +1,228 @@
+{% extends "layout-blank.html" %}
+
+{% block title %}{{ tour.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ===== HERO ===== */
+.hero {
+    position: relative;
+    height: 420px;
+    border-radius: 18px;
+    overflow: hidden;
+}
+.hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,.65), rgba(0,0,0,.1));
+}
+.hero-content {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    z-index: 2;
+    color: #fff;
+}
+.hero-title {
+    font-size: 34px;
+    font-weight: 700;
+}
+.hero-meta {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* ===== LAYOUT ===== */
+.section {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.06);
+    margin-bottom: 24px;
+}
+.section h4 {
+    font-weight: 600;
+    margin-bottom: 14px;
+}
+
+/* ===== PRICE CARD ===== */
+.price-card {
+    position: sticky;
+    top: 20px;
+    border-radius: 16px;
+    background: #0d6efd;
+    color: #fff;
+    padding: 24px;
+}
+.price {
+    font-size: 32px;
+    font-weight: 700;
+}
+.price small {
+    font-size: 14px;
+    opacity: 0.8;
+}
+.book-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 10px;
+}
+
+/* ===== GALLERY ===== */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 10px;
+}
+.gallery-grid img {
+    width: 100%;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+}
+
+/* ===== LIST CONTENT ===== */
+.content-text {
+    line-height: 1.7;
+    color: #444;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .hero {
+        height: 280px;
+    }
+    .hero-title {
+        font-size: 24px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="content py-4">
+<div class="container">
+
+    {% set cover = tour.gallery_images | selectattr("image_type", "equalto", "cover") | first %}
+
+    <!-- HERO -->
+    <div class="hero mb-4">
+        {% if cover %}
+            <img src="{{ url_for('static', path=cover.image_path) }}">
+        {% else %}
+            <img src="https://via.placeholder.com/1400x500?text=Tour+Image">
+        {% endif %}
+
+        <div class="hero-content">
+            <h1 class="hero-title">{{ tour.title }}</h1>
+            <div class="hero-meta">
+                📍 {{ tour.city }}, {{ tour.country }}
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- LEFT CONTENT -->
+        <div class="col-lg-8">
+
+            <!-- DESCRIPTION -->
+            <div class="section">
+                <h4>Overview</h4>
+                <div class="content-text">
+                    {{ tour.description | safe }}
+                </div>
+            </div>
+
+            <!-- ITINERARY -->
+            <div class="section">
+                <h4>Itinerary</h4>
+                <div class="content-text">
+                    {{ tour.itinerary | safe }}
+                </div>
+            </div>
+
+            <!-- EXCLUDES -->
+            <div class="section">
+                <h4>What’s Not Included</h4>
+                <div class="content-text">
+                    {{ tour.excludes | safe }}
+                </div>
+            </div>
+
+            <!-- GALLERY -->
+            {% set gallery = tour.gallery_images
+                | rejectattr("image_type", "equalto", "cover")
+                | list
+            %}
+            {% if gallery %}
+            <div class="section">
+                <h4>Tour Gallery</h4>
+                <div class="gallery-grid">
+                    {% for img in gallery %}
+                        <img src="{{ url_for('static', path=img.image_path) }}"
+                             data-img="{{ url_for('static', path=img.image_path) }}"
+                             class="gallery-thumb">
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- RIGHT SIDEBAR -->
+        <div class="col-lg-4">
+            <div class="price-card">
+                <div class="mb-2">Starting from</div>
+                <div class="price">₹ {{ tour.price }}</div>
+                <small>per person</small>
+
+                <hr style="opacity:.3">
+
+                <ul class="mb-3">
+                    <li>✔ Best price guarantee</li>
+                    <li>✔ Handpicked tours</li>
+                    <li>✔ 24/7 support</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>
+</section>
+
+<!-- IMAGE MODAL -->
+<div class="modal fade" id="galleryModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-body p-0">
+                <img id="galleryModalImg"
+                     class="w-100"
+                     style="object-fit:contain; max-height:85vh;">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("click", function(e){
+    if(e.target.classList.contains("gallery-thumb")){
+        document.getElementById("galleryModalImg").src = e.target.dataset.img;
+        new bootstrap.Modal(
+            document.getElementById("galleryModal")
+        ).show();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="content-header px-1">
+    <div class="container-fluid">
+        <h1>{{ "Edit Customer" if customer else "Create Customer" }}</h1>
+        <hr>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+
+                <form id="customer-form"
+                      method="post"
+                      enctype="multipart/form-data"
+                      action="
+                        {% if customer %}
+                            {{ url_for('customer_update', customer_id=customer.id) }}
+                        {% else %}
+                            {{ url_for('customer_create') }}
+                        {% endif %}
+                      "
+                      class="shadow-sm p-4 rounded bg-white border"
+                      novalidate>
+
+                    <div class="row">
+
+                        <!-- Customer Name -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-semibold">Guest Name</label>
+                            <input type="text"
+                                   name="guest_name"
+                                   class="form-control {% if errors.guest_name %}is-invalid{% endif %}"
+                                   value="{{ form.guest_name | default(customer.guest_name if customer else '') }}">
+                            <span class="invalid-feedback">
+                                {{ errors.guest_name | default('') }}
+                            </span>
+                        </div>
+
+                        <!-- Customer Phone -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-semibold">Phone Number</label>
+
+                            <div class="input-group">
+                                <select name="country_code"
+                                        class="form-select"
+                                        style="max-width:110px;">
+                                    {% for code,name in country_codes %}
+                                    <option value="{{ code }}"
+                                        {% if customer and customer.country_code == code %}selected{% endif %}>
+                                        {{ code }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+
+                                <input type="text"
+                                    name="phone"
+                                    class="form-control {% if errors.phone %}is-invalid{% endif %}"
+                                    value="{{ form.phone | default(customer.phone if customer else '') }}">
+                            </div>
+
+                            {% if errors.phone %}
+                                <div class="invalid-feedback d-block">
+                                    {{ errors.phone }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-semibold">Email</label>
+                            <input type="email"
+                                   name="email"
+                                   class="form-control {% if errors.email %}is-invalid{% endif %}"
+                                   value="{{ form.email | default(customer.email if customer else '') }}">
+                            {% if errors.email %}
+                                <div class="invalid-feedback d-block">
+                                    {{ errors.email }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-submit">
+                            {{ "Update" if customer else "Create" }}
+                        </button>
+                        <a href="{{ url_for('customer_list') }}" class="btn btn-cancel ms-2">
+                            Cancel
+                        </a>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function () {
+
+    $("#customer-form").validate({
+        rules: {
+            guest_name: { required: true },
+            phone: {
+                required: true,
+                minlength: 7,
+                maxlength: 15
+            }
+        },
+
+        errorElement: "span",
+        errorClass: "invalid-feedback",
+
+        highlight: function (element) {
+            $(element).addClass("is-invalid");
+        },
+        unhighlight: function (element) {
+            $(element).removeClass("is-invalid");
+        },
+        errorPlacement: function (error, element) {
+            error.insertAfter(element);
+        }
+    });
+
+    const trigger = document.getElementById("uploadTrigger");
+    const fileInput = document.getElementById("fileInput");
+    const previewImage = document.getElementById("previewImage");
+    const uploadIcon = document.getElementById("upload-file");
+
+    trigger.addEventListener("click", () => fileInput.click());
+
+
+});
+</script>
+{% endblock %}

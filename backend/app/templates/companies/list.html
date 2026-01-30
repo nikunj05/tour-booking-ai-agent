@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="content-header px-1">
+    <div class="container-fluid d-flex header-wrapper justify-content-between align-items-center">
+        <h1>Tour & Travel Companies</h1>
+        <a href="{{ url_for('company_create_page') }}" class="btn btn-submit"> Add Company</a>
+    </div>
+    <hr>
+</section>
+
+<section class="content">
+    <div class="container-fluid py-4">
+
+
+        <table id="companiesTable" class="table table-striped table-bordered" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Company Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Include jQuery & DataTables JS (CDN) -->
+<link rel="stylesheet"
+    href="{{ url_for('static', path='assets/plugins/datatables-responsive/css/jquery.dataTables.min.css') }}" />
+<script src="{{ url_for('static', path='assets/plugins/datatables/jquery-3.6.0.min.js')}}"></script>
+<script src="{{ url_for('static', path='assets/plugins/datatables/jquery.dataTables.min.js')}}"></script>
+
+<script>
+    $(document).ready(function () {
+
+        let companiesTable = $('#companiesTable').DataTable({
+            processing: true,
+            serverSide: false,   
+            ajax: {
+                url: "{{ url_for('company_datatable') }}",
+                type: "GET",
+                dataSrc: "data"  
+            },
+            columns: [
+                { data: "company_name" },
+                { data: "email" },
+                { data: "phone" },
+                { data: "status" },
+                { data: "actions", orderable: false, searchable: false },
+            ],
+            language: {
+                searchPlaceholder: "Search company, email, phone...",
+                search: ""
+            },
+            initComplete: function () {
+                $(this).wrap('<div class="table-responsive"></div>');
+            }
+        });
+
+        $(document).on('click', '.confirm-company-delete', function (e) {
+            e.preventDefault();
+            confirmDelete(
+                $(this).data('route'),
+                'Are you sure you want to delete this company?',
+                'POST',
+                companiesTable
+            );
+        });
+
+    });
+</script>
+
+{% endblock %}

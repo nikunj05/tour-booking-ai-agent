@@ -1,0 +1,86 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="content-header px-1">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+        <h1>Manual Tour Bookings</h1>
+        <a href="{{ url_for('manual_booking_create_page') }}"
+           class="btn btn-submit">
+            Add Booking
+        </a>
+    </div>
+    <hr>
+</section>
+
+<section class="content">
+    <div class="container-fluid py-4">
+
+        <table id="manualBookingTable"
+               class="table table-striped table-bordered"
+               style="width:100%">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Guest Details</th>
+                    <th>Travel Details</th>
+                    <th>Payment</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<link rel="stylesheet"
+      href="{{ url_for('static', path='assets/plugins/datatables-responsive/css/jquery.dataTables.min.css') }}" />
+
+<script src="{{ url_for('static', path='assets/plugins/datatables/jquery-3.6.0.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
+
+<script>
+$(document).ready(function () {
+    let bookingTable = $('#manualBookingTable').DataTable({
+        processing: true,
+        serverSide: false,
+        ajax: {
+            url: "{{ url_for('manual_booking_datatable') }}",
+            type: "GET",
+            dataSrc: "data"
+        },
+        columnDefs: [
+            { targets: 0, visible: false } // hide ID
+        ],
+        order: [[0, 'desc']], 
+        columns: [
+            { data: "id" },
+            { data: "guest_details" },
+            { data: "travel_details" },
+            { data: "payment_details" },
+            { data: "actions", orderable: false, searchable: false },
+        ],
+        language: {
+            searchPlaceholder: "Search guest, phone, date...",
+            search: ""
+        },
+        initComplete: function () {
+            $(this).wrap('<div class="table-responsive"></div>');
+        }
+    });
+
+    $(document).on('click', '.confirm-manual-booking-delete', function (e) {
+        e.preventDefault();
+        confirmDelete(
+            $(this).data('route'),
+            'Are you sure you want to delete this booking?',
+            'POST',
+            bookingTable
+        );
+    });
+
+});
+</script>
+{% endblock %}

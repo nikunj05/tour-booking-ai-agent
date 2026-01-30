@@ -1,0 +1,87 @@
+<script src="{{ url_for('static', path='assets/plugins/jquery/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/plugins/jquery-ui/jquery-ui.min.js') }}"></script>
+<script>
+    $.widget.bridge('uibutton', $.ui.button)    
+</script>
+
+<script src="{{ url_for('static', path='assets/plugins/select2/js/jquery-3.6.0.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/plugins/chart.js/Chart.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/plugins/sparklines/sparkline.js') }}"></script>
+
+<script src="{{ url_for('static', path='assets/plugins/jquery-knob/jquery.knob.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/plugins/moment/moment.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/plugins/daterangepicker/daterangepicker.js') }}"></script>
+<script
+    src="{{ url_for('static', path='assets/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/plugins/summernote/summernote-bs4.min.js') }}"></script>    
+<script
+    src="{{ url_for('static', path='assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/dist/js/adminlte.js') }}"></script>    
+<script src="{{ url_for('static', path='assets/dist/js/demo.js') }}"></script>
+<script src="{{ url_for('static', path='assets/plugins/toastr/toastr.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/plugins/select2/js/select2.full.min.js') }}"></script>
+
+
+<script src="{{ url_for('static', path='assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js')}}"></script>
+<script
+    src="{{ url_for('static', path='assets/plugins/datatables-responsive/js/dataTables.responsive.min.js')}}"></script>
+<script    
+    src="{{ url_for('static', path='assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js')}}"></script>
+<script src="{{ url_for('static', path='assets/plugins/datatables-buttons/js/dataTables.buttons.min.js')}}"></script>    
+<script src="{{ url_for('static', path='assets/plugins/datatables-buttons/js/buttons.bootstrap4.min.js')}}"></script>
+
+<script src="{{ url_for('static', path='assets/plugins/datatables-buttons/js/buttons.html5.min.js')}}"></script>
+<script src="{{ url_for('static', path='assets/plugins/datatables-buttons/js/buttons.print.min.js')}}"></script>
+<script src="{{ url_for('static', path='assets/plugins/datatables-buttons/js/buttons.colVis.min.js')}}"></script>
+<script src="{{ url_for('static', path='assets/dist/js/swiper-bundle.min.js')}}"></script>
+<script src="{{ url_for('static', path='assets/dist/js/swiper-bootstrap.bundle.min.js')}}"></script>
+
+<script src="{{ url_for('static', path='assets/dist/js/ajax.js') }}"></script>
+<script src="{{ url_for('static', path='assets/dist/js/jquery.validate.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/dist/js/jquery-impromptu.js') }}"></script>
+
+<script src="{{ url_for('static', path='assets/plugins/signature_pad/signature_pad.umd.min.js')}}"></script>
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+<script src="{{ url_for('static', path='assets/dist/js/pop-up.js')}}"></script>
+<script src="{{ url_for('static', path='assets/plugins/flatpickr/flatpickr.min.js')}}"></script>
+<script src="{{ url_for('static', path='assets/plugins/fullcalendar/main.min.js') }}"></script>
+
+<script>
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    const role = getCookie("user_role");
+    if (role) {
+        document.getElementById("sidebar-role").innerText = role.toLowerCase();
+    }
+
+    // ROLE BASED MENU CONTROL
+    if (role === "admin") {
+        document.querySelectorAll(".role-admin").forEach(el => {
+            el.style.display = "block";
+        });
+    }
+
+    if (role === "company") {
+        document.querySelectorAll(".role-company").forEach(el => {
+            el.style.display = "block";
+        });
+    }
+
+</script>
+{% if request.cookies.get('flash_success') %}
+<script>
+    toastr.success("{{ request.cookies.get('flash_success') }}");
+    document.cookie = "flash_success=; Max-Age=0; path=/";
+</script>
+{% endif %}
+{% if request.cookies.get('flash_error') %}
+<script>
+    toastr.error("{{ request.cookies.get('flash_error') }}");
+    document.cookie = "flash_error=; Max-Age=0; path=/";
+</script>
+{% endif %}

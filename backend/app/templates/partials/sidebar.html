@@ -1,0 +1,190 @@
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <div class="sidebar">
+
+        <!-- Brand -->
+        <div class="brand-section">
+            <a href="#" class="user-panel brand-logo d-inline-flex align-items-center">
+                <div class="logo-image">
+
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20px" height="20px" viewBox="0 0 24 24"
+                        class="img-circle brand-img ">
+                        <g>
+                            <path fill="none" d="M0 0h24v24H0z" />
+                            <path
+                                d="M9.827 21.763L14.31 14l3.532 6.117A9.955 9.955 0 0 1 12 22c-.746 0-1.473-.082-2.173-.237zM7.89 21.12A10.028 10.028 0 0 1 2.458 15h8.965L7.89 21.119zM2.05 13a9.964 9.964 0 0 1 2.583-7.761L9.112 13H2.05zm4.109-9.117A9.955 9.955 0 0 1 12 2c.746 0 1.473.082 2.173.237L9.69 10 6.159 3.883zM16.11 2.88A10.028 10.028 0 0 1 21.542 9h-8.965l3.533-6.119zM21.95 11a9.964 9.964 0 0 1-2.583 7.761L14.888 11h7.064z"
+                                fill="#fff" />
+                        </g>
+                    </svg>
+                </div>
+                <div class="info brand-name ">
+                    <span id="sidebar-role"></span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Sidebar -->
+        <nav class="sidebar-nav-menu">
+            <ul class="nav nav-pills nav-sidebar flex-column">
+
+                <!-- Dashboard -->
+                <li class="nav-item role-company" style="display:none;">
+                    <a href="{{ url_for('dashboard_index') }}" class="nav-link d-flex align-items-center
+                        {% if request.url.path.startswith(url_for('dashboard_index').path) %}active{% endif %}">
+                        <div class="sidebar-nav-icon">
+                            <!-- Dashboard SVG -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none">
+                                <path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z"
+                                    fill="currentColor" />
+                            </svg>
+
+                        </div>
+
+                        <p class="mb-0">Dashboard</p>
+                    </a>
+                </li>
+
+                <li class="nav-item role-admin" style="display:none;">
+                    <a href="{{ url_for('dashboard') }}" class="nav-link d-flex align-items-center
+                        {% if request.url.path.startswith(url_for('dashboard').path) %}active{% endif %}">
+                        <div class="sidebar-nav-icon">
+                            <!-- Dashboard SVG -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none">
+                                <path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z"
+                                    fill="currentColor" />
+                            </svg>
+
+                        </div>
+
+                        <p class="mb-0">Dashboard</p>
+                    </a>
+                </li>
+
+
+                <!-- Pickup Sheet -->
+                <li class="nav-item role-admin" style="display:none;">
+                    <a href="{{ url_for('company_list') }}" class="nav-link d-flex align-items-center
+                    {% if request.url.path.startswith(url_for('company_list').path) %}active{% endif %}">
+
+                        <div class="sidebar-nav-icon">
+                            <!-- Company / User SVG -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none">
+                                <path
+                                    d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5Zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5Z"
+                                    fill="currentColor" />
+                            </svg>
+                        </div>
+
+                        <p class="mb-0">Tours & Travel Companies</p>
+                    </a>
+                </li>
+
+                <li class="nav-item role-company" style="display:none;">
+
+                    <a href="{{ url_for('manual_booking_list') }}" class="nav-link d-flex align-items-center
+                    {% if request.url.path.startswith(url_for('manual_booking_list').path) %}active{% endif %}">
+
+
+                        <div class="sidebar-nav-icon">
+                            <!-- Manual Booking SVG -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none">
+                                <path d="M3 4h18v2H3V4zm0 6h18v2H3v-2zm0 6h12v2H3v-2z" fill="currentColor" />
+                            </svg>
+                        </div>
+
+                        <p class="mb-0">Tour Bookings</p>
+                    </a>
+                </li>
+
+                <li class="nav-item role-company" style="display:none;">
+                    <a href="{{ url_for('my_tour_list') }}" class="nav-link d-flex align-items-center
+                    {% if request.url.path.startswith(url_for('my_tour_list').path) %}active{% endif %}">
+
+                        <div class="sidebar-nav-icon">
+                            <!-- Tour Package SVG -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none">
+                                <path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13Z" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <circle cx="12" cy="9" r="2.5" stroke="#fff" stroke-width="2" />
+                            </svg>
+                        </div>
+                        <p class="mb-0">Tour Packages</p>
+                    </a>
+                </li>
+
+                <li class="nav-item role-company" style="display:none;">
+                    <a href="{{ url_for('driver_list') }}" class="nav-link d-flex align-items-center
+                    {% if request.url.path.startswith(url_for('driver_list').path) %}active{% endif %}">
+                        <div class="sidebar-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none">
+                                <g clip-path="url(#clip0_522_53)">
+                                    <path
+                                        d="M23.9456 10.9688L22.6331 7.68753C22.5218 7.40991 22.3296 7.17212 22.0816 7.00497C21.8335 6.83781 21.541 6.749 21.2419 6.75003H18V6.00003C18 5.80112 17.921 5.61035 17.7803 5.4697C17.6397 5.32905 17.4489 5.25003 17.25 5.25003H3C2.60218 5.25003 2.22064 5.40807 1.93934 5.68937C1.65804 5.97067 1.5 6.35221 1.5 6.75003V17.25C1.5 17.6479 1.65804 18.0294 1.93934 18.3107C2.22064 18.592 2.60218 18.75 3 18.75H4.59375C4.75898 19.3953 5.13428 19.9673 5.66048 20.3758C6.18669 20.7842 6.83387 21.0059 7.5 21.0059C8.16613 21.0059 8.81331 20.7842 9.33952 20.3758C9.86573 19.9673 10.241 19.3953 10.4063 18.75H15.0938C15.259 19.3953 15.6343 19.9673 16.1605 20.3758C16.6867 20.7842 17.3339 21.0059 18 21.0059C18.6661 21.0059 19.3133 20.7842 19.8395 20.3758C20.3657 19.9673 20.741 19.3953 20.9063 18.75H22.5C22.8978 18.75 23.2794 18.592 23.5607 18.3107C23.842 18.0294 24 17.6479 24 17.25V11.25C24.0003 11.1536 23.9818 11.0581 23.9456 10.9688ZM18 8.25003H21.2419L22.1419 10.5H18V8.25003ZM3 6.75003H16.5V12.75H3V6.75003ZM7.5 19.5C7.20333 19.5 6.91332 19.4121 6.66665 19.2472C6.41997 19.0824 6.22771 18.8481 6.11418 18.5741C6.00065 18.3 5.97094 17.9984 6.02882 17.7074C6.0867 17.4164 6.22956 17.1491 6.43934 16.9394C6.64912 16.7296 6.91639 16.5867 7.20737 16.5289C7.49834 16.471 7.79994 16.5007 8.07403 16.6142C8.34811 16.7277 8.58238 16.92 8.7472 17.1667C8.91203 17.4133 9 17.7034 9 18C9 18.3979 8.84197 18.7794 8.56066 19.0607C8.27936 19.342 7.89783 19.5 7.5 19.5ZM15.0938 17.25H10.4063C10.241 16.6047 9.86573 16.0328 9.33952 15.6243C8.81331 15.2158 8.16613 14.9941 7.5 14.9941C6.83387 14.9941 6.18669 15.2158 5.66048 15.6243C5.13428 16.0328 4.75898 16.6047 4.59375 17.25H3V14.25H16.5V15.4041C16.1551 15.6034 15.8532 15.8692 15.6119 16.1861C15.3705 16.503 15.1944 16.8646 15.0938 17.25ZM18 19.5C17.7033 19.5 17.4133 19.4121 17.1666 19.2472C16.92 19.0824 16.7277 18.8481 16.6142 18.5741C16.5007 18.3 16.4709 17.9984 16.5288 17.7074C16.5867 17.4164 16.7296 17.1491 16.9393 16.9394C17.1491 16.7296 17.4164 16.5867 17.7074 16.5289C17.9983 16.471 18.2999 16.5007 18.574 16.6142C18.8481 16.7277 19.0824 16.92 19.2472 17.1667C19.412 17.4133 19.5 17.7034 19.5 18C19.5 18.3979 19.342 18.7794 19.0607 19.0607C18.7794 19.342 18.3978 19.5 18 19.5ZM22.5 17.25H20.9063C20.739 16.6063 20.363 16.0362 19.8371 15.629C19.3112 15.2219 18.6651 15.0007 18 15V12H22.5V17.25Z"
+                                        fill="#FFFFFF"></path>
+                                </g>
+                                <defs>
+                                    <clipPath id="clip0_522_53">
+                                        <rect width="24" height="24" fill="white"></rect>
+                                    </clipPath>
+                                </defs>
+                            </svg>
+                        </div>
+                        <p class="mb-0">Drivers</p>
+                    </a>
+                </li>
+
+                <li class="nav-item role-company" style="display:none;">
+                    <a href="{{ url_for('customer_list') }}" class="nav-link d-flex align-items-center
+                    {% if request.url.path.startswith(url_for('customer_list').path) %}active{% endif %}">
+                    <div class="sidebar-nav-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                            viewBox="0 0 16 16">
+                            <path d="M4 9a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v3H4V9z"/>
+                            <path d="M11 3H5l-1 3h8l-1-3z"/>
+                            <path d="M3 6.5A.5.5 0 0 1 3.5 6h9a.5.5 0 0 1 .5.5V8H3V6.5z"/>
+                            <circle cx="5.5" cy="11.5" r="1"/>
+                            <circle cx="10.5" cy="11.5" r="1"/>
+                        </svg>
+                    </div>
+                        <p class="mb-0">Customers</p>
+                    </a>
+                </li>
+
+                <li class="nav-item role-company" style="display:none;">
+                    <a href="{{ url_for('my_profile') }}" class="nav-link d-flex align-items-center">
+
+                        <div class="sidebar-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                    d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5Z" />
+                            </svg>
+                        </div>
+
+                        <p class="mb-0">My Profile</p>
+                    </a>
+                </li>
+
+                <li class="nav-item logout-btn d-flex align-items-center">
+                    <a href="javascript:void(0)" class="nav-link logout-user" data-route="{{ url_for('logout') }}"
+                        data-login-url="{{ url_for('login_page') }}" data-message="Are you sure you want to logout?">
+                        <div class="sidebar-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none">
+                                <path
+                                    d="M11.25 20.25C11.25 20.4489 11.171 20.6397 11.0303 20.7803C10.8897 20.921 10.6989 21 10.5 21H4.5C4.30109 21 4.11032 20.921 3.96967 20.7803C3.82902 20.6397 3.75 20.4489 3.75 20.25V3.75C3.75 3.55109 3.82902 3.36032 3.96967 3.21967C4.11032 3.07902 4.30109 3 4.5 3H10.5C10.6989 3 10.8897 3.07902 11.0303 3.21967C11.171 3.36032 11.25 3.55109 11.25 3.75C11.25 3.94891 11.171 4.13968 11.0303 4.28033C10.8897 4.42098 10.6989 4.5 10.5 4.5H5.25V19.5H10.5C10.6989 19.5 10.8897 19.579 11.0303 19.7197C11.171 19.8603 11.25 20.0511 11.25 20.25ZM21.5306 11.4694L17.7806 7.71937C17.6399 7.57864 17.449 7.49958 17.25 7.49958C17.051 7.49958 16.8601 7.57864 16.7194 7.71937C16.5786 7.86011 16.4996 8.05098 16.4996 8.25C16.4996 8.44902 16.5786 8.63989 16.7194 8.78063L19.1897 11.25H10.5C10.3011 11.25 10.1103 11.329 9.96967 11.4697C9.82902 11.6103 9.75 11.8011 9.75 12C9.75 12.1989 9.82902 12.3897 9.96967 12.5303C10.1103 12.671 10.3011 12.75 10.5 12.75H19.1897L16.7194 15.2194C16.5786 15.3601 16.4996 15.551 16.4996 15.75C16.4996 15.949 16.5786 16.1399 16.7194 16.2806C16.8601 16.4214 17.051 16.5004 17.25 16.5004C17.449 16.5004 17.6399 16.4214 17.7806 16.2806L21.5306 12.5306C21.6004 12.461 21.6557 12.3783 21.6934 12.2872C21.7312 12.1962 21.7506 12.0986 21.7506 12C21.7506 11.9014 21.7312 11.8038 21.6934 11.7128C21.6557 11.6217 21.6004 11.539 21.5306 11.4694Z"
+                                    fill="#FFFFFF"></path>
+                            </svg>
+                        </div>
+                        <p class="mb-0">Logout</p>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+</aside>

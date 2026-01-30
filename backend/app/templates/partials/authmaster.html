@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title or "TourBot" }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="{{ url_for('static', path='assets/dist/img/favicon.ico') }}" sizes="16x16">
+
+    <link rel="stylesheet" href="{{ url_for('static', path='assets/plugins/fontawesome-free/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='assets/dist/css/adminlte.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='assets/plugins/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='assets/dist/css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='assets/plugins/toastr/toastr.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='assets/dist/css/jquery-impromptu.css') }}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="hold-transition login-page">
+    <div class="login-box forgot-password-page login-authentication-page">
+        <div class="login-logo">
+            <a href="javascript::void(0)">
+                <img class="brand-img" src="{{ url_for('static', path='assets/dist/img/brand-logo.png') }}"
+                    alt="logo image">
+
+            </a>
+            <img class="auth-effect-bottom-img"
+                src="{{ url_for('static', path='assets/dist/img/auth-bottom-effect-img.png') }}"
+                alt="auth bottom effect img">
+        </div>
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="{{ url_for('static', path='assets/plugins/jquery/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', path='assets/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', path='assets/dist/js/adminlte.min.js') }}"></script>
+    <script src="{{ url_for('static', path='assets/dist/js/jquery.validate.min.js') }}"></script>
+    <script src="{{ url_for('static', path='assets/plugins/toastr/toastr.min.js') }}"></script>
+    {% if request.cookies.get('flash_error') %}
+    <script>
+        toastr.error("{{ request.cookies.get('flash_error') }}");
+        document.cookie = "flash_error=; Max-Age=0; path=/";
+    </script>
+    {% endif %}
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

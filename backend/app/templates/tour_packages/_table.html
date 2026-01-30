@@ -1,0 +1,115 @@
+<div class="tour-packages-card">
+    {% if tours %}
+    <div class="tour-packages-list">
+        {% for tour in tours %}
+        <div class="tour-packages-item">
+            <div class="tour-card">
+                {# -------- COVER IMAGE -------- #}
+                {% set cover_img = tour.gallery_images | selectattr("image_type", "equalto", "cover") | list %}
+                <div class="tour-cover">
+                    {% if cover_img %}
+                    <img src="{{ url_for('static', path=cover_img[0].image_path) }}" alt="cover">
+                    {% else %}
+                    <div class="no-image">No Image</div>
+                    {% endif %}
+                    <span class="status-badge {{ tour.status }}">
+                        {{ tour.status|capitalize }}
+                    </span>
+                </div>
+
+                <div class="tour-body">
+                    <h5 class="tour-title">{{ tour.title }},{{ tour.city }}</h5>
+                    <div class="tour-meta">
+                        {% if tour.itinerary %}
+                        <hr>
+                        <h6 class="fw-semibold">Itinerary</h6>
+                        <div class="text-muted">
+                            {{ tour.itinerary | safe }}
+                        </div>
+                        {% endif %}
+                        <span class="price">{{tour.currency}} {{ tour.price }}</span>
+                    </div>
+
+                    {# -------- GALLERY -------- #}
+                    {% set gallery_imgs = tour.gallery_images | selectattr("image_type", "equalto", "gallery") | list %}
+                    {% if gallery_imgs %}
+                    <div class="tour-gallery">
+                        {% for img in gallery_imgs[:5] %}
+                        <img src="{{ url_for('static', path=img.image_path) }}" class="gallery-thumb"
+                            data-bs-toggle="modal" data-bs-target="#galleryModal"
+                            data-img="{{ url_for('static', path=img.image_path) }}">
+                        {% endfor %}
+                        {% if gallery_imgs|length > 5 %}
+                        <span class="more-count">+{{ gallery_imgs|length - 5 }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {# -------- ACTIONS -------- #}
+                    <div class="tour-actions">
+
+                        <div class="tour-actions-inner tour-actions-inner-top">
+                            <a href="{{ url_for('tour_package_availability_page', package_id=tour.id) }}"
+                                class="btn btn-submit tour-top-btn">
+                                Availability
+                            </a>
+                            <form method="post" class="tour-top-btn"
+                                action="{{ url_for('autofill_booking_create_page') }}">
+                                <input type="hidden" name="package_id" value="{{ tour.id }}">
+                                {% if travel_date %}
+                                <input type="hidden" name="travel_date" value="{{ travel_date }}">
+                                {% endif %}
+                                <button type="submit" class="btn btn-submit">Book Package</button>
+                            </form>
+                        </div>
+                        <div class="tour-actions-inner tour-actions-inner-bottom">
+                            <a href="{{ url_for('tour_package_edit_page', package_id=tour.id) }}"
+                                class="btn btn-default btn-xs">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 25 24"
+                                    fill="none">
+                                    <path
+                                        d="M21.4343 6.87853L17.2446 2.68978C17.1053 2.55046 16.9399 2.43994 16.7579 2.36453C16.5759 2.28913 16.3808 2.25032 16.1838 2.25032C15.9868 2.25032 15.7917 2.28913 15.6097 2.36453C15.4277 2.43994 15.2623 2.55046 15.1231 2.68978L3.56274 14.2501C3.42285 14.3889 3.31194 14.5541 3.23645 14.7361C3.16097 14.9181 3.12242 15.1134 3.12305 15.3104V19.5001C3.12305 19.8979 3.28109 20.2795 3.56239 20.5608C3.8437 20.8421 4.22523 21.0001 4.62305 21.0001H20.3731C20.572 21.0001 20.7627 20.9211 20.9034 20.7804C21.044 20.6398 21.1231 20.449 21.1231 20.2501C21.1231 20.0512 21.044 19.8604 20.9034 19.7198C20.7627 19.5791 20.572 19.5001 20.3731 19.5001H10.9343L21.4343 9.00009C21.5736 8.8608 21.6841 8.69543 21.7596 8.51342C21.835 8.33141 21.8738 8.13632 21.8738 7.93931C21.8738 7.7423 21.835 7.54722 21.7596 7.36521C21.6841 7.1832 21.5736 7.01782 21.4343 6.87853ZM8.81274 19.5001H4.62305V15.3104L12.8731 7.06041L17.0627 11.2501L8.81274 19.5001ZM18.1231 10.1898L13.9343 6.00009L16.1843 3.75009L20.3731 7.93978L18.1231 10.1898Z"
+                                        fill="black" fill-opacity="1" />
+                                </svg>
+                            </a>
+                            <a href="javascript:void(0)" class="confirm-tour-delete btn btn-sm btn-cancel"
+                                data-route="{{ request.url_for('tour_package_delete', package_id=tour.id) }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 25 24"
+                                    fill="none">
+                                    <path
+                                        d="M20.373 4.50009H16.623V3.75009C16.623 3.15335 16.386 2.58106 15.964 2.1591C15.5421 1.73714 14.9698 1.50009 14.373 1.50009H9.87305C9.27631 1.50009 8.70401 1.73714 8.28206 2.1591C7.8601 2.58106 7.62305 3.15335 7.62305 3.75009V4.50009H3.87305C3.67413 4.50009 3.48337 4.57911 3.34272 4.71976C3.20206 4.86041 3.12305 5.05118 3.12305 5.25009C3.12305 5.449 3.20206 5.63977 3.34272 5.78042C3.48337 5.92107 3.67413 6.00009 3.87305 6.00009H4.62305V19.5001C4.62305 19.8979 4.78108 20.2794 5.06239 20.5608C5.34369 20.8421 5.72522 21.0001 6.12305 21.0001H18.123C18.5209 21.0001 18.9024 20.8421 19.1837 20.5608C19.465 20.2794 19.623 19.8979 19.623 19.5001V6.00009H20.373C20.572 6.00009 20.7627 5.92107 20.9034 5.78042C21.044 5.63977 21.123 5.449 21.123 5.25009C21.123 5.05118 21.044 4.86041 20.9034 4.71976C20.7627 4.57911 20.572 4.50009 20.373 4.50009ZM9.12305 3.75009C9.12305 3.55118 9.20206 3.36041 9.34272 3.21976C9.48337 3.07911 9.67413 3.00009 9.87305 3.00009H14.373C14.572 3.00009 14.7627 3.07911 14.9034 3.21976C15.044 3.36041 15.123 3.55118 15.123 3.75009V4.50009H9.12305V3.75009ZM18.123 19.5001H6.12305V6.00009H18.123V19.5001ZM10.623 9.75009V15.7501C10.623 15.949 10.544 16.1398 10.4034 16.2804C10.2627 16.4211 10.072 16.5001 9.87305 16.5001C9.67413 16.5001 9.48337 16.4211 9.34272 16.2804C9.20206 16.1398 9.12305 15.949 9.12305 15.7501V9.75009C9.12305 9.55118 9.20206 9.36041 9.34272 9.21976C9.48337 9.07911 9.67413 9.00009 9.87305 9.00009C10.072 9.00009 10.2627 9.07911 10.4034 9.21976C10.544 9.36041 10.623 9.55118 10.623 9.75009ZM15.123 9.75009V15.7501C15.123 15.949 15.044 16.1398 14.9034 16.2804C14.7627 16.4211 14.572 16.5001 14.373 16.5001C14.1741 16.5001 13.9834 16.4211 13.8427 16.2804C13.7021 16.1398 13.623 15.949 13.623 15.7501V9.75009C13.623 9.55118 13.7021 9.36041 13.8427 9.21976C13.9834 9.07911 14.1741 9.00009 14.373 9.00009C14.572 9.00009 14.7627 9.07911 14.9034 9.21976C15.044 9.36041 15.123 9.55118 15.123 9.75009Z"
+                                        fill="black" />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        <div class="modal fade" id="availabilityModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered modal-md">
+                <div class="modal-content availability-modal">
+                    <div class="modal-header text-white">
+                        <h5 class="modal-title" id="availabilityTitle">Check Availability</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <input type="text" id="availabilityCalendar" class="form-control">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form id="autoBookingForm" method="post" action="{{ url_for('autofill_booking_create_page') }}"
+            style="display:none;">
+            <input type="hidden" name="package_id" id="auto_package_id">
+            <input type="hidden" name="travel_date" id="auto_travel_date">
+        </form>
+    </div>
+    {% else %}
+    <div class="col-12 text-center no-tours-found">
+        <p>No tour packages found</p>
+    </div>
+    {% endif %}
+</div>

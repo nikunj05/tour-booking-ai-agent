@@ -1,0 +1,115 @@
+<div class="row">
+    <!-- Bookings Chart -->
+    <div class="col-md-6">
+        <div class="card card-outline card-success">
+            <div class="card-header">
+                <h5 class="card-title">Monthly Bookings</h5>
+            </div>
+            <div class="card-body" style="height:300px">
+                <canvas id="bookingChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Chart -->
+    <div class="col-md-6">
+        <div class="card card-outline card-primary">
+            <div class="card-header">
+                <h5 class="card-title">Monthly Revenue</h5>
+            </div>
+            <div class="card-body" style="height:300px">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    fetch("{{ url_for('dashboard_stats') }}")
+        .then(res => res.json())
+        .then(data => {
+
+            const monthNames = [
+                "Jan","Feb","Mar","Apr","May","Jun",
+                "Jul","Aug","Sep","Oct","Nov","Dec"
+            ];
+
+            /* =========================
+               BOOKINGS CHART
+            ========================== */
+            new Chart(document.getElementById('bookingChart'), {
+                type: 'bar',
+                data: {
+                    labels: monthNames,
+                    datasets: [{
+                        label: 'Bookings',
+                        data: data.monthly_bookings_per_year,
+                        backgroundColor: 'rgba(40, 167, 69, 0.85)',
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Bookings'
+                            }
+                        }
+                    }
+                }
+            });
+
+            /* =========================
+               REVENUE CHART
+            ========================== */
+            new Chart(document.getElementById('revenueChart'), {
+                type: 'bar',
+                data: {
+                    labels: monthNames,
+                    datasets: [{
+                        label: 'Revenue (' + data.currency + ')',
+                        data: data.monthly_revenue_per_year,
+                        backgroundColor: 'rgba(0, 123, 255, 0.85)',
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return data.currency + ' ' + context.raw;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Revenue'
+                            }
+                        }
+                    }
+                }
+            });
+
+        })
+        .catch(err => console.error("Dashboard chart error:", err));
+});
+</script>
