@@ -42,6 +42,69 @@ def build_travel_date_buttons():
         ]
     }
 
+def build_vehicle_list(drivers):
+    rows = [
+        {
+            "id": f"DRV_{d['id']}",
+            "title": f"{d['vehicle_type']} ({d['seats']} seats)",
+            # "description": f"{d['vehicle_number']} • Driver: {d['name']}"
+        }
+        for d in drivers
+    ]
+
+    return {
+        "text": "Please select a vehicle for your trip:",
+        "list_data": {
+            "button": "View Vehicles",
+            "sections": [
+                {
+                    "title": "Available Vehicles",
+                    "rows": rows
+                }
+            ]
+        }
+    }
+
+def build_payment_type_buttons(text: str):
+    return {
+        "text": text,
+        "buttons": [
+            {"id": "PAY_FULL", "title": "Full Payment"},
+            {"id": "PAY_40", "title": "Advance Payment 40%"}
+        ]
+    }
+
+BOOKING_SUMMARY_REPLY_PROMPT = """
+🧾 Hey {{guest_name}}, here is your booking summary:
+
+🎫 Package: {{package_name}}
+
+📅 Date: {{travel_date}}
+⏰ Time: {{travel_time}}
+
+👨 Adults: {{adults}}
+👧 Kids: {{kids}}
+
+🚗 Vehicle: {{vehicle_type}}
+📍 Pickup Location: {{pickup_location}}
+
+💰 Total Amount: {{currency}} {{total_amount}}
+
+ℹ️ Driver contact details will be shared after payment confirmation.
+
+💳 How would you like to pay?
+"""
+
+def build_payment_mode_buttons(payable_amount: int, currency: str):
+    print(payable_amount, currency, "function")
+    return {
+        "text": f"Amount to pay now: *{currency} {payable_amount}*\n\nSelect payment mode:",
+        "buttons": [
+            {"id": "PAY_CARD", "title": "Card"},
+            {"id": "PAY_UPI", "title": "UPI"}
+        ]
+    }
+
 BASE_REPLY_PROMPT = """
     You are a WhatsApp tour booking assistant.
 
@@ -127,20 +190,11 @@ Examples:
 • 2,1
 """
 
+ASK_GUEST_NAME_REPLY_PROMPT = "Please enter your good name"
+
 INVALID_PACKAGE_REPLY_PROMPT = "Please select a valid tour package."
 
 INVALID_DATE_REPLY_PROMPT = "Please enter a valid travel date."
 
 INVALID_PAX_REPLY_PROMPT = "Please enter a valid number of adults and kids."
 
-BOOKING_SUMMARY_REPLY_PROMPT = """
-Here is your booking summary. Please confirm.
-
-City: {{city}}
-Package: {{package_name}}
-Date: {{travel_date}}
-Adults: {{adults}}
-Kids: {{kids}}
-
-Reply CONFIRM to continue.
-"""

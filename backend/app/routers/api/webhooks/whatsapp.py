@@ -95,24 +95,20 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
     return {"status": "ok"}
 
 
-# -------------------------------
-# Send WhatsApp Message
-# -------------------------------
-def send_whatsapp_message(
-    phone: str,
-    text: str,
-    buttons: list | None = None,
-    list_data: dict | None = None
-):
+def send_whatsapp_message(phone, text, buttons=None, list_data=None):
     url = f"https://graph.facebook.com/v19.0/{PHONE_NUMBER_ID}/messages"
-
-    payload = {
-        "messaging_product": "whatsapp",
-        "to": phone
+    headers = {
+        "Authorization": f"Bearer {WHATSAPP_TOKEN}",
+        "Content-Type": "application/json"
     }
 
-    # ---------- LIST MESSAGE ----------
+    payload = {"messaging_product": "whatsapp", "to": phone}
+
     if list_data:
+        # ⚠ Validate
+        if not isinstance(list_data, dict) or "button" not in list_data or "sections" not in list_data:
+            print("Invalid list_data:", list_data)
+            return
         payload.update({
             "type": "interactive",
             "interactive": {
@@ -121,43 +117,29 @@ def send_whatsapp_message(
                 "action": list_data
             }
         })
-
-    # ---------- BUTTON MESSAGE ----------
     elif buttons:
+        if not isinstance(buttons, list) or not buttons:
+            print("Invalid buttons:", buttons)
+            return
         payload.update({
             "type": "interactive",
             "interactive": {
                 "type": "button",
                 "body": {"text": text},
-                "action": {
-                    "buttons": [
-                        {
-                            "type": "reply",
-                            "reply": {
-                                "id": btn["id"],
-                                "title": btn["title"]
-                            }
-                        }
-                        for btn in buttons
-                    ]
-                }
+                "action": {"buttons": [
+                    {"type": "reply", "reply": {"id": b["id"], "title": b["title"]}}
+                    for b in buttons
+                ]}
             }
         })
-
-    # ---------- TEXT ONLY ----------
     else:
-        payload.update({
-            "type": "text",
-            "text": {"body": text}
-        })
+        payload.update({"type": "text", "text": {"body": text}})
 
-    headers = {
-        "Authorization": f"Bearer {WHATSAPP_TOKEN}",
-        "Content-Type": "application/json"
-    }
-
-    response = requests.post(url, json=payload, headers=headers)
-    response.raise_for_status()
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        print("WhatsApp API Error:", response.status_code, response.text)
 
 
 @router.post("/test-whatsapp")
