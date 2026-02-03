@@ -63,6 +63,38 @@ def build_package_list_message(city: str, packages: list[dict]) -> dict:
         }
     }
 
+
+def build_vehicle_option_list(options, total_pax):
+    rows = []
+
+    for idx, opt in enumerate(options, start=1):
+        if len(opt["vehicles"]) == 1:
+            v = opt["vehicles"][0]
+            title = f"{v['vehicle_type']} – {v['seats']} seats"
+            desc = f"Vehicle No: {v['vehicle_number']}"
+        else:
+            title = " + ".join(f"{v['vehicle_type']} ({v['seats']})" for v in opt["vehicles"])
+            desc = f"Total seats: {opt['total_seats']}"
+
+        rows.append({
+            "id": f"VEH_OPT_{idx}",
+            "title": title[:24],        # WhatsApp title limit
+            "description": desc[:72]    # WhatsApp description limit
+        })
+
+    return {
+        "text": f"Vehicle options for {total_pax} guests",
+        "list_data": {
+            "button": "Select Vehicle",
+            "sections": [
+                {
+                    "title": "Available Vehicles",   # ✅ shortened to < 24 chars
+                    "rows": rows
+                }
+            ]
+        }
+    }
+
 def build_package_detail_message(package: dict) -> dict:
     return {
         "text": format_package_text(package),
@@ -80,28 +112,7 @@ def build_travel_date_buttons():
         ]
     }
 
-def build_vehicle_list(drivers):
-    rows = [
-        {
-            "id": f"DRV_{d['id']}",
-            "title": f"{d['vehicle_type']} ({d['seats']} seats)",
-            # "description": f"{d['vehicle_number']} • Driver: {d['name']}"
-        }
-        for d in drivers
-    ]
 
-    return {
-        "text": "Please select a vehicle for your trip:",
-        "list_data": {
-            "button": "View Vehicles",
-            "sections": [
-                {
-                    "title": "Available Vehicles",
-                    "rows": rows
-                }
-            ]
-        }
-    }
 
 def build_payment_type_buttons(text: str):
     return {
@@ -142,6 +153,8 @@ def build_payment_mode_buttons(payable_amount: int, currency: str):
             {"id": "PAY_UPI", "title": "UPI"}
         ]
     }
+
+    
 
 def build_booking_confirmation_message(booking):
     driver = booking.driver
@@ -253,7 +266,7 @@ Expected reply:
 ASK_PACKAGE_REPLY_PROMPT = "Please select a tour package."
 
 ASK_TIME_REPLY_PROMPT = """
-⏰ Please enter travel time in *HH:MM AM/PM* format (e.g., 10:00 AM):
+⏰ Please enter pickup time in format (e.g., 10:00 AM):
 """
 
 ASK_PAX_REPLY_PROMPT = """

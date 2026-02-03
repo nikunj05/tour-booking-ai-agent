@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from app.chatbot.states import *
-from app.chatbot.services import filter_packages,get_active_cities,get_available_drivers,create_booking
+from app.chatbot.services import filter_packages,get_active_cities,get_available_drivers,create_booking,build_vehicle_combinations
 from app.models.chat_session import ChatSession, ChatMessage
 
 from app.services.openai_service import (
@@ -17,6 +17,7 @@ from app.chatbot.prompts.intent import (
 )
 
 from app.chatbot.prompts.reply import *
+from app.chatbot.prompts.reply import build_package_list_message, build_package_detail_message
 import phonenumbers
 
 # ------------------------------------------------
@@ -317,25 +318,18 @@ def handle_message(phone: str, text: str, db, company):
         session.data["adults"] = adults
         session.data["kids"] = kids
 
-        # total pax
         total_pax = adults + kids
         session.data["total_pax"] = total_pax
 
         price_per_person = session.data["package_price"]
-        total_amount = price_per_person * adults
-        session.data["total_amount"] = round(total_amount, 2)
+        session.data["total_amount"] = round(price_per_person * adults, 2)
 
-        # move to vehicle selection
-        session.state = ASK_VEHICLE
-        db.commit()
-
-        # fetch available drivers
+        # fetch ALL vehicles
         drivers = get_available_drivers(
             db=db,
             company_id=company.id,
             package_id=session.data["package_id"],
-            travel_date=session.data["travel_date"],
-            total_pax=total_pax
+            travel_date=session.data["travel_date"]
         )
 
         if not drivers:
@@ -343,41 +337,46 @@ def handle_message(phone: str, text: str, db, company):
             save_message(db, session, company, "bot", reply)
             return reply
 
-        session.data["drivers"] = drivers
+        # build combinations
+        options = build_vehicle_combinations(drivers, total_pax)
 
-        reply = build_vehicle_list(drivers)
-        save_message(db, session, company, "bot", reply["text"])
+        if not options:
+            reply = "❌ No suitable vehicle combinations available."
+            save_message(db, session, company, "bot", reply)
+            return reply
+
+        session.data["options"] = options
+        session.state = ASK_VEHICLE
+        db.commit()
+
+        reply = build_vehicle_option_list(options, total_pax)
+        save_message(db, session, company, "bot", reply)
         return reply
-    # ---------- VEHICLE ----------
+
     if state == ASK_VEHICLE:
 
-        if not text.startswith("DRV_"):
-            reply = "Please select a vehicle from the list."
+        if not text.startswith("VEH_OPT_"):
+            reply = "Please select a vehicle option from the list."
             save_message(db, session, company, "bot", reply)
             return reply
 
-        driver_id = int(text.replace("DRV_", ""))
+        index = int(text.replace("VEH_OPT_", "")) - 1
+        options = session.data.get("options", [])
 
-        selected_driver = next(
-            (d for d in session.data["drivers"] if d["id"] == driver_id),
-            None
-        )
-
-        if not selected_driver:
-            reply = "Please select a vehicle from the list."
+        if index < 0 or index >= len(options):
+            reply = "❌ Invalid vehicle option selected."
             save_message(db, session, company, "bot", reply)
             return reply
 
-        session.data["driver_id"] = selected_driver["id"]
-        session.data["vehicle_type"] = selected_driver["vehicle_type"]
-        session.data["vehicle_number"] = selected_driver["vehicle_number"]
+        selected_option = options[index]
 
-        # now go to summary
+        # save selected vehicles (single or combo)
+        session.data["selected_vehicles"] = selected_option["vehicles"]
+
         session.state = ASK_PICKUP_LOCATION
         db.commit()
-        
-        reply = generate_reply(text, {}, ASK_PICKUP_LOCATION_REPLY_PROMPT)
 
+        reply = generate_reply("", {}, ASK_PICKUP_LOCATION_REPLY_PROMPT)
         save_message(db, session, company, "bot", reply)
         return reply
 

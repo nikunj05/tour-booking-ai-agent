@@ -4,6 +4,8 @@ from app.models.driver import Driver
 from app.models.tour_package import TourPackage,TourPackageDriver
 from app.models.customer import Customer
 from decimal import Decimal
+from itertools import combinations
+
 
 def filter_packages(db, company_id: int, city: str):
     query = db.query(TourPackage).filter(
@@ -30,8 +32,32 @@ def get_active_cities(db, company_id: int):
     # Convert [('Dubai',), ('Abu Dhabi',)] → ['Dubai', 'Abu Dhabi']
     return [c[0] for c in cities if c[0]]
 
-def get_available_drivers(db, company_id, package_id, travel_date, total_pax):
-    # 1️⃣ already booked drivers
+def build_vehicle_combinations(drivers, total_pax, max_combo=2):
+    options = []
+
+    # 1️⃣ single vehicle options
+    for d in drivers:
+        if d["seats"] >= total_pax:
+            options.append({
+                "vehicles": [d],
+                "total_seats": d["seats"]
+            })
+
+    # 2️⃣ combo vehicle options (2 vehicles)
+    for combo in combinations(drivers, max_combo):
+        seats = sum(v["seats"] for v in combo)
+        if seats >= total_pax:
+            options.append({
+                "vehicles": list(combo),
+                "total_seats": seats
+            })
+
+    # sort: single first, closest fit
+    options.sort(key=lambda x: (len(x["vehicles"]), x["total_seats"]))
+
+    return options[:5]  # limit list
+
+def get_available_drivers(db, company_id, package_id, travel_date):
     booked_driver_ids = (
         db.query(ManualBooking.driver_id)
         .filter(
@@ -41,33 +67,23 @@ def get_available_drivers(db, company_id, package_id, travel_date, total_pax):
         )
         .all()
     )
+
     booked_driver_ids = [d[0] for d in booked_driver_ids]
 
-    print("booked_driver_ids",booked_driver_ids)
-
-    # 2️⃣ available drivers with enough seats
     drivers = (
         db.query(Driver)
-        .outerjoin(
-            TourPackageDriver,
-            TourPackageDriver.driver_id == Driver.id
-        )
         .filter(
             Driver.company_id == company_id,
             Driver.is_deleted == False,
             ~Driver.id.in_(booked_driver_ids),
-            Driver.seats >= total_pax
+            Driver.seats > 0
         )
-        .distinct()
         .all()
     )
-
-    print("drivers",drivers)
 
     return [
         {
             "id": d.id,
-            "name": d.name,
             "vehicle_type": d.vehicle_type,
             "vehicle_number": d.vehicle_number,
             "seats": d.seats
