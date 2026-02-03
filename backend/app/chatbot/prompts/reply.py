@@ -1,3 +1,11 @@
+from app.utils.text_formate import format_package_text
+
+def fallback():
+    return (
+        "Sorry, I didn’t understand that 🤖\n"
+        "Our team will assist you shortly."
+    )
+
 def build_greeting(company_name: str):
     return {
         "text": (
@@ -32,17 +40,36 @@ def build_city_selection(cities: list[str]) -> dict:
         }
     }
 
-def build_package_list(city: str, packages: list) -> str:
-    msg = f"*Available Tours in {city}*\n\n"
+def build_package_list_message(city: str, packages: list[dict]) -> dict:
+    rows = [
+        {
+            "id": f"PKG_{p['id']}",
+            "title": p["name"],
+            "description": f"{p['currency']} {p['price']}"
+        }
+        for p in packages
+    ]
 
-    for i, p in enumerate(packages, start=1):
-        msg += (
-            f"{i}. *{p['name']}*\n"
-            f"💰 Price: AED {p['price']}\n\n"
-        )
+    return {
+        "text": f"🏷️ Available tours in *{city}*",
+        "list_data": {
+            "button": "View Packages",
+            "sections": [
+                {
+                    "title": "Tour Packages",
+                    "rows": rows
+                }
+            ]
+        }
+    }
 
-    msg += "👉 Reply with the *number* of the tour you want to book."
-    return msg
+def build_package_detail_message(package: dict) -> dict:
+    return {
+        "text": format_package_text(package),
+        "buttons": [
+            {"id": "BOOK_PKG", "title": "Book now"}
+        ]
+    }
 
 def build_travel_date_buttons():
     return {
@@ -134,9 +161,12 @@ def build_booking_confirmation_message(booking):
 Driver will be assigned and shared before pickup.
 """
 
-    travel_time = f" {booking.travel_time}" if booking.travel_time else ""
-
-    return f"""Hey {booking.guest_name}, your booking is confirmed! 🎉
+    travel_time = (
+        f" {booking.travel_time.strftime('%I:%M %p')}"
+        if booking.travel_time
+        else ""
+    )
+    return f"""Hey {booking.customer.guest_name}, your booking is confirmed! 🎉
 
 🧾 *Booking ID:* {booking.id}
 📍 *Package:* {booking.tour_package.title}
@@ -161,6 +191,7 @@ BASE_REPLY_PROMPT = """
     """
 
 NO_CITIES_REPLY_PROMPT = "Sorry, no cities are available right now."
+CITY_FALLBACK_PROMPT = "Please select a city from the list.we not provide tours in this city."
 
 FAQ_REPLY_PROMPT = """
     You are a WhatsApp tour booking assistant.
@@ -173,11 +204,6 @@ FAQ_REPLY_PROMPT = """
     - Ask only ONE question at a time
     - Do NOT explain internal logic
     """
-
-ASK_TRAVEL_DATE_REPLY_PROMPT = """
-    Ask for travel date.
-    """
-
 
 BASE_INTENT_PROMPT = """
     You are an intent & entity extraction engine for a WhatsApp tour booking chatbot.
@@ -226,7 +252,9 @@ Expected reply:
 
 ASK_PACKAGE_REPLY_PROMPT = "Please select a tour package."
 
-ASK_DATE_REPLY_PROMPT = "Please tell me your travel date."
+ASK_TIME_REPLY_PROMPT = """
+⏰ Please enter travel time in *HH:MM AM/PM* format (e.g., 10:00 AM):
+"""
 
 ASK_PAX_REPLY_PROMPT = """
 How many adults and kids are traveling?
@@ -236,6 +264,8 @@ Examples:
 • 2,1
 """
 
+INVALID_TIME_REPLY_PROMPT = "Invalid time format.\n Please enter time as *HH:MM AM/PM* (e.g., 10:00 AM)."
+
 ASK_GUEST_NAME_REPLY_PROMPT = "Please enter your good name"
 
 INVALID_PACKAGE_REPLY_PROMPT = "Please select a valid tour package."
@@ -244,3 +274,6 @@ INVALID_DATE_REPLY_PROMPT = "Please enter a valid travel date."
 
 INVALID_PAX_REPLY_PROMPT = "Please enter a valid number of adults and kids."
 
+ASK_PICKUP_LOCATION_REPLY_PROMPT = "📍 Please share your *pickup location* (hotel name / address)."
+
+INVALID_PICKUP_LOCATION_REPLY_PROMPT = "Please enter a valid pickup location (hotel or address)."

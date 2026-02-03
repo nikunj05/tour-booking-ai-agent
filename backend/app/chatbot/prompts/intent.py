@@ -36,6 +36,7 @@ Extract travel date from user message and convert to format DD-MM-YYYY.
 
 Accepted formats:
 - DD-MM-YYYY
+- DD/MM/YYYY
 - 12th Feb, Feb 12, 2026
 - tomorrow, next Monday, next Friday
 
@@ -50,7 +51,19 @@ Example response:
   "travel_date": "29-01-2026"
 }
 """
+TRAVEL_TIME_EXTRACT_PROMPT = """
+Extract travel time from the message.
 
+Rules:
+- Understand 24h and 12h formats
+- Understand words like morning, evening, night
+- Return null if unclear
+
+Output JSON:
+{
+  "time": "string or null"
+}
+"""
 
 PAX_EXTRACT_PROMPT = """
 Extract number of adults and kids.

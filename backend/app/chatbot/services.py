@@ -95,6 +95,7 @@ def create_booking(
     travel_time=None,
     total_amount,
     advance_amount=0,
+    remaining_amount=0
 ):
     phone = phone.strip()
     country_code = country_code.strip()

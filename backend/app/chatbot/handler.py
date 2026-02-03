@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta
 from app.chatbot.states import *
-from app.chatbot.replies import fallback
 from app.chatbot.services import filter_packages,get_active_cities,get_available_drivers,create_booking
-from app.utils.text_formate import format_package_text
 from app.models.chat_session import ChatSession, ChatMessage
 
 from app.services.openai_service import (
@@ -14,7 +12,8 @@ from app.chatbot.prompts.intent import (
     INTENT_PROMPT,
     CITY_EXTRACT_PROMPT,
     TRAVEL_DATE_EXTRACT_PROMPT,
-    PAX_EXTRACT_PROMPT
+    PAX_EXTRACT_PROMPT,
+    TRAVEL_TIME_EXTRACT_PROMPT
 )
 
 from app.chatbot.prompts.reply import *
@@ -23,13 +22,20 @@ import phonenumbers
 # ------------------------------------------------
 # Save message (user / bot)
 # ------------------------------------------------
-def save_message(db, session, company, sender, text):
+def save_message(db, session, company, sender, message):
+    # ✅ Extract text if message is dict
+    if isinstance(message, dict):
+        message_text = message.get("text", "")
+    else:
+        message_text = message
+
     db.add(ChatMessage(
         session_id=session.id,
         company_id=company.id,
         sender=sender,
-        message=text
+        message=message_text
     ))
+
     session.updated_at = datetime.utcnow()
     db.commit()
 
@@ -44,6 +50,23 @@ def parse_whatsapp_phone(raw_phone: str):
 def change_state(session, state, db):
     session.state = state
     db.commit()
+
+def normalize_time(value: str):
+    try:
+        value = value.upper().strip()
+
+        # 24-hour format → 12-hour
+        if ":" in value and "AM" not in value and "PM" not in value:
+            dt = datetime.strptime(value, "%H:%M")
+            return dt.strftime("%I:%M %p").lstrip("0")
+
+        # Already 12-hour
+        dt = datetime.strptime(value, "%I:%M %p")
+        return dt.strftime("%I:%M %p").lstrip("0")
+
+    except Exception:
+        return None
+
 # ------------------------------------------------
 # Main Handler
 # ------------------------------------------------
@@ -67,22 +90,13 @@ def handle_message(phone: str, text: str, db, company):
         db.commit()
         db.refresh(session)
 
-    # ---------- SAVE USER MESSAGE ----------
-    save_message(db, session, company, "user", text)
-
-    # ---------- RESET ----------
-    if text.lower() in ["menu", "start"]:
-        session.state = GREETING
-        session.data = {}
-        db.commit()
-
+    # ✅ Make sure state is always defined
     state = session.state
-    company_name = getattr(company, "company_name", "our company")
 
     # ---------- GREETING ----------
     if state == GREETING:
-        session.state = CHOOSE_INTENT
-        db.commit()
+        change_state(session, CHOOSE_INTENT, db)
+
         response = build_greeting(company.company_name)
 
         save_message(db, session, company, "bot", response["text"])
@@ -90,25 +104,23 @@ def handle_message(phone: str, text: str, db, company):
 
     # ---------- INTENT ----------
     if state == CHOOSE_INTENT:
-        user_text = text
-
-        if text not in ["book_tour", "ask_question"]:
-            ai = detect_intent_and_extract(user_text, INTENT_PROMPT)
-            intent = ai.get("intent")
+        user_text = text.strip().lower()
+        if text in ["book_tour", "ask_question"]:
+            intent = user_text
         else:
-            intent = text
+            ai_result = detect_intent_and_extract(user_text, INTENT_PROMPT)
+            intent = ai_result.get("intent") or ""
 
         if intent == "book_tour":
             change_state(session, CITY, db)
             cities = get_active_cities(db, company.id)
             if not cities:
-                reply_text = "Sorry, no cities are available right now."
+                reply_text = NO_CITIES_REPLY_PROMPT
                 save_message(db, session, company, "bot", reply_text)
                 return reply_text
-
             response = build_city_selection(cities)
 
-        elif text == "ask_question":
+        elif intent == "ask_question":
             change_state(session, FAQ, db)
             response = {
                 "text": generate_reply(text, {}, FAQ_REPLY_PROMPT)
@@ -122,169 +134,110 @@ def handle_message(phone: str, text: str, db, company):
 
     # ---------- CITY ----------
     if state == CITY:
-        # Button reply comes like: CITY_DUBAI
+        # Get city from button or AI
         if text.startswith("CITY_"):
-            city = text.replace("CITY_", "").title()
+            city = text.replace("CITY_", "")
         else:
-            ai = detect_intent_and_extract(text, CITY_EXTRACT_PROMPT)
-            city = ai.get("city")
+            ai_result = detect_intent_and_extract(text, CITY_EXTRACT_PROMPT)
+            city = ai_result.get("city")
 
+        city = (city or "").strip().title()
         if not city:
-            reply = "❌ Please select a city from the list."
+            reply = CITY_FALLBACK_PROMPT
             save_message(db, session, company, "bot", reply)
             return reply
 
         session.data["city"] = city
 
         packages = filter_packages(db, company.id, city)
-
         if not packages:
-            reply = f"❌ No packages available for {city}."
+            reply = f"No packages available in {city}."
             save_message(db, session, company, "bot", reply)
             return reply
 
-        # Save minimal package data
+        # Save minimal package info
         session.data["packages"] = [
-            {
-                "id": p.id,
-                "name": p.title,
-                "price": float(p.price),
-                "currency": p.currency,
-                "description": p.description,
-                "itinerary": p.itinerary,
-                "excludes": p.excludes,
-            }
+            {"id": p.id, "name": p.title, "price": float(p.price), "currency": p.currency, "itinerary": p.itinerary,"excludes": p.excludes}
             for p in packages
         ]
 
-        session.state = SHOW_PACKAGE
-        db.commit()
+        change_state(session, SHOW_PACKAGE, db)
 
-        # Build WhatsApp LIST
-        rows = [
-            {
-                "id": f"PKG_{p['id']}",
-                "title": p["name"],
-                "description": f"AED {p['price']}"
-            }
-            for p in session.data["packages"]
-        ]
-
-        reply = {
-            "text": f"🏷️ Available tours in *{city}*",
-            "list_data": {
-                "button": "View Packages",
-                "sections": [
-                    {
-                        "title": "Tour Packages",
-                        "rows": rows
-                    }
-                ]
-            }
-        }
-
+        # Build WhatsApp list using helper
+        reply = build_package_list_message(city, session.data["packages"])
         save_message(db, session, company, "bot", reply["text"])
         return reply
 
-
     # ---------- PACKAGE LIST ----------
-    if state == SHOW_PACKAGE:
+    if state in [SHOW_PACKAGE, PACKAGE_DETAIL_ACTION]:
+
         packages = session.data.get("packages", [])
 
-        if not text.startswith("PKG_"):
-            reply = "❌ Please select a package from the list."
-            save_message(db, session, company, "bot", reply)
+        # User selects any package from list
+        if text.startswith("PKG_"):
+            pkg_id = text.replace("PKG_", "")
+
+            selected_package = next(
+                (p for p in packages if str(p["id"]) == pkg_id),
+                None
+            )
+
+            if not selected_package:
+                reply = "Please select a valid package from the list."
+                save_message(db, session, company, "bot", reply)
+                return reply
+
+            # Save selected package
+            session.data["selected_package"] = selected_package
+            change_state(session, PACKAGE_DETAIL_ACTION, db)
+
+            # Show package detail
+            reply = build_package_detail_message(selected_package)
+            save_message(db, session, company, "bot", reply["text"])
             return reply
-
-        pkg_id = text.replace("PKG_", "")
-        selected_package = next(
-            (p for p in packages if str(p["id"]) == pkg_id),
-            None
-        )
-
-        if not selected_package:
-            reply = "❌ Invalid package selection."
-            save_message(db, session, company, "bot", reply)
-            return reply
-
-        # ✅ Save selected package
-        session.data["selected_package"] = selected_package
-        session.state = SHOW_PACKAGE_DETAIL
-        db.commit()
-
-        # 🔁 Force next response
-        state = SHOW_PACKAGE_DETAIL
-
 
     # ---------- PACKAGE DETAIL ----------
     if state == SHOW_PACKAGE_DETAIL:
         p = session.data.get("selected_package")
 
         if not p:
-            session.state = SHOW_PACKAGE
-            db.commit()
-            return "Please select a package."
+            change_state(session, SHOW_PACKAGE, db)
+            reply = "Please select a package from the list."
+            save_message(db, session, company, "bot", reply)
+            return reply
 
-        reply = {
-            "text": format_package_text(p),
-            "buttons": [
-                {"id": "BOOK_PKG", "title": "Book now"},
-                {"id": "BACK_TO_LIST", "title": "Back to list"}
-            ]
-        }
-
-        session.state = PACKAGE_DETAIL_ACTION
-        db.commit()
+        reply = build_package_detail_message(p)
+        change_state(session, PACKAGE_DETAIL_ACTION, db)
 
         save_message(db, session, company, "bot", reply["text"])
         return reply
 
+
     # ---------- DETAIL ACTIONS ----------
     if state == PACKAGE_DETAIL_ACTION:
-        p = session.data.get("selected_package")
 
         if text == "BOOK_PKG":
+            p = session.data.get("selected_package")
+
             session.data.update({
                 "package_id": p["id"],
                 "package_name": p["name"],
                 "package_price": p["price"],
-                "currency": p["currency"]
+                "currency": p["currency"],
+                "itinerary": p["itinerary"],
+                "excludes": p["excludes"]
             })
 
-            session.state = ASK_TRAVEL_DATE
-            db.commit()
+            change_state(session, ASK_TRAVEL_DATE, db)
 
             reply = build_travel_date_buttons()
-            save_message(db, session, company, "bot", reply)
-            return reply
-
-        if text == "BACK_TO_LIST":
-            session.state = SHOW_PACKAGE
-            db.commit()
-
-            rows = [
-                {
-                    "id": f"PKG_{pkg['id']}",
-                    "title": pkg["name"],
-                    "description": f"{pkg['currency']} {pkg['price']}"
-                }
-                for pkg in session.data["packages"]
-            ]
-
-            reply = {
-                "text": f"🏷️ Available tours in *{session.data['city']}*",
-                "list_data": {
-                    "button": "View Packages",
-                    "sections": [
-                        {"title": "Tour Packages", "rows": rows}
-                    ]
-                }
-            }
-
             save_message(db, session, company, "bot", reply["text"])
             return reply
 
-        return "❌ Please use the buttons."
+        # User typed something else → stay in preview mode
+        reply = "👉 You can select another package or tap *Book Now* to continue."
+        save_message(db, session, company, "bot", reply)
+        return reply
 
     # ---------- TRAVEL DATE ----------
     if state == ASK_TRAVEL_DATE:
@@ -310,37 +263,43 @@ def handle_message(phone: str, text: str, db, company):
 
         # ✅ Save travel date
         session.data["travel_date"] = travel_date
-        session.state = ASK_TIME  # Change state here
-        db.commit()
+        change_state(session, ASK_TIME, db)
 
         # ✅ Ask time next
         reply = {
-            "text": "⏰ Please select a travel time or type in *HH:MM AM/PM* format (e.g., 10:00 AM):"
+            "text": generate_reply(text, {}, ASK_TIME_REPLY_PROMPT)
         }
         save_message(db, session, company, "bot", reply["text"])
         return reply
 
     # ---------- TRAVEL TIME ----------
     if state == ASK_TIME:
-        import re
 
-        time_pattern = r'^(0?[1-9]|1[0-2]):[0-5][0-9]\s?(AM|PM|am|pm)$'
+        ai = detect_intent_and_extract(text, TRAVEL_TIME_EXTRACT_PROMPT)
+        extracted_time = ai.get("time")
 
-        if not re.match(time_pattern, text):
-            reply = (
-                "❌ Invalid time format.\n"
-                "Please enter time as *HH:MM AM/PM* (e.g., 10:00 AM)."
-            )
+        if not extracted_time:
+            reply = generate_reply(text, {}, INVALID_TIME_REPLY_PROMPT)
+            save_message(db, session, company, "bot", reply)
+            return reply
+
+        # ✅ Normalize time (22:00 → 10:00 PM)
+        normalized_time = normalize_time(extracted_time)
+
+        if not normalized_time:
+            reply = generate_reply(text, {}, INVALID_TIME_REPLY_PROMPT)
             save_message(db, session, company, "bot", reply)
             return reply
 
         # ✅ Save time
-        session.data["travel_time"] = text.upper()
+        session.data["travel_time"] = normalized_time
         session.state = ASK_PAX
         db.commit()
 
         # ✅ Ask pax ONCE
-        reply = "👨‍👩‍👧‍👦 How many *adults* and *kids* are traveling?"
+        reply = {
+            "text": generate_reply(text, {}, ASK_PAX_REPLY_PROMPT)
+        }
         save_message(db, session, company, "bot", reply)
         return reply
     
@@ -389,12 +348,11 @@ def handle_message(phone: str, text: str, db, company):
         reply = build_vehicle_list(drivers)
         save_message(db, session, company, "bot", reply["text"])
         return reply
-
     # ---------- VEHICLE ----------
     if state == ASK_VEHICLE:
 
         if not text.startswith("DRV_"):
-            reply = "❌ Please select a vehicle from the list."
+            reply = "Please select a vehicle from the list."
             save_message(db, session, company, "bot", reply)
             return reply
 
@@ -406,7 +364,7 @@ def handle_message(phone: str, text: str, db, company):
         )
 
         if not selected_driver:
-            reply = "❌ Invalid vehicle selection."
+            reply = "Please select a vehicle from the list."
             save_message(db, session, company, "bot", reply)
             return reply
 
@@ -418,7 +376,7 @@ def handle_message(phone: str, text: str, db, company):
         session.state = ASK_PICKUP_LOCATION
         db.commit()
         
-        reply = "📍 Please share your *pickup location* (hotel name / address)."
+        reply = generate_reply(text, {}, ASK_PICKUP_LOCATION_REPLY_PROMPT)
 
         save_message(db, session, company, "bot", reply)
         return reply
@@ -427,7 +385,7 @@ def handle_message(phone: str, text: str, db, company):
     if state == ASK_PICKUP_LOCATION:
 
         if len(text) < 3:
-            reply = "❌ Please enter a valid pickup location (hotel or address)."
+            reply = generate_reply(text, {}, INVALID_PICKUP_LOCATION_REPLY_PROMPT)
             save_message(db, session, company, "bot", reply)
             return reply
 
@@ -475,11 +433,12 @@ def handle_message(phone: str, text: str, db, company):
             session.data["payment_type"] = "ADVANCE_40"
 
         else:
-            reply = "❌ Please select a valid payment option."
+            reply = "Please select a valid payment option."
             save_message(db, session, company, "bot", reply)
             return reply
 
         session.data["payable_amount"] = round(payable_amount, 2)
+        session.data["remaining_amount"] = round(session.data["total_amount"] - payable_amount, 2)
         session.state = ASK_PAYMENT_MODE
         db.commit()
             
@@ -493,7 +452,7 @@ def handle_message(phone: str, text: str, db, company):
     if state == ASK_PAYMENT_MODE:
 
         if text not in ["PAY_CARD", "PAY_UPI"]:
-            reply = "❌ Please select a valid payment mode."
+            reply = "Please select a valid payment mode."
             save_message(db, session, company, "bot", reply)
             return reply
 
@@ -529,7 +488,8 @@ def handle_message(phone: str, text: str, db, company):
             travel_date=session.data["travel_date"],
             travel_time=session.data.get("travel_time"),
             total_amount=session.data["total_amount"],
-            advance_amount=session.data.get("paid_amount", 0),
+            advance_amount=session.data.get("payable_amount", 0),
+            remaining_amount=session.data.get("remaining_amount", 0),
         )
 
         session.state = BOOKING_CONFIRMED
