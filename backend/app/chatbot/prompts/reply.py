@@ -11,14 +11,25 @@ def build_greeting(company_name: str):
     }
 
 def build_city_selection(cities: list[str]) -> dict:
-    buttons = [
-        {"id": f"CITY_{city.lower()}", "title": city}
+    rows = [
+        {
+            "id": f"CITY_{city.lower().replace(' ', '_')}",
+            "title": city,
+        }
         for city in cities
     ]
 
     return {
-        "text": "Where would you like to go?\nSelect a city from the options below:",
-        "buttons": buttons,
+        "text": "📍 *Where would you like to go?*\n\nSelect a city from the list below:",
+        "list_data": {
+            "button": "Select City",
+            "sections": [
+                {
+                    "title": "Available Cities",
+                    "rows": rows
+                }
+            ]
+        }
     }
 
 def build_package_list(city: str, packages: list) -> str:
@@ -105,6 +116,38 @@ def build_payment_mode_buttons(payable_amount: int, currency: str):
         ]
     }
 
+def build_booking_confirmation_message(booking):
+    driver = booking.driver
+
+    if driver:
+        driver_details = f"""
+
+🚗 *Driver Details*
+👤 *Name:* {driver.name}
+📞 *Phone:* {driver.country_code}{driver.phone_number}
+🚘 *Vehicle:* {driver.vehicle_type} ({driver.seats} seats) - {driver.vehicle_number}
+"""
+    else:
+        driver_details = f"""
+
+🚗 *Driver Details*
+Driver will be assigned and shared before pickup.
+"""
+
+    travel_time = f" {booking.travel_time}" if booking.travel_time else ""
+
+    return f"""Hey {booking.guest_name}, your booking is confirmed! 🎉
+
+🧾 *Booking ID:* {booking.id}
+📍 *Package:* {booking.tour_package.title}
+📅 *Travel Date:* {booking.travel_date}{travel_time}
+💰 *Amount Paid:* {booking.advance_amount}
+{driver_details}
+
+Thank you for booking with us 🙏
+Have a great trip!
+"""
+
 BASE_REPLY_PROMPT = """
     You are a WhatsApp tour booking assistant.
 
@@ -117,15 +160,18 @@ BASE_REPLY_PROMPT = """
     - Do NOT explain internal logic
     """
 
-ASK_CITY_REPLY_PROMPT = """
-    Ask the user which city they want to travel to for the tour.
+NO_CITIES_REPLY_PROMPT = "Sorry, no cities are available right now."
+
+FAQ_REPLY_PROMPT = """
+    You are a WhatsApp tour booking assistant.
 
     Rules:
-    - Ask only for the city name
-    - Do NOT suggest or list city names
-    - Keep it SHORT and clear
-    - WhatsApp friendly
-    - Use 1 relevant emoji
+    - Keep replies SHORT
+    - Friendly and clear
+    - WhatsApp style
+    - Use SAME language as user
+    - Ask only ONE question at a time
+    - Do NOT explain internal logic
     """
 
 ASK_TRAVEL_DATE_REPLY_PROMPT = """

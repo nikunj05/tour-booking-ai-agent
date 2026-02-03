@@ -40,6 +40,10 @@ def parse_whatsapp_phone(raw_phone: str):
     national_number = str(parsed.national_number)
 
     return country_code, national_number
+
+def change_state(session, state, db):
+    session.state = state
+    db.commit()
 # ------------------------------------------------
 # Main Handler
 # ------------------------------------------------
@@ -86,13 +90,16 @@ def handle_message(phone: str, text: str, db, company):
 
     # ---------- INTENT ----------
     if state == CHOOSE_INTENT:
-        ai = detect_intent_and_extract(text, INTENT_PROMPT)
-        intent = ai.get("intent")
+        user_text = text
+
+        if text not in ["book_tour", "ask_question"]:
+            ai = detect_intent_and_extract(user_text, INTENT_PROMPT)
+            intent = ai.get("intent")
+        else:
+            intent = text
 
         if intent == "book_tour":
-            session.state = CITY
-            db.commit()
-
+            change_state(session, CITY, db)
             cities = get_active_cities(db, company.id)
             if not cities:
                 reply_text = "Sorry, no cities are available right now."
@@ -101,10 +108,8 @@ def handle_message(phone: str, text: str, db, company):
 
             response = build_city_selection(cities)
 
-        elif intent == "ask_question":
-            session.state = FAQ
-            db.commit()
-
+        elif text == "ask_question":
+            change_state(session, FAQ, db)
             response = {
                 "text": generate_reply(text, {}, FAQ_REPLY_PROMPT)
             }
@@ -506,7 +511,7 @@ def handle_message(phone: str, text: str, db, company):
         return reply
 
     if state == PAYMENT_SUCCESS:
-        raw_phone = phone  
+        raw_phone = phone
         country_code, national_phone = parse_whatsapp_phone(raw_phone)
 
         booking = create_booking(
@@ -515,7 +520,7 @@ def handle_message(phone: str, text: str, db, company):
             guest_name=session.data["guest_name"],
             country_code=country_code,
             phone=national_phone,
-            email=session.data.get("email", None),
+            email=session.data.get("email"),
             adults=session.data.get("adults", 1),
             kids=session.data.get("kids", 0),
             pickup_location=session.data.get("pickup_location"),
@@ -530,13 +535,8 @@ def handle_message(phone: str, text: str, db, company):
         session.state = BOOKING_CONFIRMED
         db.commit()
 
-        return f"""✅ *Booking Confirmed!*
-
-    🧾 Booking ID: {booking.id}
-    📍 Package: {booking.tour_package.title}
-    📅 Date: {booking.travel_date}
-    💰 Paid: {booking.advance_amount}
-    """
+        message = build_booking_confirmation_message(booking)
+        return message
 
     # ---------- FALLBACK ----------
     reply = fallback()
