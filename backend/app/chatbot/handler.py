@@ -483,13 +483,14 @@ def handle_message(phone: str, text: str, db, company):
             kids=session.data.get("kids", 0),
             pickup_location=session.data.get("pickup_location"),
             tour_package_id=session.data["package_id"],
-            driver_id=session.data.get("driver_id"),
+            vehicles=session.data.get("selected_vehicles", []),
             travel_date=session.data["travel_date"],
             travel_time=session.data.get("travel_time"),
             total_amount=session.data["total_amount"],
             advance_amount=session.data.get("payable_amount", 0),
             remaining_amount=session.data.get("remaining_amount", 0),
         )
+
 
         session.state = BOOKING_CONFIRMED
         db.commit()

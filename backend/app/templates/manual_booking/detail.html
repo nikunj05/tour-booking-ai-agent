@@ -80,45 +80,67 @@
       </div>
 
       <!-- RIGHT: DRIVER -->
-      <div class="col-lg-5">
-        <div class="card shadow-sm rounded-3 p-3">
-          <h6 class="text-muted mb-3">Assigned Driver</h6>
+<!-- RIGHT: DRIVERS -->
+<div class="col-lg-5">
+  <div class="card shadow-sm rounded-3 p-3">
+    <h6 class="text-muted mb-3">Assigned Vehicles & Drivers</h6>
 
-          {% if booking.driver %}
-          {% if booking.driver.image %}
-          <div class="rounded-circle overflow-hidden mb-2" style="width:100px; height:100px;">
-            <img src="{{ url_for('static', path=booking.driver.image) }}" class="img-fluid h-100 w-100"
-              style="object-fit: cover;" alt="{{ booking.driver.name }}">
-          </div>
-          {% else %}
-          <div class="rounded-circle bg-secondary assigned-driver-profile-img text-white
-                          d-flex justify-content-center align-items-center
-                          mx-auto mb-2 fw-bold fs-5" style="width:100px; height:100px;">
-            {{ booking.driver.name[:2]|upper }}
-          </div>
-          {% endif %}
+    {% if booking.vehicles %}
+      <div class="row">
+        {% for bv in booking.vehicles %}
+          {% set driver = bv.driver %}
+          <div class="col-md-6 mb-3">
+            <div class="border rounded-3 p-3 h-100 text-center">
 
-          <div class="fw-bold ">
-            {{ booking.driver.name }}
-          </div>
-          <span class="text-muted d-block ">
-            <i class="fas fa-phone-alt text-dark me-2"></i> {{ booking.driver.phone_number }}
-          </span>
-          <span class="text-muted d-block ">
-            <i class="fas fa-car text-dark me-2"></i> {{ booking.driver.vehicle_type }}
-            ({{ booking.driver.vehicle_number or '-' }})
-          </span>
-          <span class="text-muted d-block ">
-            <i class="fas fa-chair text-dark me-2"></i> Seats: {{ booking.driver.seats or '-' }}
-          </span>
+              {% if driver %}
+                {% if driver.image %}
+                  <div class="rounded-circle overflow-hidden mx-auto mb-2"
+                       style="width:70px; height:70px;">
+                    <img src="{{ url_for('static', path=driver.image) }}"
+                         class="img-fluid h-100 w-100"
+                         style="object-fit: cover;"
+                         alt="{{ driver.name }}">
+                  </div>
+                {% else %}
+                  <div class="rounded-circle bg-secondary text-white
+                              d-flex justify-content-center align-items-center
+                              mx-auto mb-2 fw-bold"
+                       style="width:70px; height:70px;">
+                    {{ driver.name[:2]|upper }}
+                  </div>
+                {% endif %}
 
-          {% else %}
-          <span class="text-muted d-block ">
-            No driver assigned
-          </span>
-          {% endif %}
-        </div>
+                <div class="fw-bold">
+                  {{ driver.name }}
+                </div>
+
+                <div class="text-muted small">
+                  <i class="fas fa-phone-alt me-1"></i>
+                  {{ driver.country_code }}{{ driver.phone_number }}
+                </div>
+
+                <div class="text-muted small">
+                  <i class="fas fa-car me-1"></i>
+                  {{ driver.vehicle_type }}
+                </div>
+
+                <div class="text-muted small">
+                  <i class="fas fa-chair me-1"></i>
+                  Seats: {{ bv.seats }}
+                </div>
+              {% else %}
+                <span class="text-muted">Driver not available</span>
+              {% endif %}
+
+            </div>
+          </div>
+        {% endfor %}
       </div>
+    {% else %}
+      <span class="text-muted">No vehicle assigned</span>
+    {% endif %}
+  </div>
+</div>
 
     </div>
 

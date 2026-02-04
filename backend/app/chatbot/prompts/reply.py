@@ -167,21 +167,25 @@ def build_payment_mode_buttons(payable_amount: int, currency: str):
     
 
 def build_booking_confirmation_message(booking):
-    driver = booking.driver
+    drivers = [bd.driver for bd in booking.vehicles]
 
-    if driver:
-        driver_details = f"""
-
-🚗 *Driver Details*
-👤 *Name:* {driver.name}
+    if drivers:
+        driver_lines = []
+        for idx, driver in enumerate(drivers, start=1):
+            driver_lines.append(
+                f"""
+🚗 *Vehicle {idx}*
+👤 *Driver:* {driver.name}
 📞 *Phone:* {driver.country_code}{driver.phone_number}
 🚘 *Vehicle:* {driver.vehicle_type} ({driver.seats} seats) - {driver.vehicle_number}
 """
-    else:
-        driver_details = f"""
+            )
 
+        driver_details = "\n".join(driver_lines)
+    else:
+        driver_details = """
 🚗 *Driver Details*
-Driver will be assigned and shared before pickup.
+Drivers will be assigned and shared before pickup.
 """
 
     travel_time = (
@@ -189,11 +193,13 @@ Driver will be assigned and shared before pickup.
         if booking.travel_time
         else ""
     )
+
     return f"""Hey {booking.customer.guest_name}, your booking is confirmed! 🎉
 
 🧾 *Booking ID:* {booking.id}
 📍 *Package:* {booking.tour_package.title}
 📅 *Travel Date:* {booking.travel_date}{travel_time}
+📍 *Pickup Location:* {booking.pickup_location}
 💰 *Amount Paid:* {booking.advance_amount}
 {driver_details}
 

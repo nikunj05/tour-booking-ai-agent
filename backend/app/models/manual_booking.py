@@ -28,11 +28,6 @@ class ManualBooking(Base):
         ForeignKey("tour_packages.id"),
         nullable=False
     )
-    driver_id = Column(
-        Integer,
-        ForeignKey("drivers.id"),
-        nullable=True    
-    )
     customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True)
     travel_date = Column(Date, nullable=False)
     travel_time = Column(Time, nullable=True)
@@ -48,5 +43,33 @@ class ManualBooking(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     tour_package = relationship("TourPackage")
-    driver = relationship("Driver", back_populates="bookings")
     customer = relationship("Customer", back_populates="bookings")
+    vehicles = relationship(
+        "BookingVehicle",
+        back_populates="booking",
+        cascade="all, delete-orphan"
+    )
+
+class BookingVehicle(Base):
+    __tablename__ = "booking_vehicles"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    booking_id = Column(
+        Integer,
+        ForeignKey("manual_bookings.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    driver_id = Column(
+        Integer,
+        ForeignKey("drivers.id"),
+        nullable=False
+    )
+
+    seats = Column(Integer, nullable=False)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    booking = relationship("ManualBooking", back_populates="vehicles")
+    driver = relationship("Driver")

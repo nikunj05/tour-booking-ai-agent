@@ -1,11 +1,10 @@
 from sqlalchemy import distinct
-from app.models.manual_booking import ManualBooking
+from app.models.manual_booking import ManualBooking,BookingVehicle
 from app.models.driver import Driver
 from app.models.tour_package import TourPackage,TourPackageDriver
 from app.models.customer import Customer
 from decimal import Decimal
 from itertools import combinations
-
 
 def filter_packages(db, company_id: int, city: str):
     query = db.query(TourPackage).filter(
@@ -59,12 +58,13 @@ def build_vehicle_combinations(drivers, total_pax, max_combo=2):
 
 def get_available_drivers(db, company_id, package_id, travel_date):
     booked_driver_ids = (
-        db.query(ManualBooking.driver_id)
+        db.query(BookingVehicle.driver_id)
+        .join(ManualBooking, ManualBooking.id == BookingVehicle.booking_id)
         .filter(
             ManualBooking.travel_date == travel_date,
-            ManualBooking.driver_id.isnot(None),
             ManualBooking.is_deleted == False
         )
+        .distinct()
         .all()
     )
 
@@ -106,7 +106,7 @@ def create_booking(
     kids=0,
     pickup_location=None,
     tour_package_id,
-    driver_id=None,
+    vehicles=None,  
     travel_date,
     travel_time=None,
     total_amount,
@@ -140,21 +140,37 @@ def create_booking(
         db.commit()
         db.refresh(customer)
 
-    # ✅ Driver conflict check
-    if driver_id:
+    normalized = []
+    for v in vehicles or []:
+        if isinstance(v, dict):
+            normalized.append({
+                "driver_id": v["id"],
+                "seats": v["seats"]
+            })
+        else:
+            normalized.append({
+                "driver_id": v,
+                "seats": 0
+            })
+
+    driver_ids = [v["driver_id"] for v in normalized]
+
+    # ✅ Availability check
+    if driver_ids:
         conflict = (
-            db.query(ManualBooking)
+            db.query(BookingVehicle)
+            .join(ManualBooking)
             .filter(
-                ManualBooking.driver_id == driver_id,
+                BookingVehicle.driver_id.in_(driver_ids),
                 ManualBooking.travel_date == travel_date,
                 ManualBooking.is_deleted == False
             )
             .first()
         )
         if conflict:
-            raise ValueError("Selected driver is already booked for this date.")
+            raise ValueError("One or more selected vehicles are already booked for this date.")
 
-    # ✅ Amount calculations
+    # ✅ Amount calculation
     total = to_decimal(total_amount)
     advance = to_decimal(advance_amount)
     remaining = total - advance
@@ -172,7 +188,6 @@ def create_booking(
         kids=kids,
         pickup_location=pickup_location,
         tour_package_id=tour_package_id,
-        driver_id=driver_id,
         travel_date=travel_date,
         travel_time=travel_time,
         total_amount=total,
@@ -185,4 +200,15 @@ def create_booking(
     db.commit()
     db.refresh(booking)
 
+    # ✅ Attach vehicles
+    for v in normalized:
+        db.add(
+            BookingVehicle(
+                booking_id=booking.id,
+                driver_id=v["driver_id"],
+                seats=v["seats"]
+            )
+        )
+
+    db.commit()
     return booking
