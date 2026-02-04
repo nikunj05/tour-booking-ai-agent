@@ -63,7 +63,6 @@ def build_package_list_message(city: str, packages: list[dict]) -> dict:
         }
     }
 
-
 def build_vehicle_option_list(options, total_pax):
     rows = []
 
@@ -104,7 +103,6 @@ def build_vehicle_option_list(options, total_pax):
         }
     }
 
-
 def build_package_detail_message(package: dict) -> dict:
     return {
         "text": format_package_text(package),
@@ -122,8 +120,6 @@ def build_travel_date_buttons():
         ]
     }
 
-
-
 def build_payment_type_buttons(text: str):
     return {
         "text": text,
@@ -134,17 +130,22 @@ def build_payment_type_buttons(text: str):
     }
 
 BOOKING_SUMMARY_REPLY_PROMPT = """
+IMPORTANT:
+- Do NOT change wording, emojis, spacing, or line breaks.
+- Do NOT add or remove lines.
+- Do NOT rephrase anything.
+- Only replace variables inside {{ }}.
+
 🧾 Hey {{guest_name}}, here is your booking summary:
 
 🎫 Package: {{package_name}}
 
-📅 Date: {{travel_date}}
-⏰ Time: {{travel_time}}
+📅 Date: {{travel_date}} {{travel_time}}
 
 👨 Adults: {{adults}}
 👧 Kids: {{kids}}
 
-🚗 Vehicle: {{vehicle_type}}
+🚗 Vehicles: {{vehicle_type}}
 📍 Pickup Location: {{pickup_location}}
 
 💰 Total Amount: {{currency}} {{total_amount}}
@@ -164,8 +165,6 @@ def build_payment_mode_buttons(payable_amount: int, currency: str):
         ]
     }
 
-    
-
 def build_booking_confirmation_message(booking):
     drivers = [bd.driver for bd in booking.vehicles]
 
@@ -180,7 +179,6 @@ def build_booking_confirmation_message(booking):
 🚘 *Vehicle:* {driver.vehicle_type} ({driver.seats} seats) - {driver.vehicle_number}
 """
             )
-
         driver_details = "\n".join(driver_lines)
     else:
         driver_details = """
@@ -194,7 +192,7 @@ Drivers will be assigned and shared before pickup.
         else ""
     )
 
-    return f"""Hey {booking.customer.guest_name}, your booking is confirmed! 🎉
+    summary_text = f"""Hey {booking.customer.guest_name}, your booking is confirmed! 🎉
 
 🧾 *Booking ID:* {booking.id}
 📍 *Package:* {booking.tour_package.title}
@@ -205,7 +203,30 @@ Drivers will be assigned and shared before pickup.
 
 Thank you for booking with us 🙏
 Have a great trip!
+
+Do you want to change any details?
 """
+
+    # Add Yes/No buttons directly to this message
+    message_with_buttons = {
+        "text": summary_text,
+        "buttons": [
+            {"id": "CHANGE_DETAILS_YES", "title": "Yes"},
+            {"id": "CHANGE_DETAILS_NO", "title": "No"}
+        ]
+    }
+
+    return message_with_buttons
+
+
+def build_change_details_buttons():
+    return {
+        "text": f"Your detail has been updated ✅. Do you want to change anything else?",
+        "buttons": [
+            {"id": "CHANGE_DETAILS_YES", "title": "Yes"},
+            {"id": "CHANGE_DETAILS_NO", "title": "No"}
+        ]
+    }
 
 BASE_REPLY_PROMPT = """
     You are a WhatsApp tour booking assistant.
@@ -249,36 +270,6 @@ BASE_INTENT_PROMPT = """
     Return ONLY valid JSON.
     """
 
-SHOW_PACKAGES_REPLY_PROMPT = """
-You are a WhatsApp tour booking assistant.
-
-Rules:
-- Show available tour packages for the selected city.
-- Packages will be provided in the context as a list of dictionaries with fields: id, name, price.
-- Format the reply clearly and user-friendly.
-- Number each package starting from 1.
-- Include name and price.
-- End with instruction: "Reply with the package number to select."
-
-Example context:
-{
-    "city": "Dubai",
-    "packages": [
-        {"id": 1, "name": "Desert Safari", "price": 150},
-        {"id": 2, "name": "City Tour", "price": 120}
-    ]
-}
-
-Expected reply:
-
-🏙️ Tours available in Dubai:
-
-1. Desert Safari – AED 150
-2. City Tour – AED 120
-
-👉 Reply with the package number to select.
-"""
-
 ASK_PACKAGE_REPLY_PROMPT = "Please select a tour package."
 
 ASK_TIME_REPLY_PROMPT = """
@@ -306,3 +297,34 @@ INVALID_PAX_REPLY_PROMPT = "Please enter a valid number of adults and kids."
 ASK_PICKUP_LOCATION_REPLY_PROMPT = "📍 Please share your *pickup location* (hotel name / address)."
 
 INVALID_PICKUP_LOCATION_REPLY_PROMPT = "Please enter a valid pickup location (hotel or address)."
+
+EXTRACT_UPDATE_FIELD_PROMPT = """
+You are a helpful assistant for a travel booking system. 
+The user may respond with text indicating which booking detail they want to change. 
+The possible fields that can be updated are:
+
+- guest_name
+- pickup_location
+- travel_time
+
+Your task: 
+
+1. Identify **exactly one field** the user wants to update.  
+2. Extract the new value the user wants for that field.  
+3. Return the result strictly in JSON format like this:
+
+{
+  "field": "<field_name>",
+  "value": "<new_value>"
+}
+
+Do not include any extra text, explanation, or formatting.  
+If you cannot determine a valid field or value, return:
+
+{
+  "field": null,
+  "value": null
+}
+
+User message: "{user_message}"
+"""

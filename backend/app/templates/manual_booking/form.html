@@ -127,20 +127,20 @@
                     </div>
 
                     <div class="row">
-
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Driver</label>
-                            <select name="driver_id" class="form-select select2" data-placeholder="Search driver">
-                                <option value=""></option>
+                            <label class="form-label fw-semibold">Vehicles / Drivers</label>
+                            <select name="driver_ids[]" class="form-select select2" multiple
+                                data-placeholder="Select vehicle(s)">
                                 {% for driver in drivers %}
-                                <option value="{{ driver.id }}" {% if booking and booking.driver_id==driver.id
-                                    %}selected{% endif %}>
+                                <option value="{{ driver.id }}" {% if booking and driver.id in booking.vehicles |
+                                    map(attribute='driver_id' ) | list %} selected {% endif %}>
                                     {{ driver.name }} —
-                                    {{ driver.vehicle_type }} {{driver.seats}} seats ({{ driver.vehicle_number }})
+                                    {{ driver.vehicle_type }} {{ driver.seats }} seats ({{ driver.vehicle_number }})
                                 </option>
                                 {% endfor %}
                             </select>
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Pickup Location</label>
                             <input type="text" name="pickup_location" class="form-control"
@@ -186,7 +186,6 @@
 {% endblock %}
 
 {% block extra_js %}
-
 <script>
     $(document).ready(function () {
         /* Validation */
@@ -344,54 +343,54 @@
             loadAvailableDrivers();
         });
 
-function loadAvailableDrivers() {
-    const packageId = $('[name="tour_package_id"]').val();
-    const travelDate = $('[name="travel_date"]').val();
-    const driverSelect = $('[name="driver_id"]');
+    function loadAvailableDrivers() {
+        const packageId = $('[name="tour_package_id"]').val();
+        const travelDate = $('[name="travel_date"]').val();
+        const driverSelect = $('[name="driver_ids[]"]');
 
-    if (!packageId || !travelDate) return;
+        if (!packageId || !travelDate) return;
 
-    const url = $('#showAllDrivers').is(':checked')
-        ? `/manual-bookings/all-drivers/${packageId}/${travelDate}`
-        : `/manual-bookings/available-drivers/${packageId}/${travelDate}`;
+        // keep selected drivers
+        const selectedDriverIds = driverSelect.val() || [];
 
-    const currentDriver = {
-        id: "{{ booking.driver.id if booking and booking.driver else '' }}",
-        text: "{{ booking.driver.name if booking and booking.driver else '' }} — {{ booking.driver.vehicle_type if booking and booking.driver else '' }} {{ booking.driver.seats if booking and booking.driver else '' }} seats ({{ booking.driver.vehicle_number if booking and booking.driver else '' }})"
-    };
+        let url;
+        const bookingId = "{{ booking.id if booking else '' }}";
 
-    fetch(url)
-        .then(res => res.json())
-        .then(data => {
-            driverSelect.empty().append('<option value=""></option>');
+        if ($('#showAllDrivers').is(':checked')) {
+            url = `/manual-bookings/all-drivers/${packageId}/${travelDate}`;
+        } else {
+            url = `/manual-bookings/available-drivers/${packageId}/${travelDate}`;
 
-            let found = false;
-
-            data.forEach(d => {
-                const selected = currentDriver.id == d.id;
-                if (selected) found = true;
-
-                driverSelect.append(
-                    `<option value="${d.id}" ${selected ? 'selected' : ''}>
-                        ${d.name} — ${d.vehicle_type} ${d.seats} seats (${d.vehicle_number})
-                    </option>`
-                );
-            });
-
-            // 🔥 If editing & current driver not in API → force inject
-            if (currentDriver.id && !found) {
-                const option = new Option(
-                    currentDriver.text,
-                    currentDriver.id,
-                    true,
-                    true
-                );
-                driverSelect.append(option);
+            // ✅ only append booking_id in EDIT mode
+            if (bookingId) {
+                url += `?booking_id=${bookingId}`;
             }
+        }
 
-            driverSelect.trigger('change.select2');
-        });
-}
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                driverSelect.empty();
+
+                data.forEach(d => {
+                    const isSelected = selectedDriverIds
+                        .map(String)
+                        .includes(String(d.id));
+
+                    const option = new Option(
+                        `${d.name} — ${d.vehicle_type} ${d.seats} seats (${d.vehicle_number})`,
+                        d.id,
+                        isSelected,
+                        isSelected
+                    );
+
+                    driverSelect.append(option);
+                });
+
+                driverSelect.trigger('change');
+            });
+    }
+
 
 
         $('[name="tour_package_id"], [name="travel_date"]').on(
@@ -414,6 +413,10 @@ function loadAvailableDrivers() {
 
         $(document).ready(function () {
             calculateRemaining();
+        });
+
+        $('#manual-booking-form').on('submit', function () {
+            $('[name="driver_ids[]"]').trigger('change');
         });
     });
 </script>

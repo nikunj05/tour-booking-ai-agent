@@ -128,7 +128,11 @@ def create_booking(
         .first()
     )
 
-    if not customer:
+    if customer:
+        customer.guest_name = guest_name
+        customer.email = email
+
+    else:
         customer = Customer(
             company_id=company.id,
             guest_name=guest_name,
@@ -137,8 +141,9 @@ def create_booking(
             email=email,
         )
         db.add(customer)
-        db.commit()
-        db.refresh(customer)
+
+    db.commit()
+    db.refresh(customer)
 
     normalized = []
     for v in vehicles or []:

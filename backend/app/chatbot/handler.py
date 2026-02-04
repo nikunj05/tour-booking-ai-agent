@@ -1,7 +1,9 @@
-from datetime import datetime, timedelta
+from datetime import datetime,timedelta
+
 from app.chatbot.states import *
 from app.chatbot.services import filter_packages,get_active_cities,get_available_drivers,create_booking,build_vehicle_combinations
 from app.models.chat_session import ChatSession, ChatMessage
+from app.models.manual_booking import ManualBooking
 
 from app.services.openai_service import (
     detect_intent_and_extract,
@@ -24,17 +26,16 @@ import phonenumbers
 # Save message (user / bot)
 # ------------------------------------------------
 def save_message(db, session, company, sender, message):
-    # ✅ Extract text if message is dict
     if isinstance(message, dict):
-        message_text = message.get("text", "")
+        text = message.get("text", "")
     else:
-        message_text = message
+        text = message
 
     db.add(ChatMessage(
         session_id=session.id,
         company_id=company.id,
         sender=sender,
-        message=message_text
+        message=text
     ))
 
     session.updated_at = datetime.utcnow()
@@ -75,12 +76,14 @@ def handle_message(phone: str, text: str, db, company):
     text = text.strip()
 
     # ---------- SESSION ----------
-    session = db.query(ChatSession).filter_by(
-        phone=phone,
-        company_id=company.id
-    ).first()
+    session = (
+        db.query(ChatSession)
+        .filter_by(phone=phone, company_id=company.id)
+        .order_by(ChatSession.updated_at.desc())
+        .first()
+    )
 
-    if not session:
+    if not session or session.state == BOOKING_DONE:
         session = ChatSession(
             phone=phone,
             company_id=company.id,
@@ -213,7 +216,6 @@ def handle_message(phone: str, text: str, db, company):
         save_message(db, session, company, "bot", reply["text"])
         return reply
 
-
     # ---------- DETAIL ACTIONS ----------
     if state == PACKAGE_DETAIL_ACTION:
 
@@ -256,6 +258,8 @@ def handle_message(phone: str, text: str, db, company):
         else:
             ai = detect_intent_and_extract(text, TRAVEL_DATE_EXTRACT_PROMPT)
             travel_date = ai.get("travel_date")
+
+            print(travel_date)
 
             if not travel_date:
                 reply = "Invalid date format.\nPlease enter date as *DD-MM-YYYY*"
@@ -419,7 +423,6 @@ def handle_message(phone: str, text: str, db, company):
         save_message(db, session, company, "bot", reply["text"])
         return reply
 
-
     # ---------- PAYMENT TYPE ----------
     if state == ASK_PAYMENT_TYPE:
 
@@ -491,12 +494,83 @@ def handle_message(phone: str, text: str, db, company):
             remaining_amount=session.data.get("remaining_amount", 0),
         )
 
-
-        session.state = BOOKING_CONFIRMED
+        session.state = CONFIRM_CHANGE_DETAILS
+        session.data["booking_id"] = booking.id
         db.commit()
 
-        message = build_booking_confirmation_message(booking)
-        return message
+        return build_booking_confirmation_message(booking)
+
+    if state == CONFIRM_CHANGE_DETAILS:
+        if text == "CHANGE_DETAILS_YES":
+            # User wants to update details
+            session.state = DETAILS_UPDATE
+            db.commit()
+            return "Please provide the details you want to change."
+
+        elif text == "CHANGE_DETAILS_NO":
+            # User is happy, finalize booking
+            session.state = BOOKING_DONE
+            db.commit()
+            return "Your booking is confirmed ✅. Thank you!"
+        
+        else:
+            # Invalid response
+            return "Please choose Yes or No."
+
+    if state == DETAILS_UPDATE:
+        # Use AI to extract the field and new value from user's message
+        ai_result = detect_intent_and_extract(text, EXTRACT_UPDATE_FIELD_PROMPT)
+        field = ai_result.get("field")
+        new_value = ai_result.get("value")
+
+        print(field,new_value)
+        print(session.data.get("booking_id"))
+
+        # Fetch booking and customer
+        booking = db.query(ManualBooking).filter(ManualBooking.id == session.data.get("booking_id")).first()
+        customer = booking.customer if booking else None
+
+        if not booking or not customer:
+            return "Sorry, I could not find your booking to update."
+
+        # ----------------- Update Customer Table -----------------
+        if field in ["guest_name", "phone", "country_code"] and new_value:
+            setattr(customer, field, new_value)
+            db.commit()
+            session.data[field] = new_value  # update session too
+
+            session.state = CONFIRM_CHANGE_DETAILS
+            db.commit()
+
+            reply = build_change_details_buttons()
+            
+            return reply
+
+        # ----------------- Update ManualBooking Table -----------------
+        elif field == "travel_time" and new_value:
+            # Convert string to time if needed
+            try:
+                from datetime import datetime
+                travel_time_obj = datetime.strptime(new_value, "%H:%M").time()
+                booking.travel_time = travel_time_obj
+                db.commit()
+                session.data[field] = new_value
+            except ValueError:
+                return "Please provide travel time in HH:MM format (e.g., 15:30)."
+
+            session.state = CONFIRM_CHANGE_DETAILS
+            db.commit()
+
+            reply = build_change_details_buttons()
+            return reply
+            
+    # ----------------- Invalid Field -----------------
+    else:
+        return (
+            "Sorry, I could not understand which detail you want to change. "
+            "You can change guest name, phone number, country code, or travel time."
+        )
+
 
     # ---------- FALLBACK ----------
     reply = fallback()
