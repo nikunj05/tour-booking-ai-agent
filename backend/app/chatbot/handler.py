@@ -333,7 +333,7 @@ def handle_message(phone: str, text: str, db, company):
         )
 
         if not drivers:
-            reply = "❌ No vehicles available for your travel date."
+            reply = "No vehicles available for your travel date."
             save_message(db, session, company, "bot", reply)
             return reply
 
@@ -341,7 +341,7 @@ def handle_message(phone: str, text: str, db, company):
         options = build_vehicle_combinations(drivers, total_pax)
 
         if not options:
-            reply = "❌ No suitable vehicle combinations available."
+            reply = "No suitable vehicle combinations available."
             save_message(db, session, company, "bot", reply)
             return reply
 

@@ -68,18 +68,27 @@ def build_vehicle_option_list(options, total_pax):
     rows = []
 
     for idx, opt in enumerate(options, start=1):
+
+        # ---------- SINGLE VEHICLE ----------
         if len(opt["vehicles"]) == 1:
             v = opt["vehicles"][0]
-            title = f"{v['vehicle_type']} – {v['seats']} seats"
-            desc = f"Vehicle No: {v['vehicle_number']}"
+
+            title = v["vehicle_type"]                    
+            desc = f"{v['seats']} seats • {v['vehicle_number']}"
+
+        # ---------- COMBO VEHICLES ----------
         else:
-            title = " + ".join(f"{v['vehicle_type']} ({v['seats']})" for v in opt["vehicles"])
-            desc = f"Total seats: {opt['total_seats']}"
+            # Title: vehicle names only
+            title = " + ".join(v["vehicle_type"] for v in opt["vehicles"])
+
+            # Description: seats breakdown
+            seat_parts = [f"{v['vehicle_type']} {v['seats']}" for v in opt["vehicles"]]
+            desc = f"Total {opt['total_seats']} seats • " + ", ".join(seat_parts)
 
         rows.append({
             "id": f"VEH_OPT_{idx}",
-            "title": title[:24],        # WhatsApp title limit
-            "description": desc[:72]    # WhatsApp description limit
+            "title": title[:24],       
+            "description": desc[:72]     
         })
 
     return {
@@ -88,12 +97,13 @@ def build_vehicle_option_list(options, total_pax):
             "button": "Select Vehicle",
             "sections": [
                 {
-                    "title": "Available Vehicles",   # ✅ shortened to < 24 chars
+                    "title": "Vehicle Options",   # ≤ 24 chars
                     "rows": rows
                 }
             ]
         }
     }
+
 
 def build_package_detail_message(package: dict) -> dict:
     return {
