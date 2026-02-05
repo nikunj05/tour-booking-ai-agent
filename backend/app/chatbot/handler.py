@@ -72,7 +72,7 @@ def normalize_time(value: str):
 # ------------------------------------------------
 # Main Handler
 # ------------------------------------------------
-def handle_message(phone: str, text: str, db, company):
+def handle_message(phone: str, text: str, db, company, flow_data=None):
     text = text.strip()
 
     # ---------- SESSION ----------

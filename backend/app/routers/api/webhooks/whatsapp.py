@@ -59,11 +59,18 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
                 elif msg_type == "interactive":
                     interactive = msg.get("interactive", {})
 
+                    # Button click
                     if interactive.get("type") == "button_reply":
                         text = interactive.get("button_reply", {}).get("id", "")
 
+                    # List selection
                     elif interactive.get("type") == "list_reply":
                         text = interactive.get("list_reply", {}).get("id", "")
+
+                    # ✅ Flow submission
+                    elif interactive.get("type") == "flow_reply":
+                        text = "__FLOW_SUBMIT__"
+                        flow_data = interactive.get("flow_reply", {}).get("response", {})
 
                 if not text:
                     continue
@@ -76,7 +83,13 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
                     print(f"No company found for phone_number_id: {whatsapp_phone_number_id}")
                     continue
 
-                result = handle_message(phone, text, db, company=company)
+                result = handle_message(
+                    phone,
+                    text,
+                    db,
+                    company=company,
+                    flow_data=flow_data if msg_type == "interactive" else None
+                )
                 print(result)
 
                 if isinstance(result, dict):
@@ -84,7 +97,8 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
                         phone=phone,
                         text=result.get("text"),
                         buttons=result.get("buttons"),
-                        list_data=result.get("list_data")
+                        list_data=result.get("list_data"),
+                        flow=result.get("flow")  
                     )
                 else:
                     send_whatsapp_message(
@@ -95,20 +109,43 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
     return {"status": "ok"}
 
 
-def send_whatsapp_message(phone, text, buttons=None, list_data=None):
+def send_whatsapp_message(phone, text, buttons=None, list_data=None, flow=None):
     url = f"https://graph.facebook.com/v19.0/{PHONE_NUMBER_ID}/messages"
     headers = {
         "Authorization": f"Bearer {WHATSAPP_TOKEN}",
         "Content-Type": "application/json"
     }
 
-    payload = {"messaging_product": "whatsapp", "to": phone}
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": phone
+    }
 
-    if list_data:
-        # ⚠ Validate
+    # ✅ FLOW (highest priority)
+    if flow:
+        payload.update({
+            "type": "interactive",
+            "interactive": {
+                "type": "flow",
+                "body": {"text": text},
+                "action": {
+                    "name": "flow",
+                    "parameters": {
+                        "flow_id": flow["flow_id"],
+                        "flow_cta": flow.get("cta", "Continue"),
+                        "flow_action": "navigate",
+                        "flow_action_screen": flow.get("screen", "START")
+                    }
+                }
+            }
+        })
+
+    # ✅ LIST
+    elif list_data:
         if not isinstance(list_data, dict) or "button" not in list_data or "sections" not in list_data:
             print("Invalid list_data:", list_data)
             return
+
         payload.update({
             "type": "interactive",
             "interactive": {
@@ -117,44 +154,41 @@ def send_whatsapp_message(phone, text, buttons=None, list_data=None):
                 "action": list_data
             }
         })
+
+    # ✅ BUTTONS
     elif buttons:
         if not isinstance(buttons, list) or not buttons:
             print("Invalid buttons:", buttons)
             return
+
         payload.update({
             "type": "interactive",
             "interactive": {
                 "type": "button",
                 "body": {"text": text},
-                "action": {"buttons": [
-                    {"type": "reply", "reply": {"id": b["id"], "title": b["title"]}}
-                    for b in buttons
-                ]}
+                "action": {
+                    "buttons": [
+                        {
+                            "type": "reply",
+                            "reply": {
+                                "id": b["id"],
+                                "title": b["title"]
+                            }
+                        } for b in buttons
+                    ]
+                }
             }
         })
+
+    # ✅ TEXT
     else:
-        payload.update({"type": "text", "text": {"body": text}})
+        payload.update({
+            "type": "text",
+            "text": {"body": text}
+        })
 
     try:
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
-    except requests.exceptions.HTTPError as e:
+    except requests.exceptions.HTTPError:
         print("WhatsApp API Error:", response.status_code, response.text)
-
-
-@router.post("/test-whatsapp")
-async def test_whatsapp(db: Session = Depends(get_db)):
-    phone = "+91392957324"
-    text = "hi"
-
-    # Fetch a static company for testing
-    company = db.query(Company).filter_by(
-        id=4
-    ).first()  # Get first company in DB for test
-
-    if not company:
-        return {"error": "No company found in DB. Please add one first."}
-
-    # Call handle_message with static company
-    reply = handle_message(phone, text, db, company=company)
-    return {"reply": reply}

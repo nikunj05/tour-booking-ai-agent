@@ -20,3 +20,6 @@ DETAILS_UPDATE = "details_update"
 BOOKING_DONE = "booking_done"
 FAQ = "FAQ"
 FALLBACK = "FALLBACK"
+
+
+ASK_FLOW_DETAILS = "ASK_FLOW_DETAILS"
