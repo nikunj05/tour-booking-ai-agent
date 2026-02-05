@@ -4,7 +4,7 @@ from app.chatbot.states import *
 from app.chatbot.services import filter_packages,get_active_cities,get_available_drivers,create_booking,build_vehicle_combinations
 from app.models.chat_session import ChatSession, ChatMessage
 from app.models.manual_booking import ManualBooking
-
+from app.services.stripe_service import create_payment_link
 from app.services.openai_service import (
     detect_intent_and_extract,
     generate_reply
@@ -15,7 +15,8 @@ from app.chatbot.prompts.intent import (
     CITY_EXTRACT_PROMPT,
     TRAVEL_DATE_EXTRACT_PROMPT,
     PAX_EXTRACT_PROMPT,
-    TRAVEL_TIME_EXTRACT_PROMPT
+    TRAVEL_TIME_EXTRACT_PROMPT,
+    GUEST_NAME_EXTRACT_PROMPT
 )
 
 from app.chatbot.prompts.reply import *
@@ -87,7 +88,7 @@ def handle_message(phone: str, text: str, db, company):
         session = ChatSession(
             phone=phone,
             company_id=company.id,
-            state=GREETING,
+            state=ASK_GUEST_NAME,
             data={}
         )
         db.add(session)
@@ -97,13 +98,30 @@ def handle_message(phone: str, text: str, db, company):
     # ✅ Make sure state is always defined
     state = session.state
 
-    # ---------- GREETING ----------
-    if state == GREETING:
-        change_state(session, CHOOSE_INTENT, db)
+    # ---------- GUEST NAME ----------
+    if state == ASK_GUEST_NAME:
 
-        response = build_greeting(company.company_name)
+        reply = generate_reply(
+            "",
+            session.data,
+            ASK_GUEST_NAME_REPLY_PROMPT
+        )
+        
+        save_message(db, session, company, "bot", reply)
+        change_state(session, GREETING, db)
+        return reply
+
+    if state == GREETING:
+
+        ai_result = detect_intent_and_extract(text, GUEST_NAME_EXTRACT_PROMPT)
+        guest_name = ai_result.get("guest_name")
+        session.data["guest_name"] = guest_name
+        db.commit()
+
+        response = build_greeting(company.company_name, guest_name)
 
         save_message(db, session, company, "bot", response["text"])
+        change_state(session, CHOOSE_INTENT, db)
         return response
 
     # ---------- INTENT ----------
@@ -244,50 +262,90 @@ def handle_message(phone: str, text: str, db, company):
     # ---------- TRAVEL DATE ----------
     if state == ASK_TRAVEL_DATE:
 
-        travel_date = None
-
-        # ✅ Button clicks
+        # ✅ Button: Today
         if text == "DATE_TODAY":
             travel_date = datetime.now().strftime("%Y-%m-%d")
 
+        # ✅ Button: Tomorrow
         elif text == "DATE_TOMORROW":
             travel_date = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
 
-        # ✅ Manual typed date
-        else:
-            ai = detect_intent_and_extract(text, TRAVEL_DATE_EXTRACT_PROMPT)
-            travel_date = ai.get("travel_date")
+        # ✅ Button: Type Date
+        elif text == "DATE_CUSTOM":
+            change_state(session, ASK_CUSTOM_TRAVEL_DATE, db)
 
-            print(travel_date)
-
-            if not travel_date:
-                reply = "Invalid date format.\nPlease enter date as *DD-MM-YYYY*"
-                save_message(db, session, company, "bot", reply)
-                return reply
-
-        try:
-            travel_date_obj = datetime.strptime(travel_date, "%Y-%m-%d")
-            if travel_date_obj.date() < datetime.now().date():
-                reply = "Please enter a valid future date 🗓️."
-                save_message(db, session, company, "bot", reply)
-                return reply
-
-        except Exception:
-            reply = "Invalid date format. Please enter date as *DD-MM-YYYY*"
+            reply = (
+                "🗓️ Please type your travel date in this format:\n\n"
+                "*DD-MM-YYYY*\n\n"
+                "Example: *15-03-2026*"
+            )
             save_message(db, session, company, "bot", reply)
             return reply
 
-        # ✅ Save travel date
+        else:
+            reply = "Please choose an option below 👇"
+            save_message(db, session, company, "bot", reply)
+            return reply
+
+        # ✅ Save date (Today / Tomorrow)
         session.data["travel_date"] = travel_date
         change_state(session, ASK_TIME, db)
 
-        # ✅ Ask time next
         reply = {
             "text": generate_reply(text, {}, ASK_TIME_REPLY_PROMPT)
         }
         save_message(db, session, company, "bot", reply["text"])
         return reply
 
+    # ---------- CUSTOM TRAVEL DATE ----------
+    if state == ASK_CUSTOM_TRAVEL_DATE:
+
+        ai = detect_intent_and_extract(text, TRAVEL_DATE_EXTRACT_PROMPT)
+        travel_date = ai.get("travel_date")
+
+        print(travel_date)
+
+        if not travel_date:
+            reply = (
+                "❌ Invalid date format.\n\n"
+                "Please enter date as *DD-MM-YYYY*\n"
+                "Example: *15-03-2026*"
+            )
+            save_message(db, session, company, "bot", reply)
+            return reply
+
+        try:
+            # User enters DD-MM-YYYY
+            travel_date_obj = datetime.strptime(text.strip(), "%d-%m-%Y")
+
+            # Convert to standard format for storage
+            travel_date = travel_date_obj.strftime("%Y-%m-%d")
+
+            # Check past date
+            if travel_date_obj.date() < datetime.now().date():
+                reply = "❌ Please enter a future date 🗓️."
+                save_message(db, session, company, "bot", reply)
+                return reply
+
+        except ValueError:
+            reply = (
+                "❌ Invalid date format.\n\n"
+                "Please enter date as *DD-MM-YYYY*\n"
+                "Example: *15-04-2026*"
+            )
+            save_message(db, session, company, "bot", reply)
+            return reply
+
+        # ✅ Save valid date
+        session.data["travel_date"] = travel_date
+        change_state(session, ASK_TIME, db)
+
+        reply = {
+            "text": generate_reply(text, {}, ASK_TIME_REPLY_PROMPT)
+        }
+        save_message(db, session, company, "bot", reply["text"])
+        return reply
+    
     # ---------- TRAVEL TIME ----------
     if state == ASK_TIME:
 
@@ -406,21 +464,6 @@ def handle_message(phone: str, text: str, db, company):
         session.data["pickup_location"] = text
 
         # move to payment summary
-        session.state = ASK_GUEST_NAME
-        db.commit()
-
-        reply = generate_reply(
-            "",
-            session.data,
-            ASK_GUEST_NAME_REPLY_PROMPT
-        )
-        
-        save_message(db, session, company, "bot", reply)
-        return reply
-
-    # ---------- GUEST NAME ----------
-    if state == ASK_GUEST_NAME:
-        session.data["guest_name"] = text.strip()
         session.state = ASK_PAYMENT_TYPE
         db.commit()
 
@@ -470,46 +513,63 @@ def handle_message(phone: str, text: str, db, company):
             return reply
 
         session.data["payment_mode"] = "CARD" if text == "PAY_CARD" else "UPI"
-        # session.state = SEND_PAYMENT_LINK
-        session.state = PAYMENT_SUCCESS
-        db.commit()
 
-        reply = (
-            "🔗 Please complete your payment using the link below:\n\n"
-            "https://example.com/dummy-payment-link\n\n"
-            "⚠️ This is a test link. Live payment will be enabled soon."
-        )
-        save_message(db, session, company, "bot", reply)
-        return reply
-
-    if state == PAYMENT_SUCCESS:
+        # ✅ Create booking FIRST (pending payment)
         raw_phone = phone
         country_code, national_phone = parse_whatsapp_phone(raw_phone)
 
-        booking = create_booking(
-            db=db,
-            company=company,
-            guest_name=session.data["guest_name"],
-            country_code=country_code,
-            phone=national_phone,
-            email=session.data.get("email"),
-            adults=session.data.get("adults", 1),
-            kids=session.data.get("kids", 0),
-            pickup_location=session.data.get("pickup_location"),
-            tour_package_id=session.data["package_id"],
-            vehicles=session.data.get("selected_vehicles", []),
-            travel_date=session.data["travel_date"],
-            travel_time=session.data.get("travel_time"),
-            total_amount=session.data["total_amount"],
-            advance_amount=session.data.get("payable_amount", 0),
-            remaining_amount=session.data.get("remaining_amount", 0),
+        booking_id = session.data.get("booking_id")
+
+        if booking_id:
+            booking = db.query(ManualBooking).get(booking_id)
+        else:
+            raw_phone = phone
+            country_code, national_phone = parse_whatsapp_phone(raw_phone)
+
+            booking = create_booking(
+                db=db,
+                company=company,
+                guest_name=session.data["guest_name"],
+                country_code=country_code,
+                phone=national_phone,
+                email=session.data.get("email"),
+                adults=session.data.get("adults", 1),
+                kids=session.data.get("kids", 0),
+                pickup_location=session.data.get("pickup_location"),
+                tour_package_id=session.data["package_id"],
+                vehicles=session.data.get("selected_vehicles", []),
+                travel_date=session.data["travel_date"],
+                travel_time=session.data.get("travel_time"),
+                total_amount=session.data["total_amount"],
+                advance_amount=session.data["payable_amount"],
+                remaining_amount=session.data["remaining_amount"],
+            )
+
+            session.data["booking_id"] = booking.id
+            db.commit()
+
+        payment_url = create_payment_link(
+            booking=booking,
+            session_id=session.id,
+            amount=session.data["payable_amount"],
+            currency=session.data["currency"],
+            description=f"{session.data['package_name']} Tour Booking"
         )
 
-        session.state = CONFIRM_CHANGE_DETAILS
-        session.data["booking_id"] = booking.id
+        session.data["payment_link"] = payment_url
+        session.state = WAITING_FOR_PAYMENT
         db.commit()
 
-        return build_booking_confirmation_message(booking)
+        reply = (
+                "💳 *Complete Your Payment*\n\n"
+                f"📦 Package: *{session.data['package_name']}*\n"
+                f"💰 Payable Amount: *{session.data['payable_amount']} {session.data['currency'].upper()}*\n\n"
+                f"👉 Click to pay:\n{payment_url}\n\n"
+                "Once payment is done, we’ll confirm your booking ✅"
+            )
+
+        save_message(db, session, company, "bot", reply)
+        return reply
 
     if state == CONFIRM_CHANGE_DETAILS:
         if text == "CHANGE_DETAILS_YES":

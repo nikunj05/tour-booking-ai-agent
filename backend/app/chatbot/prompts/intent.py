@@ -22,6 +22,15 @@ Return JSON:
 }
 """
 
+GUEST_NAME_EXTRACT_PROMPT = """
+Extract guest name from user message.
+
+Return JSON:
+{
+  "guest_name": "string"
+}
+"""
+
 CITY_EXTRACT_PROMPT = """
 Extract city name from user message.
 

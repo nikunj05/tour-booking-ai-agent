@@ -6,10 +6,10 @@ def fallback():
         "Our team will assist you shortly."
     )
 
-def build_greeting(company_name: str):
+def build_greeting(company_name: str, guest_name: str):
     return {
         "text": (
-            f"Hi! Welcome to *{company_name}* ✨\n\n"
+            f"Hi {guest_name}! Welcome to *{company_name}* ✨\n\n"
             "How can I assist you today? Choose an option below:"
         ),
         "buttons": [
@@ -113,10 +113,11 @@ def build_package_detail_message(package: dict) -> dict:
 
 def build_travel_date_buttons():
     return {
-        "text": "📅 When would you like to travel?\n\n👉 Choose an option below\nor type the date (example: *13-05-2026*)",
+        "text": "📅 When would you like to travel?",
         "buttons": [
             {"id": "DATE_TODAY", "title": "Today"},
             {"id": "DATE_TOMORROW", "title": "Tomorrow"},
+            {"id": "DATE_CUSTOM", "title": "Type Date"}
         ]
     }
 
