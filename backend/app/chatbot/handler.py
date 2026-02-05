@@ -237,7 +237,6 @@ def handle_message(phone: str, text: str, db, company):
             save_message(db, session, company, "bot", reply["text"])
             return reply
 
-        # User typed something else → stay in preview mode
         reply = "👉 You can select another package or tap *Book Now* to continue."
         save_message(db, session, company, "bot", reply)
         return reply
@@ -265,6 +264,18 @@ def handle_message(phone: str, text: str, db, company):
                 reply = "Invalid date format.\nPlease enter date as *DD-MM-YYYY*"
                 save_message(db, session, company, "bot", reply)
                 return reply
+
+        try:
+            travel_date_obj = datetime.strptime(travel_date, "%Y-%m-%d")
+            if travel_date_obj.date() < datetime.now().date():
+                reply = "Please enter a valid future date 🗓️."
+                save_message(db, session, company, "bot", reply)
+                return reply
+
+        except Exception:
+            reply = "Invalid date format. Please enter date as *DD-MM-YYYY*"
+            save_message(db, session, company, "bot", reply)
+            return reply
 
         # ✅ Save travel date
         session.data["travel_date"] = travel_date
@@ -550,7 +561,6 @@ def handle_message(phone: str, text: str, db, company):
         elif field == "travel_time" and new_value:
             # Convert string to time if needed
             try:
-                from datetime import datetime
                 travel_time_obj = datetime.strptime(new_value, "%H:%M").time()
                 booking.travel_time = travel_time_obj
                 db.commit()
