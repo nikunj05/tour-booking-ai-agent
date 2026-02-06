@@ -102,13 +102,16 @@ def send_whatsapp_message(phone, text, buttons=None, list_data=None):
         "Content-Type": "application/json"
     }
 
-    payload = {"messaging_product": "whatsapp", "to": phone}
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": phone
+    }
 
     if list_data:
-        # ⚠ Validate
         if not isinstance(list_data, dict) or "button" not in list_data or "sections" not in list_data:
             print("Invalid list_data:", list_data)
             return
+
         payload.update({
             "type": "interactive",
             "interactive": {
@@ -117,26 +120,51 @@ def send_whatsapp_message(phone, text, buttons=None, list_data=None):
                 "action": list_data
             }
         })
-    elif buttons:
-        if not isinstance(buttons, list) or not buttons:
-            print("Invalid buttons:", buttons)
-            return
+
+    elif isinstance(buttons, list) and buttons and buttons[0].get("type") == "url":
+        payload.update({
+            "type": "interactive",
+            "interactive": {
+                "type": "cta_url",
+                "body": {"text": text},
+                "action": {
+                    "name": "cta_url",
+                    "parameters": {
+                        "display_text": buttons[0]["title"],
+                        "url": buttons[0]["url"]
+                    }
+                }
+            }
+        })
+
+    elif isinstance(buttons, list) and buttons:
         payload.update({
             "type": "interactive",
             "interactive": {
                 "type": "button",
                 "body": {"text": text},
-                "action": {"buttons": [
-                    {"type": "reply", "reply": {"id": b["id"], "title": b["title"]}}
-                    for b in buttons
-                ]}
+                "action": {
+                    "buttons": [
+                        {
+                            "type": "reply",
+                            "reply": {
+                                "id": b["id"],
+                                "title": b["title"]
+                            }
+                        } for b in buttons
+                    ]
+                }
             }
         })
+
     else:
-        payload.update({"type": "text", "text": {"body": text}})
+        payload.update({
+            "type": "text",
+            "text": {"body": text}
+        })
 
     try:
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
-    except requests.exceptions.HTTPError as e:
+    except requests.exceptions.HTTPError:
         print("WhatsApp API Error:", response.status_code, response.text)

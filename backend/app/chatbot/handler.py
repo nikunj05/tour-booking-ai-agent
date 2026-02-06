@@ -98,14 +98,19 @@ def handle_message(phone: str, text: str, db, company):
         db.refresh(session)
 
     elif last_session.state == BOOKING_DONE:
+        data = {}
+
+        if last_session.data and last_session.data.get("guest_name"):
+            data["guest_name"] = last_session.data["guest_name"]
+
         session = ChatSession(
             phone=phone,
             company_id=company.id,
             state=GREETING,
-            data={
-                "guest_name": last_session.data.get("guest_name")
-            }
+            data=data
         )
+
+        print("New session created for booking done", session.data)
         db.add(session)
         db.commit()
         db.refresh(session)
@@ -130,13 +135,13 @@ def handle_message(phone: str, text: str, db, company):
         return reply
 
     if state == GREETING:
-
         ai_result = detect_intent_and_extract(text, GUEST_NAME_EXTRACT_PROMPT)
         guest_name = ai_result.get("guest_name")
-        session.data["guest_name"] = guest_name
-        db.commit()
+        if guest_name:
+            session.data["guest_name"] = guest_name
+            db.commit()
 
-        response = build_greeting(company.company_name, guest_name)
+        response = build_greeting(company.company_name, guest_name=session.data.get("guest_name"))
 
         save_message(db, session, company, "bot", response["text"])
         change_state(session, CHOOSE_INTENT, db)
@@ -167,7 +172,7 @@ def handle_message(phone: str, text: str, db, company):
             }
 
         else:
-            response = build_greeting(company.company_name, guest_name)
+            response = build_greeting(company.company_name, guest_name=session.data.get("guest_name"))
 
         save_message(db, session, company, "bot", response["text"])
         return response
@@ -480,7 +485,7 @@ def handle_message(phone: str, text: str, db, company):
         session.data["pickup_location"] = text
 
         # move to payment summary
-        session.state = ASK_PAYMENT_TYPE
+        session.state = ASK_PAYMENT
         db.commit()
 
         summary_text = generate_reply(
@@ -493,54 +498,33 @@ def handle_message(phone: str, text: str, db, company):
         save_message(db, session, company, "bot", reply["text"])
         return reply
 
-    # ---------- PAYMENT TYPE ----------
-    if state == ASK_PAYMENT_TYPE:
+    # ---------- PAYMENT SUMMARY ----------
+    if state == ASK_PAYMENT:
 
-        if text == "PAY_FULL":
-            payable_amount = session.data["total_amount"]
-            session.data["payment_type"] = "FULL"
-
-        elif text == "PAY_40":
-            payable_amount = session.data["total_amount"] * 0.40
-            session.data["payment_type"] = "ADVANCE_40"
-
-        else:
+        if text not in ["PAY_FULL", "PAY_40"]:
             reply = "Please select a valid payment option."
             save_message(db, session, company, "bot", reply)
             return reply
 
+        # Calculate amounts
+        if text == "PAY_FULL":
+            payable_amount = session.data["total_amount"]
+            session.data["payment_type"] = "FULL"
+        else:
+            payable_amount = session.data["total_amount"] * 0.40
+            session.data["payment_type"] = "ADVANCE_40"
+
         session.data["payable_amount"] = round(payable_amount, 2)
         session.data["remaining_amount"] = round(session.data["total_amount"] - payable_amount, 2)
-        session.state = ASK_PAYMENT_MODE
-        db.commit()
-            
-        reply = build_payment_mode_buttons(
-            payable_amount=session.data["payable_amount"],
-            currency=session.data["currency"]
-        )
-        save_message(db, session, company, "bot", reply["text"])
-        return reply
 
-    if state == ASK_PAYMENT_MODE:
-
-        if text not in ["PAY_CARD", "PAY_UPI"]:
-            reply = "Please select a valid payment mode."
-            save_message(db, session, company, "bot", reply)
-            return reply
-
-        session.data["payment_mode"] = "CARD" if text == "PAY_CARD" else "UPI"
-
+        # Create booking if not exists
+        booking_id = session.data.get("booking_id")
         raw_phone = phone
         country_code, national_phone = parse_whatsapp_phone(raw_phone)
-
-        booking_id = session.data.get("booking_id")
 
         if booking_id:
             booking = db.query(ManualBooking).get(booking_id)
         else:
-            raw_phone = phone
-            country_code, national_phone = parse_whatsapp_phone(raw_phone)
-
             booking = create_booking(
                 db=db,
                 company=company,
@@ -559,10 +543,10 @@ def handle_message(phone: str, text: str, db, company):
                 advance_amount=session.data["payable_amount"],
                 remaining_amount=session.data["remaining_amount"],
             )
-
             session.data["booking_id"] = booking.id
             db.commit()
 
+        # Create Stripe payment link
         payment_url = create_payment_link(
             booking=booking,
             session_id=session.id,
@@ -575,16 +559,9 @@ def handle_message(phone: str, text: str, db, company):
         session.state = WAITING_FOR_PAYMENT
         db.commit()
 
-        reply = (
-                "💳 *Complete Your Payment*\n\n"
-                f"📦 Package: *{session.data['package_name']}*\n"
-                f"💰 Payable Amount: *{session.data['payable_amount']} {session.data['currency'].upper()}*\n\n"
-                f"Remaining Amount: *{session.data['remaining_amount']} {session.data['currency'].upper()}*\n\n"
-                f"👉 Click to pay:\n{payment_url}\n\n"
-                "Once payment is done, we’ll confirm your booking ✅"
-            )
-
-        save_message(db, session, company, "bot", reply)
+        # Send summary with button
+        reply = build_payment_summary_button(booking, session)
+        save_message(db, session, company, "bot", reply["text"])
         return reply
 
     if state == WAITING_FOR_PAYMENT:

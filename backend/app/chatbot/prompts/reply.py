@@ -252,6 +252,24 @@ Please tap the button below to retry the payment.
         ]
     }
 
+def build_payment_summary_button(booking, session):
+    return {
+        "text": (
+            f"💳 Payment Summary\n\n"
+            f"📦 Package: {session.data['package_name']}\n"
+            f"💰 Amount to pay: {session.data['payable_amount']} {session.data['currency'].upper()}\n"
+            f"Remaining amount: {session.data['remaining_amount']} {session.data['currency'].upper()}\n\n"
+            "Tap the button below to pay."
+        ),
+        "buttons": [
+            {
+                "type": "url",               
+                "title": "Pay Now",
+                "url": session.data["payment_link"], 
+            }
+        ]
+    }
+
 def build_change_details_buttons():
     return {
         "text": f"Your detail has been updated ✅. Do you want to change anything else?",
@@ -260,6 +278,7 @@ def build_change_details_buttons():
             {"id": "CHANGE_DETAILS_NO", "title": "No"}
         ]
     }
+
 
 BASE_REPLY_PROMPT = """
     You are a WhatsApp tour booking assistant.
