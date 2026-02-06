@@ -4,7 +4,7 @@ from app.models.user import User
 from app.core.security import hash_password
 from app.models.company import Company
 
-SUPER_ADMIN_EMAIL = "admin@gmail.com"
+SUPER_ADMIN_EMAIL = "admin1@gmail.com"
 SUPER_ADMIN_PASSWORD = "12345678"  # change later
 SUPER_ADMIN_ROLE = "admin"
 

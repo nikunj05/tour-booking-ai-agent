@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends,Query, Request, Form
 from sqlalchemy.orm import Session
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from app.database.session import get_db
-from app.models.manual_booking import ManualBooking
+from app.models.manual_booking import ManualBooking,BookingVehicle
 from app.models.tour_package import TourPackage,TourPackageDriver
 from app.models.driver import Driver
 from app.models.customer import Customer
@@ -130,7 +130,7 @@ def create_manual_booking(
     kids: int = Form(...),
     pickup_location: str = Form(None),
     tour_package_id: int = Form(...),
-    driver_id: int = Form(None),
+    driver_ids: List[int] = Form(default=[], alias="driver_ids[]"),
     travel_date: str = Form(...),
     travel_time: str = Form(None),
     total_amount: float = Form(...),
@@ -170,21 +170,22 @@ def create_manual_booking(
         db.refresh(customer)
 
     # ✅ DRIVER CONFLICT CHECK
-    if driver_id:
-        conflict = (
-            db.query(ManualBooking)
+    if driver_ids:
+        conflicts = (
+            db.query(BookingVehicle)
+            .join(ManualBooking)
             .filter(
-                ManualBooking.driver_id == driver_id,
+                BookingVehicle.driver_id.in_(driver_ids),
                 ManualBooking.travel_date == travel_date,
                 ManualBooking.is_deleted == False
             )
-            .first()
+            .all()
         )
 
-        if conflict:
+        if conflicts:
             return flash_redirect(
                 url=request.url_for("manual_booking_create"),
-                message="Selected driver is already booked for this date.",
+                message="One or more selected drivers are already booked for this date.",
                 category="error",
             )
 
@@ -202,7 +203,6 @@ def create_manual_booking(
         kids=kids,
         pickup_location=pickup_location,
         tour_package_id=tour_package_id,
-        driver_id=driver_id,
         travel_date=travel_date,
         travel_time=travel_time,
         total_amount=total_amount,
@@ -214,6 +214,17 @@ def create_manual_booking(
     db.add(booking)
     db.commit()
     db.refresh(booking)
+
+    print("driver_ids", driver_ids)
+    for driver_id in driver_ids:
+        booking_driver = BookingVehicle(
+            booking_id=booking.id,
+            driver_id=driver_id,
+            seats=adults + kids,
+        )
+        db.add(booking_driver)
+
+    db.commit()
 
     # ✅ WhatsApp notification
     try:
@@ -291,7 +302,7 @@ def manual_booking_datatable(
             "travel_details": f"""
                 <strong>{booking.tour_package.title}</strong><br>
                 <i class="fas fa-calendar-alt text-dark"></i> {booking.travel_date.strftime("%d-%m-%Y")}<br>
-                <i class="far fa-clock text-dark"></i> {booking.travel_time or "-"}<br>
+                <i class="far fa-clock text-dark"></i> {booking.travel_time.strftime("%I:%M %p") or "-"}<br>
                 <i class="fas fa-map-marker-alt text-dark"></i> {booking.pickup_location or "-"}
             """,
 
@@ -345,16 +356,19 @@ def edit_manual_booking(
 
     packages = (
         db.query(TourPackage)
-        .filter(TourPackage.is_deleted == False,TourPackage.status == "active")
+        .filter(
+            TourPackage.is_deleted == False,
+            TourPackage.status == "active"
+        )
         .all()
     )
 
-    # 🔹 Drivers already booked on same date (except current booking)
+    # 🔹 Drivers already booked on same date (EXCEPT this booking)
     booked_driver_ids = (
-        db.query(ManualBooking.driver_id)
+        db.query(BookingVehicle.driver_id)
+        .join(ManualBooking)
         .filter(
             ManualBooking.travel_date == booking.travel_date,
-            ManualBooking.driver_id.isnot(None),
             ManualBooking.id != booking.id,
             ManualBooking.is_deleted == False
         )
@@ -362,21 +376,34 @@ def edit_manual_booking(
     )
     booked_driver_ids = [d[0] for d in booked_driver_ids]
 
+    # ✅ Drivers already assigned to THIS booking (important)
+    current_driver_ids = [
+        bv.driver_id for bv in booking.vehicles
+    ]
+
     # 🔹 Drivers assigned to selected package
-    drivers = (
+    query = (
         db.query(Driver)
         .join(TourPackageDriver, TourPackageDriver.driver_id == Driver.id)
         .filter(
             TourPackageDriver.tour_package_id == booking.tour_package_id,
             Driver.company_id == company.id,
             Driver.is_deleted == False,
+        )
+    )
+
+    # 🔹 Exclude booked drivers, but KEEP current booking drivers
+    if booked_driver_ids:
+        query = query.filter(
             or_(
                 ~Driver.id.in_(booked_driver_ids),
-                Driver.id == booking.driver_id
+                Driver.id.in_(current_driver_ids)
             )
         )
-        .all()
-    )
+
+    drivers = query.all()
+
+    print(drivers)
 
     return templates.TemplateResponse(
         "manual_booking/form.html",
@@ -385,7 +412,7 @@ def edit_manual_booking(
             "booking": booking,
             "packages": packages,
             "country_codes": COUNTRY_CODES,
-            "drivers": drivers,   
+            "drivers": drivers,
             "company": company,
         }
     )
@@ -398,7 +425,7 @@ def update_manual_booking(
     adults: int = Form(...),
     kids: int = Form(...),
     tour_package_id: int = Form(...),
-    driver_id: int = Form(None),
+    driver_ids: List[int] = Form(default=[], alias="driver_ids[]"),
     country_code: str = Form(...),
     phone: str = Form(...),
     email: str = Form(None),
@@ -457,24 +484,26 @@ def update_manual_booking(
     db.refresh(customer)
 
     # 3️⃣ Check driver conflict
-    if driver_id:
-        conflict = (
-            db.query(ManualBooking)
+    if driver_ids:
+        conflicts = (
+            db.query(BookingVehicle)
+            .join(ManualBooking)
             .filter(
-                ManualBooking.id != booking_id,
-                ManualBooking.driver_id == driver_id,
+                BookingVehicle.driver_id.in_(driver_ids),
                 ManualBooking.travel_date == travel_date,
+                ManualBooking.id != booking_id,
                 ManualBooking.is_deleted == False
             )
-            .first()
+            .all()
         )
-        if conflict:
+
+        if conflicts:
             return flash_redirect(
                 url=request.url_for(
                     "manual_booking_edit",
                     booking_id=booking_id
                 ),
-                message="Selected driver is already booked for this date.",
+                message="One or more selected drivers are already booked for this date.",
                 category="error",
             )
 
@@ -482,7 +511,6 @@ def update_manual_booking(
     booking.adults = adults
     booking.kids = kids
     booking.tour_package_id = tour_package_id
-    booking.driver_id = driver_id
     booking.pickup_location = pickup_location
     booking.travel_date = travel_date
     booking.travel_time = travel_time
@@ -498,6 +526,19 @@ def update_manual_booking(
 
     db.commit()
 
+    db.query(BookingVehicle).filter(
+        BookingVehicle.booking_id == booking.id
+    ).delete()
+
+    for driver_id in driver_ids:
+        db.add(
+            BookingVehicle(
+                booking_id=booking.id,
+                driver_id=driver_id,
+                seats=adults + kids
+            )
+        )
+    db.commit()
     return flash_redirect(
         url=request.url_for("manual_booking_list"),
         message="Booking updated successfully.",
@@ -570,14 +611,25 @@ def get_booked_dates(
     package_id: int,
     db: Session = Depends(get_db)
 ):
-    # 1️⃣ Total drivers assigned to package
-    total_drivers = (
-        db.query(TourPackageDriver)
+    # 1️⃣ Drivers assigned to THIS package
+    package_driver_ids = (
+        db.query(TourPackageDriver.driver_id)
         .filter(TourPackageDriver.tour_package_id == package_id)
-        .count()
+        .all()
     )
+    package_driver_ids = [d[0] for d in package_driver_ids]
 
-    # 2️⃣ All bookings (for display)
+    total_drivers = len(package_driver_ids)
+
+    if total_drivers == 0:
+        return {
+            "booked_dates": [],
+            "bookings": [],
+            "availability": {},
+            "total_drivers": 0
+        }
+
+    # 2️⃣ All bookings for popup/list
     bookings = (
         db.query(ManualBooking)
         .filter(
@@ -590,22 +642,23 @@ def get_booked_dates(
     bookings_data = []
     for b in bookings:
         bookings_data.append({
-            "id": b.id, 
-            "guest_name": b.customer.guest_name,
+            "id": b.id,
+            "guest_name": b.customer.guest_name if b.customer else "",
             "pickup_location": b.pickup_location or "",
             "travel_date": b.travel_date.strftime("%Y-%m-%d"),
             "travel_time": b.travel_time or "",
         })
 
-    # 3️⃣ Count bookings per date
-    booking_counts = (
+    # 3️⃣ Count USED drivers per date (ANY package)
+    driver_usage = (
         db.query(
             ManualBooking.travel_date,
-            func.count(ManualBooking.id).label("count")
+            func.count(func.distinct(BookingVehicle.driver_id)).label("used")
         )
+        .join(BookingVehicle, BookingVehicle.booking_id == ManualBooking.id)
         .filter(
-            ManualBooking.tour_package_id == package_id,
-            ManualBooking.is_deleted == False
+            ManualBooking.is_deleted == False,
+            BookingVehicle.driver_id.in_(package_driver_ids)
         )
         .group_by(ManualBooking.travel_date)
         .all()
@@ -615,45 +668,57 @@ def get_booked_dates(
     availability = {}
 
     # 4️⃣ Calculate remaining drivers per date
-    for travel_date, count in booking_counts:
+    for travel_date, used in driver_usage:
         date_str = travel_date.strftime("%Y-%m-%d")
-        remaining = max(total_drivers - count, 0)
+        remaining = max(total_drivers - used, 0)
 
         availability[date_str] = remaining
 
-        # disable date only if full
+        # Disable date if NO driver left
         if remaining == 0:
             booked_dates.append(date_str)
 
     return {
-        "booked_dates": booked_dates,   # used by calendar
-        "bookings": bookings_data,      # used by popup/list
-        "availability": availability,   # ✅ NEW
-        "total_drivers": total_drivers  # optional but useful
+        "booked_dates": booked_dates,     # calendar disable
+        "bookings": bookings_data,        # popup list
+        "availability": availability,     # remaining drivers per date
+        "total_drivers": total_drivers
     }
 
 @router.get("/available-drivers/{package_id}/{travel_date}")
 def get_available_drivers(
     package_id: int,
     travel_date: date,
+    booking_id: int | None = None,
     db: Session = Depends(get_db),
     current_user=Depends(company_only),
 ):
     company_id = current_user.company.id
 
-    # Step 1: Get drivers already booked on this date
-    booked_driver_ids = (
-        db.query(ManualBooking.driver_id)
+    # ✅ 1. Drivers from current booking (important for edit)
+    current_booking_driver_ids = []
+    if booking_id:
+        current_booking_driver_ids = [
+            d[0]
+            for d in db.query(BookingVehicle.driver_id)
+            .filter(BookingVehicle.booking_id == booking_id)
+            .all()
+        ]
+
+    # ✅ 2. Drivers booked on same date (EXCEPT current booking)
+    booked_driver_ids = [
+        d[0]
+        for d in db.query(BookingVehicle.driver_id)
+        .join(ManualBooking, ManualBooking.id == BookingVehicle.booking_id)
         .filter(
             ManualBooking.travel_date == travel_date,
-            ManualBooking.driver_id.isnot(None),
-            ManualBooking.is_deleted == False
+            ManualBooking.is_deleted == False,
+            ManualBooking.id != booking_id if booking_id else True
         )
         .all()
-    )
-    booked_driver_ids = [d[0] for d in booked_driver_ids]
+    ]
 
-    # Step 2: Get drivers assigned to this package and company
+    # ✅ 3. Final driver query
     drivers = (
         db.query(Driver)
         .join(TourPackageDriver, TourPackageDriver.driver_id == Driver.id)
@@ -661,24 +726,25 @@ def get_available_drivers(
             TourPackageDriver.tour_package_id == package_id,
             Driver.company_id == company_id,
             Driver.is_deleted == False,
-            ~Driver.id.in_(booked_driver_ids)
+            or_(
+                ~Driver.id.in_(booked_driver_ids),
+                Driver.id.in_(current_booking_driver_ids)
+            )
         )
         .all()
     )
 
-    # Step 3: Return only the available drivers
     return [
         {
             "id": d.id,
             "name": d.name,
-            "country_code": d.country_code,
-            "phone": d.phone_number,
             "vehicle_type": d.vehicle_type,
             "vehicle_number": d.vehicle_number,
             "seats": d.seats
         }
         for d in drivers
     ]
+
 
 @router.get("/all-drivers/{package_id}/{travel_date}")
 def get_all_package_drivers(
@@ -689,21 +755,19 @@ def get_all_package_drivers(
 ):
     company_id = current_user.company.id
 
-    # 1️⃣ Drivers already booked on this date (ANY package)
+    # 1️⃣ Drivers already booked on this date
     booked_driver_ids = (
-        db.query(ManualBooking.driver_id)
+        db.query(BookingVehicle.driver_id)
+        .join(ManualBooking, ManualBooking.id == BookingVehicle.booking_id)
         .filter(
             ManualBooking.travel_date == travel_date,
-            ManualBooking.driver_id.isnot(None),
             ManualBooking.is_deleted == False
         )
         .all()
     )
     booked_driver_ids = [d[0] for d in booked_driver_ids]
 
-    # 2️⃣ All drivers of company
-    #    - assigned to any package OR no package
-    #    - NOT booked on that date
+    # 2️⃣ All available drivers of company
     drivers = (
         db.query(Driver)
         .outerjoin(

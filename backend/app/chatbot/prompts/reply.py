@@ -1,16 +1,290 @@
-GREETING_REPLY_PROMPT = """
-    Create a friendly WhatsApp greeting.
+from app.utils.text_formate import format_package_text
 
-    Rules:
-    - Greet the user
-    - Mention the company name
-    - Ask how you can help
-    - Give 2 clear options:
-    • Book a tour
-    • Ask a question
-    - Keep it SHORT
-    - Use emojis
-    """
+def fallback():
+    return (
+        "Sorry, I didn’t understand that 🤖\n"
+        "Our team will assist you shortly."
+    )
+
+def build_greeting(company_name: str, guest_name: str):
+    return {
+        "text": (
+            f"Hi {guest_name}! Welcome to *{company_name}* ✨\n\n"
+            "How can I assist you today? Choose an option below:"
+        ),
+        "buttons": [
+            {"id": "book_tour", "title": "Book a Tour 🏖️"},
+            {"id": "ask_question", "title": "Ask About Tours?"}
+        ]
+    }
+
+def build_city_selection(cities: list[str]) -> dict:
+    rows = [
+        {
+            "id": f"CITY_{city.lower().replace(' ', '_')}",
+            "title": city,
+        }
+        for city in cities
+    ]
+
+    return {
+        "text": "📍 *Where would you like to go?*\n\nSelect a city from the list below:",
+        "list_data": {
+            "button": "Select City",
+            "sections": [
+                {
+                    "title": "Available Cities",
+                    "rows": rows
+                }
+            ]
+        }
+    }
+
+def build_package_list_message(city: str, packages: list[dict]) -> dict:
+    rows = [
+        {
+            "id": f"PKG_{p['id']}",
+            "title": p["name"],
+            "description": f"{p['currency']} {p['price']}"
+        }
+        for p in packages
+    ]
+
+    return {
+        "text": f"🏷️ Available tours in *{city}*",
+        "list_data": {
+            "button": "View Packages",
+            "sections": [
+                {
+                    "title": "Tour Packages",
+                    "rows": rows
+                }
+            ]
+        }
+    }
+
+def build_vehicle_option_list(options, total_pax):
+    rows = []
+
+    for idx, opt in enumerate(options, start=1):
+
+        # ---------- SINGLE VEHICLE ----------
+        if len(opt["vehicles"]) == 1:
+            v = opt["vehicles"][0]
+
+            title = v["vehicle_type"]                    
+            desc = f"{v['seats']} seats • {v['vehicle_number']}"
+
+        # ---------- COMBO VEHICLES ----------
+        else:
+            # Title: vehicle names only
+            title = " + ".join(v["vehicle_type"] for v in opt["vehicles"])
+
+            # Description: seats breakdown
+            seat_parts = [f"{v['vehicle_type']} {v['seats']}" for v in opt["vehicles"]]
+            desc = f"Total {opt['total_seats']} seats • " + ", ".join(seat_parts)
+
+        rows.append({
+            "id": f"VEH_OPT_{idx}",
+            "title": title[:24],       
+            "description": desc[:72]     
+        })
+
+    return {
+        "text": f"Vehicle options for {total_pax} guests",
+        "list_data": {
+            "button": "Select Vehicle",
+            "sections": [
+                {
+                    "title": "Vehicle Options",   
+                    "rows": rows
+                }
+            ]
+        }
+    }
+
+def build_package_detail_message(package: dict) -> dict:
+    message = {
+        "text": format_package_text(package),
+        "buttons": [
+            {"id": "BOOK_PKG", "title": "Book now"}
+        ]
+    }
+
+    if package.get("cover_image"):
+        message["image"] = package["cover_image"]
+
+    return message
+
+def build_travel_date_buttons():
+    return {
+        "text": "📅 When would you like to travel?",
+        "buttons": [
+            {"id": "DATE_TODAY", "title": "Today"},
+            {"id": "DATE_TOMORROW", "title": "Tomorrow"},
+            {"id": "DATE_CUSTOM", "title": "Type Date"}
+        ]
+    }
+
+def build_transport_type_buttons():
+    return {
+        "text": "Do you want hotel pickup only, or both pickup and drop-off?",
+        "buttons": [
+            {"id": "ONE_WAY", "title": "Pickup only"},
+            {"id": "ROUND_TRIP", "title": "Pickup and drop-off"}
+        ]
+    }
+
+def build_payment_type_buttons(text: str):
+    return {
+        "text": text,
+        "buttons": [
+            {"id": "PAY_FULL", "title": "Full Payment"},
+            {"id": "PAY_40", "title": "Advance Payment 40%"}
+        ]
+    }
+
+BOOKING_SUMMARY_REPLY_PROMPT = """
+IMPORTANT:
+- Do NOT change wording, emojis, spacing, or line breaks.
+- Do NOT add or remove lines.
+- Do NOT rephrase anything.
+- Only replace variables inside {{ }}.
+
+🧾 Hey {{guest_name}}, here is your booking summary:
+
+🎫 Package: {{package_name}}
+
+📅 Date: {{travel_date}} {{travel_time}}
+
+👨 Adults: {{adults}}
+👧 Kids: {{kids}}
+
+🚗 Vehicles: {{vehicle_type}}
+📍 Pickup Location: {{pickup_location}}
+
+💰 Total Amount: {{currency}} {{total_amount}}
+
+ℹ️ Driver contact details will be shared after payment confirmation.
+
+💳 How would you like to pay?
+"""
+
+def build_booking_confirmation_message(booking):
+    drivers = [bd.driver for bd in booking.vehicles]
+
+    if drivers:
+        driver_lines = []
+        for idx, driver in enumerate(drivers, start=1):
+            driver_lines.append(
+                f"""• *Vehicle {idx}:* {driver.vehicle_type} ({driver.seats} seats)
+  - Vehicle No: {driver.vehicle_number}
+  - Driver Name: {driver.name}
+  - Contact: {driver.country_code}{driver.phone_number}
+"""
+            )
+        driver_details = "\n".join(driver_lines)
+    else:
+        driver_details = (
+            "• Driver details will be assigned and shared before pickup."
+        )
+
+    travel_time = (
+        f" at {booking.travel_time.strftime('%I:%M %p')}"
+        if booking.travel_time
+        else ""
+    )
+
+    summary_text = f"""
+Hello *{booking.customer.guest_name}*,
+
+✅ Your booking has been *successfully confirmed*
+
+📄 *Booking Details*
+
+• Booking ID: {booking.id}
+• Package: {booking.tour_package.title}
+• Travel Date: {booking.travel_date}{travel_time}
+• Pickup Location: {booking.pickup_location}
+
+💳 *Payment Summary*
+
+• Amount Paid: {booking.advance_amount}
+• Remaining Amount: {booking.remaining_amount}
+
+🚘 *Vehicle & Driver Information*
+
+{driver_details}
+
+Thank you for choosing us.
+We wish you a pleasant and memorable trip.
+
+Would you like to change any booking details?
+""".strip()
+
+    return {
+        "text": summary_text,
+        "buttons": [
+            {"id": "CHANGE_DETAILS_YES", "title": "Yes"},
+            {"id": "CHANGE_DETAILS_NO", "title": "No"}
+        ]
+    }
+
+def build_payment_failed_message(booking, session):
+    text = f"""
+Hello *{booking.customer.guest_name}*,
+
+❌ *Payment Failed*
+
+We were unable to process your payment for the booking below:
+
+• Booking ID: {booking.id}
+• Package: {booking.tour_package.title}
+• Payable Amount: {booking.advance_amount}
+
+This can happen due to a temporary issue or bank authorization failure.
+
+Please tap the button below to retry the payment.
+""".strip()
+
+    return {
+        "text": text,
+        "buttons": [
+            {
+                "type": "url",               
+                "title": "Retry Payment",
+                "url": session.data["payment_link"], 
+            }
+        ]
+    }
+
+def build_payment_summary_button(booking, session):
+    return {
+        "text": (
+            f"💳 Payment Summary\n\n"
+            f"📦 Package: {session.data['package_name']}\n"
+            f"💰 Amount to pay: {session.data['payable_amount']} {session.data['currency'].upper()}\n"
+            f"Remaining amount: {session.data['remaining_amount']} {session.data['currency'].upper()}\n\n"
+            "Tap the button below to pay."
+        ),
+        "buttons": [
+            {
+                "type": "url",               
+                "title": "Pay Now",
+                "url": session.data["payment_link"], 
+            }
+        ]
+    }
+
+def build_change_details_buttons():
+    return {
+        "text": f"Your detail has been updated ✅. Do you want to change anything else?",
+        "buttons": [
+            {"id": "CHANGE_DETAILS_YES", "title": "Yes"},
+            {"id": "CHANGE_DETAILS_NO", "title": "No"}
+        ]
+    }
+
 
 BASE_REPLY_PROMPT = """
     You are a WhatsApp tour booking assistant.
@@ -24,21 +298,20 @@ BASE_REPLY_PROMPT = """
     - Do NOT explain internal logic
     """
 
-ASK_CITY_REPLY_PROMPT = """
-    Ask the user which city they want to travel to for the tour.
+NO_CITIES_REPLY_PROMPT = "Sorry, no cities are available right now."
+CITY_FALLBACK_PROMPT = "Please select a city from the list.we not provide tours in this city."
+
+FAQ_REPLY_PROMPT = """
+    You are a WhatsApp tour booking assistant.
 
     Rules:
-    - Ask only for the city name
-    - Do NOT suggest or list city names
-    - Keep it SHORT and clear
-    - WhatsApp friendly
-    - Use 1 relevant emoji
+    - Keep replies SHORT
+    - Friendly and clear
+    - WhatsApp style
+    - Use SAME language as user
+    - Ask only ONE question at a time
+    - Do NOT explain internal logic
     """
-
-ASK_TRAVEL_DATE_REPLY_PROMPT = """
-    Ask for travel date.
-    """
-
 
 BASE_INTENT_PROMPT = """
     You are an intent & entity extraction engine for a WhatsApp tour booking chatbot.
@@ -55,39 +328,11 @@ BASE_INTENT_PROMPT = """
     Return ONLY valid JSON.
     """
 
-SHOW_PACKAGES_REPLY_PROMPT = """
-You are a WhatsApp tour booking assistant.
-
-Rules:
-- Show available tour packages for the selected city.
-- Packages will be provided in the context as a list of dictionaries with fields: id, name, price.
-- Format the reply clearly and user-friendly.
-- Number each package starting from 1.
-- Include name and price.
-- End with instruction: "Reply with the package number to select."
-
-Example context:
-{
-    "city": "Dubai",
-    "packages": [
-        {"id": 1, "name": "Desert Safari", "price": 150},
-        {"id": 2, "name": "City Tour", "price": 120}
-    ]
-}
-
-Expected reply:
-
-🏙️ Tours available in Dubai:
-
-1. Desert Safari – AED 150
-2. City Tour – AED 120
-
-👉 Reply with the package number to select.
-"""
-
 ASK_PACKAGE_REPLY_PROMPT = "Please select a tour package."
 
-ASK_DATE_REPLY_PROMPT = "Please tell me your travel date."
+ASK_TIME_REPLY_PROMPT = """
+⏰ Please enter pickup time in format (e.g., 10:00 AM):
+"""
 
 ASK_PAX_REPLY_PROMPT = """
 How many adults and kids are traveling?
@@ -97,20 +342,46 @@ Examples:
 • 2,1
 """
 
+INVALID_TIME_REPLY_PROMPT = "Invalid time format.\n Please enter time as *HH:MM AM/PM* (e.g., 10:00 AM)."
+
+ASK_GUEST_NAME_REPLY_PROMPT = "Please enter your good name"
+
 INVALID_PACKAGE_REPLY_PROMPT = "Please select a valid tour package."
 
 INVALID_DATE_REPLY_PROMPT = "Please enter a valid travel date."
 
 INVALID_PAX_REPLY_PROMPT = "Please enter a valid number of adults and kids."
 
-BOOKING_SUMMARY_REPLY_PROMPT = """
-Here is your booking summary. Please confirm.
 
-City: {{city}}
-Package: {{package_name}}
-Date: {{travel_date}}
-Adults: {{adults}}
-Kids: {{kids}}
+INVALID_PICKUP_LOCATION_REPLY_PROMPT = "Please enter a valid pickup location (hotel or address)."
 
-Reply CONFIRM to continue.
+EXTRACT_UPDATE_FIELD_PROMPT = """
+You are a helpful assistant for a travel booking system. 
+The user may respond with text indicating which booking detail they want to change. 
+The possible fields that can be updated are:
+
+- guest_name
+- pickup_location
+- travel_time
+
+Your task: 
+
+1. Identify **exactly one field** the user wants to update.  
+2. Extract the new value the user wants for that field.  
+3. Return the result strictly in JSON format like this:
+
+{
+  "field": "<field_name>",
+  "value": "<new_value>"
+}
+
+Do not include any extra text, explanation, or formatting.  
+If you cannot determine a valid field or value, return:
+
+{
+  "field": null,
+  "value": null
+}
+
+User message: "{user_message}"
 """

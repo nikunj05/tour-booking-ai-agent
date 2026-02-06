@@ -36,19 +36,38 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
     for entry in data.get("entry", []):
         for change in entry.get("changes", []):
             value = change.get("value", {})
+
+            # Ignore status updates
+            if "messages" not in value:
+                continue
+
             messages = value.get("messages", [])
             metadata = value.get("metadata", {})
-            whatsapp_phone_number_id = metadata.get("phone_number_id")  # Company identification
-            for msg in messages:
-                if msg.get("type") != "text":
-                    continue
+            whatsapp_phone_number_id = metadata.get("phone_number_id")
 
+            if not messages:
+                continue
+
+            for msg in messages:
+                msg_type = msg.get("type")
                 phone = msg.get("from")
-                text = msg.get("text", {}).get("body", "").strip()
+                text = ""
+
+                if msg_type == "text":
+                    text = msg.get("text", {}).get("body", "").strip()
+
+                elif msg_type == "interactive":
+                    interactive = msg.get("interactive", {})
+
+                    if interactive.get("type") == "button_reply":
+                        text = interactive.get("button_reply", {}).get("id", "")
+
+                    elif interactive.get("type") == "list_reply":
+                        text = interactive.get("list_reply", {}).get("id", "")
+
                 if not text:
                     continue
 
-                # ---- Find company based on phone_number_id ----
                 company = db.query(Company).filter_by(
                     whatsapp_phone_number_id=whatsapp_phone_number_id
                 ).first()
@@ -57,54 +76,95 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
                     print(f"No company found for phone_number_id: {whatsapp_phone_number_id}")
                     continue
 
-                # ---- Handle message ----
-                reply = handle_message(phone, text, db, company=company)
+                result = handle_message(phone, text, db, company=company)
+                print(result)
 
-                # ---- Send WhatsApp reply ----
-                send_whatsapp_message(
-                    phone,
-                    reply
-                )
+                if isinstance(result, dict):
+                    send_whatsapp_message(
+                        phone=phone,
+                        text=result.get("text"),
+                        buttons=result.get("buttons"),
+                        list_data=result.get("list_data")
+                    )
+                else:
+                    send_whatsapp_message(
+                        phone=phone,
+                        text=result
+                    )
 
     return {"status": "ok"}
 
 
-# -------------------------------
-# Send WhatsApp Message
-# -------------------------------
-def send_whatsapp_message(phone: str, text: str):
+def send_whatsapp_message(phone, text, buttons=None, list_data=None):
     url = f"https://graph.facebook.com/v19.0/{PHONE_NUMBER_ID}/messages"
-
-    payload = {
-        "messaging_product": "whatsapp",
-        "to": phone,
-        "type": "text",
-        "text": {"body": text}
-    }
-
     headers = {
         "Authorization": f"Bearer {WHATSAPP_TOKEN}",
         "Content-Type": "application/json"
     }
 
-    response = requests.post(url, json=payload, headers=headers)
-    response.raise_for_status()
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": phone
+    }
 
+    if list_data:
+        if not isinstance(list_data, dict) or "button" not in list_data or "sections" not in list_data:
+            print("Invalid list_data:", list_data)
+            return
 
+        payload.update({
+            "type": "interactive",
+            "interactive": {
+                "type": "list",
+                "body": {"text": text},
+                "action": list_data
+            }
+        })
 
-@router.post("/test-whatsapp")
-async def test_whatsapp(db: Session = Depends(get_db)):
-    phone = "+91392957324"
-    text = "hi"
+    elif isinstance(buttons, list) and buttons and buttons[0].get("type") == "url":
+        payload.update({
+            "type": "interactive",
+            "interactive": {
+                "type": "cta_url",
+                "body": {"text": text},
+                "action": {
+                    "name": "cta_url",
+                    "parameters": {
+                        "display_text": buttons[0]["title"],
+                        "url": buttons[0]["url"]
+                    }
+                }
+            }
+        })
 
-    # Fetch a static company for testing
-    company = db.query(Company).filter_by(
-        id=4
-    ).first()  # Get first company in DB for test
+    elif isinstance(buttons, list) and buttons:
+        payload.update({
+            "type": "interactive",
+            "interactive": {
+                "type": "button",
+                "body": {"text": text},
+                "action": {
+                    "buttons": [
+                        {
+                            "type": "reply",
+                            "reply": {
+                                "id": b["id"],
+                                "title": b["title"]
+                            }
+                        } for b in buttons
+                    ]
+                }
+            }
+        })
 
-    if not company:
-        return {"error": "No company found in DB. Please add one first."}
+    else:
+        payload.update({
+            "type": "text",
+            "text": {"body": text}
+        })
 
-    # Call handle_message with static company
-    reply = handle_message(phone, text, db, company=company)
-    return {"reply": reply}
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError:
+        print("WhatsApp API Error:", response.status_code, response.text)

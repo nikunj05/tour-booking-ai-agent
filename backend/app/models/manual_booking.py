@@ -17,21 +17,12 @@ class ManualBooking(Base):
     __tablename__ = "manual_bookings"
 
     id = Column(Integer, primary_key=True, index=True)
-    guest_name = Column(String(150), nullable=True)
-    country_code = Column(String(10), nullable=True, server_default='+91')
-    phone = Column(String(20), nullable=True)
-    email = Column(String(150), nullable=True)
     adults = Column(Integer, nullable=False, default=1)
     kids = Column(Integer, nullable=False, default=0)
     tour_package_id = Column(
         Integer,
         ForeignKey("tour_packages.id"),
         nullable=False
-    )
-    driver_id = Column(
-        Integer,
-        ForeignKey("drivers.id"),
-        nullable=True    
     )
     customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True)
     travel_date = Column(Date, nullable=False)
@@ -44,9 +35,39 @@ class ManualBooking(Base):
         String(20),
         default="pending"
     ) 
+    payment_ref = Column(String(255), nullable=True)
+    transport_type = Column(String(20), nullable=True)
     is_deleted = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     tour_package = relationship("TourPackage")
-    driver = relationship("Driver", back_populates="bookings")
     customer = relationship("Customer", back_populates="bookings")
+    vehicles = relationship(
+        "BookingVehicle",
+        back_populates="booking",
+        cascade="all, delete-orphan"
+    )
+
+class BookingVehicle(Base):
+    __tablename__ = "booking_vehicles"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    booking_id = Column(
+        Integer,
+        ForeignKey("manual_bookings.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    driver_id = Column(
+        Integer,
+        ForeignKey("drivers.id"),
+        nullable=False
+    )
+
+    seats = Column(Integer, nullable=False)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    booking = relationship("ManualBooking", back_populates="vehicles")
+    driver = relationship("Driver")

@@ -4,7 +4,7 @@ from fastapi.exceptions import HTTPException as FastAPIHTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from app.routers.web import auth, admin_dashboard, tour_package, company, manual_booking, driver, company_dashboard, customer 
-from app.routers.api.webhooks import whatsapp
+from app.routers.api.webhooks import whatsapp,strip
 from sqlalchemy.orm import Session
 
 app = FastAPI()
@@ -19,7 +19,7 @@ app.include_router(driver.router)
 app.include_router(company_dashboard.router)
 app.include_router(customer.router)
 app.include_router(whatsapp.router)
-
+app.include_router(strip.router)
 
 @app.exception_handler(FastAPIHTTPException)
 async def auth_exception_handler(request: Request, exc: FastAPIHTTPException):
