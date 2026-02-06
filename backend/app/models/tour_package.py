@@ -6,6 +6,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from app.database.base import Base
 from sqlalchemy.ext.hybrid import hybrid_property
+from app.models.driver import Driver
 
 
 class TourPackage(Base):
