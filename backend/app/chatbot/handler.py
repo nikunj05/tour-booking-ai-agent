@@ -22,6 +22,7 @@ from app.chatbot.prompts.intent import (
 from app.chatbot.prompts.reply import *
 from app.chatbot.prompts.reply import build_package_list_message, build_package_detail_message
 import phonenumbers
+import os
 
 # ------------------------------------------------
 # Save message (user / bot)
@@ -69,6 +70,13 @@ def normalize_time(value: str):
 
     except Exception:
         return None
+
+BASE_URL = os.getenv("BASE_URL")
+
+def build_public_image_url(image_path: str) -> str | None:
+    if not image_path:
+        return None
+    return f"{BASE_URL.rstrip('/')}/static/{image_path.lstrip('/')}"
 
 # ------------------------------------------------
 # Main Handler
@@ -202,7 +210,7 @@ def handle_message(phone: str, text: str, db, company):
 
         # Save minimal package info
         session.data["packages"] = [
-            {"id": p.id, "name": p.title, "price": float(p.price), "currency": p.currency, "description": p.description, "itinerary": p.itinerary,"excludes": p.excludes}
+            {"id": p.id, "name": p.title, "price": float(p.price), "currency": p.currency, "description": p.description, "itinerary": p.itinerary,"excludes": p.excludes,"cover_image": build_public_image_url(p.cover_image)}
             for p in packages
         ]
 
@@ -270,7 +278,8 @@ def handle_message(phone: str, text: str, db, company):
                 "currency": p["currency"],
                 "description": p["description"],
                 "itinerary": p["itinerary"],
-                "excludes": p["excludes"]
+                "excludes": p["excludes"],
+                "cover_image": build_public_image_url(p["cover_image"]),
             })
 
             change_state(session, ASK_TRAVEL_DATE, db)

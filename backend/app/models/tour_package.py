@@ -5,6 +5,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from app.database.base import Base
+from sqlalchemy.ext.hybrid import hybrid_property
 
 
 class TourPackage(Base):
@@ -34,6 +35,13 @@ class TourPackage(Base):
         cascade="all, delete-orphan"
     )
 
+    @hybrid_property
+    def cover_image(self):
+        for img in self.gallery_images:
+            if img.image_type == "cover":
+                return img.image_path
+        return None
+
 class TourPackageGalleryImage(Base):
     __tablename__ = "tour_package_gallery_images"
 
@@ -48,6 +56,8 @@ class TourPackageGalleryImage(Base):
     image_type = Column(String(20), nullable=False)  # cover | gallery
 
     tour_package = relationship("TourPackage", back_populates="gallery_images")
+
+
 
 class TourPackageDriver(Base):
     __tablename__ = "tour_package_drivers"

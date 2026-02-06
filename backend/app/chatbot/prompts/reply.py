@@ -104,12 +104,17 @@ def build_vehicle_option_list(options, total_pax):
     }
 
 def build_package_detail_message(package: dict) -> dict:
-    return {
+    message = {
         "text": format_package_text(package),
         "buttons": [
             {"id": "BOOK_PKG", "title": "Book now"}
         ]
     }
+
+    if package.get("cover_image"):
+        message["image"] = package["cover_image"]
+
+    return message
 
 def build_travel_date_buttons():
     return {
