@@ -1,0 +1,57 @@
+@page {
+    margin: 10mm;
+}
+
+.page {
+    page-break-after: always;
+}
+
+.labels-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.labels-table tr {
+    height: 34mm;
+}
+
+.label-cell {
+    border: 1px solid #000;
+    box-sizing: border-box;
+    width: 10px;
+    padding: 5px;
+}
+
+.label-cell.code {
+    font-size: 18mm;
+    font-weight: bold;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.label-cell.date,
+.label-cell.info {
+    text-align: center;
+    vertical-align: top;
+    line-height: 1.1;
+}
+
+.label-cell.date {
+    font-size: 18px;
+    width: 100px !important;
+}
+
+.label-cell.info {
+    font-size: 17px;
+    width: 100px !important;
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+.w-53{
+    width: 53% !important;
+}
