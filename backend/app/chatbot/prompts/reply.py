@@ -159,10 +159,9 @@ IMPORTANT:
 def build_payment_mode_buttons(payable_amount: int, currency: str):
     print(payable_amount, currency, "function")
     return {
-        "text": f"Amount to pay now: *{currency} {payable_amount}*\n\nSelect payment mode:",
+        "text": f"Amount to pay now: *{currency} {payable_amount}*",
         "buttons": [
-            {"id": "PAY_CARD", "title": "Card"},
-            {"id": "PAY_UPI", "title": "UPI"}
+            {"id": "PAY_CARD", "title": "Pay with Card"},
         ]
     }
 
@@ -173,43 +172,52 @@ def build_booking_confirmation_message(booking):
         driver_lines = []
         for idx, driver in enumerate(drivers, start=1):
             driver_lines.append(
-                f"""
-🚗 *Vehicle {idx}*
-👤 *Driver:* {driver.name}
-📞 *Phone:* {driver.country_code}{driver.phone_number}
-🚘 *Vehicle:* {driver.vehicle_type} ({driver.seats} seats) - {driver.vehicle_number}
+                f"""• *Vehicle {idx}:* {driver.vehicle_type} ({driver.seats} seats)
+  - Vehicle No: {driver.vehicle_number}
+  - Driver Name: {driver.name}
+  - Contact: {driver.country_code}{driver.phone_number}
 """
             )
         driver_details = "\n".join(driver_lines)
     else:
-        driver_details = """
-🚗 *Driver Details*
-Drivers will be assigned and shared before pickup.
-"""
+        driver_details = (
+            "• Driver details will be assigned and shared before pickup."
+        )
 
     travel_time = (
-        f" {booking.travel_time.strftime('%I:%M %p')}"
+        f" at {booking.travel_time.strftime('%I:%M %p')}"
         if booking.travel_time
         else ""
     )
 
-    summary_text = f"""Hey {booking.customer.guest_name}, your booking is confirmed! 🎉
+    summary_text = f"""
+Hello *{booking.customer.guest_name}*,
 
-🧾 *Booking ID:* {booking.id}
-📍 *Package:* {booking.tour_package.title}
-📅 *Travel Date:* {booking.travel_date}{travel_time}
-📍 *Pickup Location:* {booking.pickup_location}
-💰 *Amount Paid:* {booking.advance_amount}
+✅ Your booking has been *successfully confirmed*
+
+📄 *Booking Details*
+
+• Booking ID: {booking.id}
+• Package: {booking.tour_package.title}
+• Travel Date: {booking.travel_date}{travel_time}
+• Pickup Location: {booking.pickup_location}
+
+💳 *Payment Summary*
+
+• Amount Paid: {booking.advance_amount}
+• Remaining Amount: {booking.remaining_amount}
+
+🚘 *Vehicle & Driver Information*
+
 {driver_details}
 
-Thank you for booking with us 🙏
-Have a great trip!
+Thank you for choosing us.
+We wish you a pleasant and memorable trip.
 
-Do you want to change any details?
-"""
+Would you like to change any booking details?
+""".strip()
 
-    # Add Yes/No buttons directly to this message
-    message_with_buttons = {
+    return {
         "text": summary_text,
         "buttons": [
             {"id": "CHANGE_DETAILS_YES", "title": "Yes"},
@@ -217,8 +225,32 @@ Do you want to change any details?
         ]
     }
 
-    return message_with_buttons
+def build_payment_failed_message(booking):
+    text = f"""
+Hello *{booking.customer.guest_name}*,
 
+❌ *Payment Failed*
+
+We were unable to process your payment for the booking below:
+
+• Booking ID: {booking.id}
+• Package: {booking.tour_package.title}
+• Payable Amount: {booking.advance_amount}
+
+This can happen due to a temporary issue or bank authorization failure.
+
+Please tap the button below to retry the payment.
+""".strip()
+
+    return {
+        "text": text,
+        "buttons": [
+            {
+                "id": f"RETRY_PAYMENT_{booking.id}",
+                "title": "Retry Payment"
+            }
+        ]
+    }
 
 def build_change_details_buttons():
     return {

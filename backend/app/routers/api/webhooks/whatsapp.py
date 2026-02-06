@@ -140,21 +140,3 @@ def send_whatsapp_message(phone, text, buttons=None, list_data=None):
         response.raise_for_status()
     except requests.exceptions.HTTPError as e:
         print("WhatsApp API Error:", response.status_code, response.text)
-
-
-@router.post("/test-whatsapp")
-async def test_whatsapp(db: Session = Depends(get_db)):
-    phone = "+91392957324"
-    text = "hi"
-
-    # Fetch a static company for testing
-    company = db.query(Company).filter_by(
-        id=4
-    ).first()  # Get first company in DB for test
-
-    if not company:
-        return {"error": "No company found in DB. Please add one first."}
-
-    # Call handle_message with static company
-    reply = handle_message(phone, text, db, company=company)
-    return {"reply": reply}

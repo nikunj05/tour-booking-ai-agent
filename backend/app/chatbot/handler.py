@@ -74,17 +74,19 @@ def normalize_time(value: str):
 # Main Handler
 # ------------------------------------------------
 def handle_message(phone: str, text: str, db, company):
+    today_example = datetime.now().strftime("%d-%m-%Y")
     text = text.strip()
 
     # ---------- SESSION ----------
-    session = (
+    last_session = (
         db.query(ChatSession)
         .filter_by(phone=phone, company_id=company.id)
         .order_by(ChatSession.updated_at.desc())
         .first()
     )
 
-    if not session or session.state == BOOKING_DONE:
+    if not last_session:
+        # 🆕 First time user → ask name
         session = ChatSession(
             phone=phone,
             company_id=company.id,
@@ -95,7 +97,23 @@ def handle_message(phone: str, text: str, db, company):
         db.commit()
         db.refresh(session)
 
-    # ✅ Make sure state is always defined
+    elif last_session.state == BOOKING_DONE:
+        session = ChatSession(
+            phone=phone,
+            company_id=company.id,
+            state=GREETING,
+            data={
+                "guest_name": last_session.data.get("guest_name")
+            }
+        )
+        db.add(session)
+        db.commit()
+        db.refresh(session)
+
+    else:
+        # ▶ Continue existing flow
+        session = last_session
+
     state = session.state
 
     # ---------- GUEST NAME ----------
@@ -149,7 +167,7 @@ def handle_message(phone: str, text: str, db, company):
             }
 
         else:
-            response = build_greeting(company.company_name)
+            response = build_greeting(company.company_name, guest_name)
 
         save_message(db, session, company, "bot", response["text"])
         return response
@@ -173,13 +191,13 @@ def handle_message(phone: str, text: str, db, company):
 
         packages = filter_packages(db, company.id, city)
         if not packages:
-            reply = f"No packages available in {city}."
+            reply = f"No packages available in your city preference pls select another city from list."
             save_message(db, session, company, "bot", reply)
             return reply
 
         # Save minimal package info
         session.data["packages"] = [
-            {"id": p.id, "name": p.title, "price": float(p.price), "currency": p.currency, "itinerary": p.itinerary,"excludes": p.excludes}
+            {"id": p.id, "name": p.title, "price": float(p.price), "currency": p.currency, "description": p.description, "itinerary": p.itinerary,"excludes": p.excludes}
             for p in packages
         ]
 
@@ -245,6 +263,7 @@ def handle_message(phone: str, text: str, db, company):
                 "package_name": p["name"],
                 "package_price": p["price"],
                 "currency": p["currency"],
+                "description": p["description"],
                 "itinerary": p["itinerary"],
                 "excludes": p["excludes"]
             })
@@ -273,21 +292,20 @@ def handle_message(phone: str, text: str, db, company):
         # ✅ Button: Type Date
         elif text == "DATE_CUSTOM":
             change_state(session, ASK_CUSTOM_TRAVEL_DATE, db)
-
             reply = (
                 "🗓️ Please type your travel date in this format:\n\n"
                 "*DD-MM-YYYY*\n\n"
-                "Example: *15-03-2026*"
+                f"Example: *{today_example}*"
             )
+
             save_message(db, session, company, "bot", reply)
             return reply
 
         else:
-            reply = "Please choose an option below 👇"
+            reply = "Please choose an option  "
             save_message(db, session, company, "bot", reply)
             return reply
 
-        # ✅ Save date (Today / Tomorrow)
         session.data["travel_date"] = travel_date
         change_state(session, ASK_TIME, db)
 
@@ -303,13 +321,11 @@ def handle_message(phone: str, text: str, db, company):
         ai = detect_intent_and_extract(text, TRAVEL_DATE_EXTRACT_PROMPT)
         travel_date = ai.get("travel_date")
 
-        print(travel_date)
-
         if not travel_date:
             reply = (
-                "❌ Invalid date format.\n\n"
+                "Invalid date format.\n\n"
                 "Please enter date as *DD-MM-YYYY*\n"
-                "Example: *15-03-2026*"
+                f"Example: *{today_example}*"
             )
             save_message(db, session, company, "bot", reply)
             return reply
@@ -323,15 +339,15 @@ def handle_message(phone: str, text: str, db, company):
 
             # Check past date
             if travel_date_obj.date() < datetime.now().date():
-                reply = "❌ Please enter a future date 🗓️."
+                reply = "Please enter a future date 🗓️."
                 save_message(db, session, company, "bot", reply)
                 return reply
 
         except ValueError:
             reply = (
-                "❌ Invalid date format.\n\n"
+                "Invalid date format.\n\n"
                 "Please enter date as *DD-MM-YYYY*\n"
-                "Example: *15-04-2026*"
+                f"Example: *{today_example}*"
             )
             save_message(db, session, company, "bot", reply)
             return reply
@@ -437,7 +453,7 @@ def handle_message(phone: str, text: str, db, company):
         options = session.data.get("options", [])
 
         if index < 0 or index >= len(options):
-            reply = "❌ Invalid vehicle option selected."
+            reply = "Invalid vehicle option selected."
             save_message(db, session, company, "bot", reply)
             return reply
 
@@ -514,7 +530,6 @@ def handle_message(phone: str, text: str, db, company):
 
         session.data["payment_mode"] = "CARD" if text == "PAY_CARD" else "UPI"
 
-        # ✅ Create booking FIRST (pending payment)
         raw_phone = phone
         country_code, national_phone = parse_whatsapp_phone(raw_phone)
 
@@ -564,12 +579,48 @@ def handle_message(phone: str, text: str, db, company):
                 "💳 *Complete Your Payment*\n\n"
                 f"📦 Package: *{session.data['package_name']}*\n"
                 f"💰 Payable Amount: *{session.data['payable_amount']} {session.data['currency'].upper()}*\n\n"
+                f"Remaining Amount: *{session.data['remaining_amount']} {session.data['currency'].upper()}*\n\n"
                 f"👉 Click to pay:\n{payment_url}\n\n"
                 "Once payment is done, we’ll confirm your booking ✅"
             )
 
         save_message(db, session, company, "bot", reply)
         return reply
+
+    if state == WAITING_FOR_PAYMENT:
+
+        if text.startswith("RETRY_PAYMENT_"):
+            booking_id = int(text.replace("RETRY_PAYMENT_", ""))
+            booking = db.query(ManualBooking).get(booking_id)
+
+            if not booking:
+                reply = "Booking not found. Please contact support."
+                save_message(db, session, company, "bot", reply)
+                return reply
+
+            # 🔁 Create NEW Stripe payment link
+            payment_url = create_payment_link(
+                booking=booking,
+                session_id=session.id,
+                amount=booking.advance_amount,
+                currency=booking.currency,
+                description=f"{booking.tour_package.title} Tour Booking"
+            )
+
+            session.data["booking_id"] = booking.id
+            session.data["payment_link"] = payment_url
+            db.commit()
+
+            reply = (
+                "💳 *Retry Payment*\n\n"
+                f"📦 Package: *{booking.tour_package.title}*\n"
+                f"💰 Payable Amount: *{booking.advance_amount} {booking.currency.upper()}*\n\n"
+                f"👉 Click to pay:\n{payment_url}\n\n"
+                "Once payment is done, we’ll confirm your booking ✅"
+            )
+
+            save_message(db, session, company, "bot", reply)
+            return reply
 
     if state == CONFIRM_CHANGE_DETAILS:
         if text == "CHANGE_DETAILS_YES":
