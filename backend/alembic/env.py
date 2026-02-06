@@ -22,6 +22,11 @@ if config.config_file_name is not None:
 
 from app.database.base import Base
 from app.models import company,user,driver
+import os
+
+from dotenv import load_dotenv
+load_dotenv()
+
 
 target_metadata = Base.metadata
 
@@ -30,7 +35,9 @@ target_metadata = Base.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-
+db_url = os.getenv("DATABASE_URL")
+if db_url:
+    config.set_main_option("sqlalchemy.url", db_url)
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -44,6 +51,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
+    
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -51,7 +59,6 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
     )
-
     with context.begin_transaction():
         context.run_migrations()
 
@@ -68,12 +75,8 @@ def run_migrations_online() -> None:
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
-
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
-
+        context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
             context.run_migrations()
 
