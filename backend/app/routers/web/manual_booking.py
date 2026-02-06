@@ -302,7 +302,7 @@ def manual_booking_datatable(
             "travel_details": f"""
                 <strong>{booking.tour_package.title}</strong><br>
                 <i class="fas fa-calendar-alt text-dark"></i> {booking.travel_date.strftime("%d-%m-%Y")}<br>
-                <i class="far fa-clock text-dark"></i> {booking.travel_time or "-"}<br>
+                <i class="far fa-clock text-dark"></i> {booking.travel_time.strftime("%I:%M %p") or "-"}<br>
                 <i class="fas fa-map-marker-alt text-dark"></i> {booking.pickup_location or "-"}
             """,
 

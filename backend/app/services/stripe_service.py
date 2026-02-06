@@ -29,3 +29,5 @@ def create_payment_link(booking,session_id,amount, currency, description="Tour B
 
     return payment_link.url
 
+
+

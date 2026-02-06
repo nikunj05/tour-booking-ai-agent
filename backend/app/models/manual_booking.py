@@ -17,10 +17,6 @@ class ManualBooking(Base):
     __tablename__ = "manual_bookings"
 
     id = Column(Integer, primary_key=True, index=True)
-    guest_name = Column(String(150), nullable=True)
-    country_code = Column(String(10), nullable=True, server_default='+91')
-    phone = Column(String(20), nullable=True)
-    email = Column(String(150), nullable=True)
     adults = Column(Integer, nullable=False, default=1)
     kids = Column(Integer, nullable=False, default=0)
     tour_package_id = Column(
@@ -39,6 +35,8 @@ class ManualBooking(Base):
         String(20),
         default="pending"
     ) 
+    payment_ref = Column(String(255), nullable=True)
+    transport_type = Column(String(20), nullable=True)
     is_deleted = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

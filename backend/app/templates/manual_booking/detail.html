@@ -41,7 +41,7 @@
               </span>
               <span class="text-muted d-block">
                 <i class="far fa-clock me-1"></i>
-                {{ booking.travel_time or '-' }}
+                {{ booking.travel_time.strftime('%I:%M %p') or '-' }}
               </span>
               <span class="text-muted d-block">
                 <i class="fas fa-map-marker-alt me-1"></i>

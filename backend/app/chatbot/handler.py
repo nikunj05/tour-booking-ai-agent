@@ -479,7 +479,7 @@ def handle_message(phone: str, text: str, db, company):
         session.state = ASK_PICKUP_LOCATION
         db.commit()
 
-        reply = generate_reply("", {}, ASK_PICKUP_LOCATION_REPLY_PROMPT)
+        reply = "📍 Please share your *pickup location* (hotel name / address)."
         save_message(db, session, company, "bot", reply)
         return reply
 
@@ -494,6 +494,22 @@ def handle_message(phone: str, text: str, db, company):
         session.data["pickup_location"] = text
 
         # move to payment summary
+        session.state = ASK_TRANSPORT_TYPE
+        db.commit()
+
+        reply = build_transport_type_buttons()
+        save_message(db, session, company, "bot", reply["text"])
+        return reply
+
+    # ---------- TRANSPORT TYPE ----------
+    if state == ASK_TRANSPORT_TYPE:
+
+        if text not in ["ONE_WAY", "ROUND_TRIP"]:
+            reply = "Please select a valid transport type."
+            save_message(db, session, company, "bot", reply)
+            return reply
+
+        session.data["transport_type"] = text
         session.state = ASK_PAYMENT
         db.commit()
 
@@ -506,7 +522,7 @@ def handle_message(phone: str, text: str, db, company):
         reply = build_payment_type_buttons(summary_text)
         save_message(db, session, company, "bot", reply["text"])
         return reply
-
+    
     # ---------- PAYMENT SUMMARY ----------
     if state == ASK_PAYMENT:
 
@@ -551,6 +567,7 @@ def handle_message(phone: str, text: str, db, company):
                 total_amount=session.data["total_amount"],
                 advance_amount=session.data["payable_amount"],
                 remaining_amount=session.data["remaining_amount"],
+                transport_type=session.data["transport_type"],
             )
             session.data["booking_id"] = booking.id
             db.commit()

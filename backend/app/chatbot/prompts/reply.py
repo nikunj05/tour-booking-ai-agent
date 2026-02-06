@@ -96,7 +96,7 @@ def build_vehicle_option_list(options, total_pax):
             "button": "Select Vehicle",
             "sections": [
                 {
-                    "title": "Vehicle Options",   # ≤ 24 chars
+                    "title": "Vehicle Options",   
                     "rows": rows
                 }
             ]
@@ -123,6 +123,15 @@ def build_travel_date_buttons():
             {"id": "DATE_TODAY", "title": "Today"},
             {"id": "DATE_TOMORROW", "title": "Tomorrow"},
             {"id": "DATE_CUSTOM", "title": "Type Date"}
+        ]
+    }
+
+def build_transport_type_buttons():
+    return {
+        "text": "Do you want hotel pickup only, or both pickup and drop-off?",
+        "buttons": [
+            {"id": "ONE_WAY", "title": "Pickup only"},
+            {"id": "ROUND_TRIP", "title": "Pickup and drop-off"}
         ]
     }
 
@@ -160,15 +169,6 @@ IMPORTANT:
 
 💳 How would you like to pay?
 """
-
-def build_payment_mode_buttons(payable_amount: int, currency: str):
-    print(payable_amount, currency, "function")
-    return {
-        "text": f"Amount to pay now: *{currency} {payable_amount}*",
-        "buttons": [
-            {"id": "PAY_CARD", "title": "Pay with Card"},
-        ]
-    }
 
 def build_booking_confirmation_message(booking):
     drivers = [bd.driver for bd in booking.vehicles]
@@ -230,7 +230,7 @@ Would you like to change any booking details?
         ]
     }
 
-def build_payment_failed_message(booking):
+def build_payment_failed_message(booking, session):
     text = f"""
 Hello *{booking.customer.guest_name}*,
 
@@ -251,8 +251,9 @@ Please tap the button below to retry the payment.
         "text": text,
         "buttons": [
             {
-                "id": f"RETRY_PAYMENT_{booking.id}",
-                "title": "Retry Payment"
+                "type": "url",               
+                "title": "Retry Payment",
+                "url": session.data["payment_link"], 
             }
         ]
     }
@@ -351,7 +352,6 @@ INVALID_DATE_REPLY_PROMPT = "Please enter a valid travel date."
 
 INVALID_PAX_REPLY_PROMPT = "Please enter a valid number of adults and kids."
 
-ASK_PICKUP_LOCATION_REPLY_PROMPT = "📍 Please share your *pickup location* (hotel name / address)."
 
 INVALID_PICKUP_LOCATION_REPLY_PROMPT = "Please enter a valid pickup location (hotel or address)."
 

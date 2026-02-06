@@ -30,14 +30,19 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
         return {"error": "Invalid signature"}
 
     # ✅ Handle successful payment
-    if event["type"] == "checkout.session.completed":
-        session_obj = event["data"]["object"]
+    event_type = event["type"]
+    session_obj = event["data"]["object"]
+
+    if event_type == "checkout.session.completed":
         handle_payment_success(session_obj, db)
-    elif event["type"] == "checkout.session.async_payment_succeeded":
-        session_obj = event["data"]["object"]
+
+    elif event_type == "checkout.session.async_payment_succeeded":
         handle_payment_success(session_obj, db)
-    elif event["type"] == "checkout.session.async_payment_failed":
-        session_obj = event["data"]["object"]
+
+    elif event_type == "checkout.session.async_payment_failed":
+        handle_payment_failure(session_obj, db)
+
+    elif event_type == "payment_intent.payment_failed":
         handle_payment_failure(session_obj, db)
 
     return {"status": "ok"}
@@ -56,9 +61,9 @@ def handle_payment_success(session_obj, db):
     if not booking:
         return
 
-    booking.payment_status = "completed"
-    # booking.paid_amount = session_obj["amount_total"] / 100
-    # booking.payment_ref = session_obj["payment_intent"]
+    booking.payment_status = "partial"
+    booking.advance_amount = session_obj["amount_total"] / 100
+    booking.payment_ref = session_obj["payment_intent"]
 
     # ✅ Update chat session
     chat_session = db.query(ChatSession).get(chat_session_id)
@@ -96,8 +101,8 @@ def handle_payment_failure(session_obj, db):
         return
 
     booking.payment_status = "failed"
-    # booking.paid_amount = session_obj["amount_total"] / 100
-    # booking.payment_ref = session_obj["payment_intent"]
+    booking.paid_amount = session_obj["amount_total"] / 100
+    booking.payment_ref = session_obj["payment_intent"]
 
     # ✅ Update chat session
     chat_session = db.query(ChatSession).get(chat_session_id)

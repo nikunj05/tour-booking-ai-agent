@@ -111,7 +111,8 @@ def create_booking(
     travel_time=None,
     total_amount,
     advance_amount=0,
-    remaining_amount=0
+    remaining_amount=0,
+    transport_type=None,
 ):
     phone = phone.strip()
     country_code = country_code.strip()
@@ -180,12 +181,6 @@ def create_booking(
     advance = to_decimal(advance_amount)
     remaining = total - advance
 
-    payment_status = (
-        "paid" if remaining == 0
-        else "partial" if advance > 0
-        else "pending"
-    )
-
     # ✅ Create booking
     booking = ManualBooking(
         customer_id=customer.id,
@@ -198,7 +193,7 @@ def create_booking(
         total_amount=total,
         advance_amount=advance,
         remaining_amount=remaining,
-        payment_status=payment_status,
+        transport_type=transport_type,
     )
 
     db.add(booking)
