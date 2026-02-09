@@ -16,11 +16,16 @@ class Company(Base):
     status = Column(String(20), default="active")
     currency = Column(String(10), default="USD")
     country = Column(String(100))
+    
     whatsapp_access_token = Column(String(255), nullable=True)
     whatsapp_phone_number_id = Column(String(50), nullable=True)
     whatsapp_business_account_id = Column(String(50), nullable=True)
     whatsapp_template_lang = Column(String(10), default="en_US")
     whatsapp_webhook_verify_token = Column(String(50), nullable=True)
+
+    stripe_publishable_key = Column(String(255), nullable=True)
+    stripe_secret_key = Column(String(255), nullable=True)
+    stripe_webhook_secret = Column(String(255), nullable=True)
     is_deleted = Column(Boolean, default=False)
 
 

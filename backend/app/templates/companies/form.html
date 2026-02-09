@@ -9,217 +9,423 @@
 </section>
 
 <section class="content">
-    <div class="container-fluid py-4">
-        <div class="row justify-content-center">
-            <div class="col-lg-12">
+<div class="container-fluid py-4">
+<div class="row justify-content-center">
+<div class="col-lg-12">
 
-                <form id="company-form" method="post" enctype="multipart/form-data" action="
-                            {% if is_my_profile %}
-                                {{ url_for('my_profile_update') }}
-                            {% elif company %}
-                                {{ url_for('company_update', company_id=company.id) }}
-                            {% else %}
-                                {{ url_for('company_create') }}
-                            {% endif %}
-                        " class="shadow-sm p-4 rounded bg-white border" novalidate>
+<form id="company-form"
+      method="post"
+      enctype="multipart/form-data"
+      action="
+        {% if is_my_profile %}
+            {{ url_for('my_profile_update') }}
+        {% elif company %}
+            {{ url_for('company_update', company_id=company.id) }}
+        {% else %}
+            {{ url_for('company_create') }}
+        {% endif %}
+      "
+      class="shadow-sm p-4 rounded bg-white border"
+      novalidate>
 
-                    {% if is_my_profile %}
-                    <div class="col-lg-12 profile-picture-upload mb-3">
-                        <label class="form-label fw-semibold">Company Logo</label>
-                        <div class="profile-picture d-flex" id="uploadTrigger">
-                            <div class="profile-picture-inner-box">
+<!-- ================= TABS ================= -->
+<ul class="nav nav-tabs mb-4 company-tabs">
+    <li class="nav-item">
+        <a class="nav-link active" data-bs-toggle="tab" href="#company-info">
+            Company Info
+        </a>
+    </li>
+    {% if company or is_my_profile %}
+    <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#whatsapp-config">
+            WhatsApp
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#stripe-config">
+            Stripe
+        </a>
+    </li>
+    {% endif %}
+</ul>
 
-                                <img id="upload-file" src="{{ url_for('static', path='assets/icon/uploadFile.png') }}"
-                                    {% if company.logo %}style="display:none" {% endif %} />
-                                <input type="file" id="fileInput" name="logo" accept="image/*">
-                                <img id="previewImage"
-                                    src="{% if company.logo %}{{ url_for('static', path=company.logo) }}{% endif %}"
-                                    height="60" width="60" alt="Profile Image" {% if not company.logo
-                                    %}style="display:none" {% endif %}>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
+<div class="tab-content">
+<input type="hidden" name="active_tab" id="active_tab" value="company">
 
-                    <div class="col-lg-12 ">
+<!-- ================= COMPANY INFO TAB ================= -->
+<div class="tab-pane fade show active" id="company-info">
+    {% if is_my_profile %}
+    <div class="col-lg-12 profile-picture-upload mb-3">
+        <label class="form-label fw-semibold">Company Logo</label>
+        <div class="profile-picture d-flex" id="uploadTrigger">
+            <div class="profile-picture-inner-box">
+                <img id="upload-file"
+                     src="{{ url_for('static', path='assets/icon/uploadFile.png') }}"
+                     {% if company.logo %}style="display:none"{% endif %}>
 
-                        <div class="row">
-                            <!-- Company Name -->
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label fw-semibold">Company Name</label>
-                                <input type="text" name="company_name"
-                                    class="form-control {% if errors.company_name %}is-invalid{% endif %}"
-                                    value="{{ form.company_name | default(company.company_name if company else '') }}">
-                                <span class="invalid-feedback">
-                                    {{ errors.company_name | default('') }}
-                                </span>
-                            </div>
+                <input type="file" id="fileInput" name="logo" accept="image/*">
 
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label fw-semibold">Currency</label>
-
-                                <select name="currency" class="form-select">
-                                    {% set selected_currency = form.currency
-                                    | default(company.currency if company else 'USD') %}
-
-                                    {% for code, name in currencies %}
-                                    <option value="{{ code }}" {% if code==selected_currency %}selected{% endif %}>
-                                        {{ code }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label fw-semibold">Country</label>
-
-                                <select name="country" id="country"
-                                    class="form-control {% if errors.country %}is-invalid{% endif %}">
-                                    <option value="">Select Country</option>
-
-                                    {% for c in countries %}
-                                    <option value="{{ c }}" {% if form.country==c or (company and company.country==c) %}
-                                        selected {% endif %}>
-                                        {{ c }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-
-                                {% if errors.country %}
-                                <span class="invalid-feedback d-block">
-                                    {{ errors.country }}
-                                </span>
-                                {% endif %}
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-semibold">Email</label>
-                                    <input type="email" name="email"
-                                        class="form-control {% if errors.email %}is-invalid{% endif %}"
-                                        value="{{ form.email | default(company.user.email if company else '') }}" {% if
-                                        company %}readonly{% endif %}>
-                                    <span class="invalid-feedback">
-                                        {{ errors.email | default('') }}
-                                    </span>
-                                </div>
-
-                                <!-- Phone -->
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-semibold">Phone</label>
-
-                                    <div class="input-group">
-                                        <!-- Country Code -->
-                                        <select name="country_code" id="country_code" class="form-select"
-                                            style="max-width: 110px;">
-                                            {% for code, name in country_codes %}
-                                            <option value="{{ code }}" {% if form.country_code==code or (company and
-                                                company.country_code==code) %} selected {% endif %}>
-                                                {{ code }}
-                                            </option>
-                                            {% endfor %}
-                                        </select>
-
-                                        <!-- Phone Number -->
-                                        <input type="text" name="phone"
-                                            class="form-control {% if errors.phone %}is-invalid{% endif %}"
-                                            value="{{ form.phone | default(company.phone if company else '') }}"
-                                            placeholder="Phone number">
-                                    </div>
-
-                                    {% if errors.phone %}
-                                    <span class="invalid-feedback d-block">
-                                        {{ errors.phone }}
-                                    </span>
-                                    {% endif %}
-                                </div>
-
-                            </div>
-
-                            {% if company and not is_my_profile %}
-                            <div class="mb-3 admin-only">
-                                <label class="form-label fw-semibold">Status</label>
-                                <select name="status" class="form-select">
-                                    <option value="active" {{ 'selected' if company.status=='active' }}>
-                                        Active
-                                    </option>
-                                    <option value="inactive" {{ 'selected' if company.status=='inactive' }}>
-                                        Inactive
-                                    </option>
-                                </select>
-                            </div>
-                            {% endif %}
-                            <!-- Buttons -->
-                            <div class="mt-4">
-                                <button type="submit" class="btn btn-submit">
-                                    {{ "Update" if company else "Create" }}
-                                </button>
-                                <a href="{{ url_for('company_list') }}" class="btn btn-cancel ms-2">Cancel</a>
-                            </div>
-
-                </form>
-
+                <img id="previewImage"
+                     src="{% if company.logo %}{{ url_for('static', path=company.logo) }}{% endif %}"
+                     height="60" width="60"
+                     {% if not company.logo %}style="display:none"{% endif %}>
             </div>
         </div>
     </div>
+    {% endif %}
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <label class="form-label fw-semibold">Company Name</label>
+        <input type="text" name="company_name" class="form-control"
+               value="{{ company.company_name if company else '' }}">
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label class="form-label fw-semibold">Currency</label>
+        <select name="currency" class="form-select">
+            {% for code, name in currencies %}
+            <option value="{{ code }}" {% if company and company.currency==code %}selected{% endif %}>
+                {{ code }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label class="form-label fw-semibold">Country</label>
+        <select name="country" id="country" class="form-control">
+            <option value="">Select Country</option>
+            {% for c in countries %}
+            <option value="{{ c }}" {% if company and company.country==c %}selected{% endif %}>
+                {{ c }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-semibold">Email</label>
+        <input type="email" name="email" class="form-control"
+               value="{{ company.user.email if company else '' }}"
+               {% if company %}readonly{% endif %}>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-semibold">Phone</label>
+        <div class="input-group">
+            <select name="country_code" class="form-select" style="max-width:110px">
+                {% for code, name in country_codes %}
+                <option value="{{ code }}" {% if company and company.country_code==code %}selected{% endif %}>
+                    {{ code }}
+                </option>
+                {% endfor %}
+            </select>
+            <input type="text" name="phone" class="form-control"
+                   value="{{ company.phone if company else '' }}">
+        </div>
+    </div>
+    {% if company and not is_my_profile %}
+        <div class="col-md-6 mb-3 admin-only">
+            <label class="form-label fw-semibold">Status</label>
+            <select name="status" class="form-select">
+                <option value="active" {{ 'selected' if company.status=='active' }}>
+                    Active
+                </option>
+                <option value="inactive" {{ 'selected' if company.status=='inactive' }}>
+                    Inactive
+                </option>
+            </select>
+        </div>
+    {% endif %}
+</div>
+</div>
+
+<!-- ================= WHATSAPP TAB ================= -->
+{% if company or is_my_profile %}
+<div class="tab-pane fade" id="whatsapp-config">
+
+<div class="alert alert-success">
+    <strong>WhatsApp Cloud API Configuration</strong>
+    <p class="mb-1">
+        To enable WhatsApp messaging for this company, you need to set up
+        WhatsApp Cloud API in Meta (Facebook) Developer Console.
+    </p>
+
+    <ul class="mb-2 ps-3">
+        <li>Create a Meta Developer account</li>
+        <li>Create a WhatsApp Cloud API app</li>
+        <li>Generate Access Token & Phone Number ID</li>
+        <li>Configure Webhook and Verify Token</li>
+    </ul>
+
+    <a href="https://developers.facebook.com/docs/whatsapp/cloud-api/get-started"
+       target="_blank"
+       class="text-decoration-none fw-semibold text-primary">
+        👉 View official WhatsApp Cloud API setup guide
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-semibold">Access Token
+            <span
+            class="ms-1 text-muted"
+            data-bs-toggle="tooltip"
+            data-bs-placement="right"
+            title="Paste your WhatsApp Access Token (starts with EAAC). You can find it in Facebook Developer Dashboard → Your App → WhatsApp Cloud API → Configuration."
+            style="cursor:pointer;"
+        >
+        <i class="fa fa-info-circle"></i>
+        </span>
+        </label>
+        <input type="password" name="whatsapp_access_token" class="form-control"
+               value="{{ company.whatsapp_access_token or '' }}" placeholder="EAAC*******">
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-semibold">Phone Number ID
+            <span
+            class="ms-1 text-muted"
+            data-bs-toggle="tooltip"
+            data-bs-placement="right"
+            title="Paste your WhatsApp Phone Number ID. You can find it in Facebook Developer Dashboard → Your App → WhatsApp Cloud API → Configuration."
+            style="cursor:pointer;"
+        >
+        <i class="fa fa-info-circle"></i>
+        </span>
+        </label>
+        <input type="text" name="whatsapp_phone_number_id" class="form-control"
+               value="{{ company.whatsapp_phone_number_id or '' }}" placeholder="110507345306077">
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-semibold">Business Account ID
+            <span
+            class="ms-1 text-muted"
+            data-bs-toggle="tooltip"
+            data-bs-placement="right"
+            title="Paste your WhatsApp Business Account ID. You can find it in Facebook Developer Dashboard → Your App → WhatsApp Cloud API → Configuration."
+            style="cursor:pointer;"
+        >
+        <i class="fa fa-info-circle"></i>
+        </span>
+        </label>
+        <input type="text" name="whatsapp_business_account_id" class="form-control"
+               value="{{ company.whatsapp_business_account_id or '' }}" placeholder="1748228388741967">
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-semibold">Webhook Verify Token
+            <span
+            class="ms-1 text-muted"
+            data-bs-toggle="tooltip"
+            data-bs-placement="right"
+            title="Paste your WhatsApp Webhook Verify Token. You can find it in Facebook Developer Dashboard → Your App → WhatsApp Cloud API → Configuration."
+            style="cursor:pointer;"
+        >
+        <i class="fa fa-info-circle"></i>
+        </span>
+        </label>
+ <input type="text"
+       name="whatsapp_webhook_verify_token"
+       class="form-control"
+       value="{{ company.whatsapp_webhook_verify_token or 'my_whatsapp_webhook_token' }}"
+       placeholder="">
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label class="form-label fw-semibold">Template Language</label>
+        <input type="text" name="whatsapp_template_lang" class="form-control"
+               value="{{ company.whatsapp_template_lang or 'en_US' }}">
+    </div>
+</div>
+</div>
+
+<!-- ================= STRIPE TAB ================= -->
+<div class="tab-pane fade" id="stripe-config">
+
+<div class="alert alert-success">
+    <strong>Stripe Payment Configuration</strong>
+    <p class="mb-1">
+        Configure Stripe to accept online payments for this company.
+        Each company must use its own Stripe account and API keys.
+    </p>
+
+    <ul class="mb-2 ps-3">
+        <li>Create or log in to a Stripe account</li>
+        <li>Get the <strong>Secret Key</strong> from Developers → API keys</li>
+        <li>Set up a <strong>Webhook</strong> and copy the Webhook Secret</li>
+        <li>Use <strong>Test keys</strong> for staging and <strong>Live keys</strong> for production</li>
+    </ul>
+
+    <a href="https://dashboard.stripe.com/apikeys"
+       target="_blank"
+       class="fw-semibold text-decoration-none text-primary">
+        👉 Open Stripe API Keys
+    </a>
+    <br>
+    <a href="https://dashboard.stripe.com/webhooks"
+       target="_blank"
+       class="fw-semibold text-decoration-none text-primary">
+        👉 Configure Stripe Webhooks
+    </a>
+</div>
+
+
+<div class="row">
+<div class="col-md-6 mb-3">
+    <label class="form-label fw-semibold">
+        Stripe Secret Key
+        <span
+            class="ms-1 text-muted"
+            data-bs-toggle="tooltip"
+            data-bs-placement="right"
+            title="Paste your Stripe Secret Key (starts with sk_). You can find it in Stripe Dashboard → Developers → API Keys."
+            style="cursor:pointer;"
+        >
+        <i class="fa fa-info-circle"></i>
+        </span>
+    </label>
+
+    <input type="password"
+           name="stripe_secret_key"
+           class="form-control"
+           placeholder="sk_live_********"
+           value="{{ company.stripe_secret_key or '' }}" placeholder="sk_test_51S4u1z2Lg20110507345306077">
+</div>
+
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-semibold">Stripe Publishable Key
+            <span
+            class="ms-1 text-muted"
+            data-bs-toggle="tooltip"
+            data-bs-placement="right"
+            title="Paste your Stripe Publishable Key (starts with pk_). You can find it in Stripe Dashboard → Developers → API Keys."
+            style="cursor:pointer;"
+        >
+        <i class="fa fa-info-circle"></i>
+        </span>
+        </label>
+        <input type="text" name="stripe_publishable_key" class="form-control"
+               value="{{ company.stripe_publishable_key or '' }}" placeholder="pk_test_51S4u1z2Lg20110507345306077">
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-semibold">Stripe Webhook Secret
+            <span
+            class="ms-1 text-muted"
+            data-bs-toggle="tooltip"
+            data-bs-placement="right"
+            title="Paste your Stripe Webhook Secret (starts with whsec_). You can find it in Stripe Dashboard → Developers → Webhooks → Add Endpoint."
+            style="cursor:pointer;"
+        >
+        <i class="fa fa-info-circle"></i>
+        </span>
+        </label>
+        <input type="text" name="stripe_webhook_secret" class="form-control"
+               value="{{ company.stripe_webhook_secret or '' }}" placeholder="whsec_51S4u1z2Lg20110507345306077">
+    </div>
+</div>
+</div>
+{% endif %}
+
+</div>
+
+<!-- ================= BUTTON ================= -->
+<div class="page-bottom-action-btn mt-4">
+    <button type="submit" class="btn btn-submit">
+        {{ "Update" if company else "Create" }}
+    </button>
+    {% if is_my_profile %}
+        <a href="{{ url_for('my_profile') }}" class="btn btn-cancel ms-2">
+            Cancel
+        </a>
+    {% elif company %}
+        <a href="{{ url_for('company_update', company_id=company.id) }}" class="btn btn-cancel ms-2">
+            Cancel
+        </a>
+    {% endif %}
+</div>
+
+</form>
+</div>
+</div>
+</div>
 </section>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    $(document).ready(function () {
-        $('#country').select2({
-            placeholder: "Select country",
-            allowClear: true,
-            width: '100%'
-        });
+$(document).ready(function () {
+
+    /* SELECT2 */
+    $('#country').select2({ width:'100%' });
+
+    /* FORM VALIDATION */
+    const validator = $("#company-form").validate({
+        ignore: ":hidden",
+        rules: {
+            company_name: { required: true },
+            email: { required: true, email: true },
+            phone: { required: true, minlength: 7 },
+            currency: { required: true },
+
+            whatsapp_access_token: { required: true },
+            whatsapp_phone_number_id: { required: true },
+            whatsapp_business_account_id: { required: false },
+            whatsapp_webhook_verify_token: { required: true },
+            whatsapp_template_lang: { required: true },
+
+            stripe_secret_key: { required: true },
+            stripe_publishable_key: { required: false },
+            stripe_webhook_secret: { required: true },
+        },
+        errorClass: "invalid-feedback",
+        highlight: el => $(el).addClass("is-invalid"),
+        unhighlight: el => $(el).removeClass("is-invalid")
     });
-    $(document).ready(function () {
 
-        $("#company-form").validate({
-            rules: {
-                company_name: {
-                    required: true,
-                },
-                email: {
-                    required: true,
-                    email: true
-                },
-                phone: {
-                    required: true,
-                    minlength: 7,
-                    maxlength: 15
-                },
-                currency: {
-                    required: true,
-                },
-            },
+    /* TAB-WISE VALIDATION */
+    $("#company-form").on("submit", function (e) {
+        let activeTab = $(".tab-pane.active").attr("id");
 
+        if (activeTab === "company-info") {
+            $("#whatsapp-config :input").each(function () {
+                $(this).rules("remove");
+            });
+            $("#stripe-config :input").each(function () {
+                $(this).rules("remove");
+            });
+        } else if (activeTab === "whatsapp-config") {
+            $("#company-info :input").each(function () {
+                $(this).rules("remove");
+            });
+            $("#stripe-config :input").each(function () {
+                $(this).rules("remove");
+            });
+        } else if (activeTab === "stripe-config") {
+            $("#whatsapp-config :input").each(function () {
+                $(this).rules("remove");
+            });
+            $("#company-info :input").each(function () {
+                $(this).rules("remove");
+            });
+        }
 
+        if (!$("#company-form").valid()) {
+            e.preventDefault();
+        }
+    });
 
-            errorElement: "span",
-            errorClass: "invalid-feedback",
+    /* ================= LOGO UPLOAD ================= */
+    const trigger = document.getElementById("uploadTrigger");
+    const fileInput = document.getElementById("fileInput");
+    const previewImage = document.getElementById("previewImage");
+    const uploadIcon = document.getElementById("upload-file");
 
-            highlight: function (element) {
-                $(element).addClass("is-invalid");
-            },
-
-            unhighlight: function (element) {
-                $(element).removeClass("is-invalid");
-            },
-
-            errorPlacement: function (error, element) {
-                error.insertAfter(element);
-            }
-        });
-
-        const trigger = document.getElementById("uploadTrigger");
-        const fileInput = document.getElementById("fileInput");
-        const previewImage = document.getElementById("previewImage");
-        const uploadIcon = document.getElementById("upload-file");
-
-        trigger.addEventListener("click", () => {
-            fileInput.click();
-        });
+    if (trigger && fileInput) {
+        trigger.addEventListener("click", () => fileInput.click());
 
         fileInput.addEventListener("change", (e) => {
             const file = e.target.files[0];
@@ -230,10 +436,24 @@
                 previewImage.src = reader.result;
                 previewImage.style.display = "block";
                 uploadIcon.style.display = "none";
-                trigger.classList.add("has-image"); // works if CSS exists
+                trigger.classList.add("has-image");
             };
             reader.readAsDataURL(file);
         });
+    }
+
+    $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+        const target = $(e.target).attr("href");
+
+        if (target === "#whatsapp-config") {
+            $("#active_tab").val("whatsapp");
+        } else if (target === "#stripe-config") {
+            $("#active_tab").val("stripe");
+        } else {
+            $("#active_tab").val("company");
+        }
     });
+});
 </script>
+
 {% endblock %}

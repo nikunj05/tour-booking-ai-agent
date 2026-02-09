@@ -229,14 +229,14 @@ def create_manual_booking(
     # ✅ WhatsApp notification
     try:
         phone_number = format_phone(country_code, phone)
-        # send_whatsapp_booking_confirmation(phone_number, booking)
+        send_whatsapp_booking_confirmation(phone_number, booking)
         # send_whatsapp_driver_details(phone_number, booking)
-        # itinerary_text = (
-        #     "📍 Tour Itinerary:\n\n"
-        #     + html_to_whatsapp_text(booking.tour_package.itinerary)
-        # )
+        itinerary_text = (
+            "📍 Tour Itinerary:\n\n"
+            + html_to_whatsapp_text(booking.tour_package.itinerary)
+        )
 
-        # send_whatsapp_text(phone_number, itinerary_text)
+        send_whatsapp_text(phone_number, itinerary_text)
 
     except Exception as e:
         print("WhatsApp send failed", e)

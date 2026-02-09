@@ -133,7 +133,6 @@ def create_page(
     request: Request,
     current_user: User = Depends(admin_only)
 ):
-
     return render_form(request, currencies=CURRENCIES, countries=COUNTRIES, country_codes=COUNTRY_CODES)
 
 @router.post("/create", name="company_create")
@@ -232,7 +231,7 @@ def edit_page(
     company = db.query(Company).get(company_id)
     if not company:
         return redirect_with_message(request, "Company not found")
-
+    
     return render_form(
         request,
         company=company,
@@ -253,31 +252,73 @@ def edit_page(
 def update_company(
     company_id: int,
     request: Request,
-    company_name: str = Form(...),
-    country_code: str = Form(...),  
-    phone: str = Form(""),
-    status: str = Form(...),
+
+    active_tab: str = Form("company"),
+
+    # Company info
+    company_name: str = Form(None),
+    country_code: str = Form(None),
+    phone: str = Form(None),
+    status: str = Form(None),
     country: str = Form(None),
-    currency: str = Form(...),
+    currency: str = Form(None),
+
+    # WhatsApp
+    whatsapp_access_token: str = Form(None),
+    whatsapp_phone_number_id: str = Form(None),
+    whatsapp_business_account_id: str = Form(None),
+    whatsapp_webhook_verify_token: str = Form(None),
+    whatsapp_template_lang: str = Form(None),
+
+    # Stripe
+    stripe_publishable_key: str = Form(None),
+    stripe_secret_key: str = Form(None),
+    stripe_webhook_secret: str = Form(None),
+
     db: Session = Depends(get_db),
     current_user: User = Depends(admin_only)
 ):
-
     company = db.query(Company).get(company_id)
     if not company:
         return redirect_with_message(request, "Company not found")
 
-    company.company_name = company_name
-    company.country_code = country_code
-    company.phone = phone
-    company.status = status
-    company.currency = currency
-    company.country = country
+    # ================= COMPANY INFO UPDATE =================
+    if active_tab == "company":
+        company.company_name = company_name
+        company.country_code = country_code
+        company.phone = phone
+        company.status = status
+        company.currency = currency
+        company.country = country
+
+        message = "Company details updated successfully"
+
+    # ================= WHATSAPP UPDATE =================
+    elif active_tab == "whatsapp":
+        company.whatsapp_access_token = whatsapp_access_token
+        company.whatsapp_phone_number_id = whatsapp_phone_number_id
+        company.whatsapp_business_account_id = whatsapp_business_account_id
+        company.whatsapp_webhook_verify_token = whatsapp_webhook_verify_token
+        company.whatsapp_template_lang = whatsapp_template_lang
+
+        message = "WhatsApp configuration updated successfully"
+
+    # ================= STRIPE UPDATE =================
+    elif active_tab == "stripe":
+        company.stripe_publishable_key = stripe_publishable_key
+        company.stripe_secret_key = stripe_secret_key
+        company.stripe_webhook_secret = stripe_webhook_secret
+
+        message = "Stripe configuration updated successfully"
+
+    else:
+        return redirect_with_message(request, "Invalid update request")
+
     db.commit()
-    
+
     return flash_redirect(
         url=request.url_for("company_list"),
-        message="Company Details updated successfully"
+        message=message
     )
 
 # =================================================
@@ -335,66 +376,98 @@ def my_profile(
 @router.post("/my-profile", name="my_profile_update")
 def update_my_profile(
     request: Request,
+    active_tab: str = Form("company"),
 
-    company_name: str = Form(...),
-    country_code: str = Form(...),
+    # ---------- COMPANY INFO ----------
+    company_name: str = Form(None),
+    country_code: str = Form(None),
     phone: str = Form(None),
-    currency: str = Form(...),
+    currency: str = Form(None),
     country: str = Form(None),
-    logo: UploadFile = File(None), 
+    logo: UploadFile = File(None),
+
+    # ---------- WHATSAPP ----------
+    whatsapp_access_token: str = Form(None),
+    whatsapp_phone_number_id: str = Form(None),
+    whatsapp_business_account_id: str = Form(None),
+    whatsapp_webhook_verify_token: str = Form(None),
+    whatsapp_template_lang: str = Form(None),
+
+    # Stripe
+    stripe_publishable_key: str = Form(None),
+    stripe_secret_key: str = Form(None),
+    stripe_webhook_secret: str = Form(None),
 
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     company = current_user.company
 
-    # ✅ Validate using CompanyUpdate
-    try:
-        form = CompanyUpdate(
-            company_name=company_name,
-            country_code=country_code,
-            phone=phone or None,
-            status=company.status,
-            currency=currency,
-            country=country
-        )
-    except ValidationError as e:
-        errors = {err["loc"][0]: err["msg"] for err in e.errors()}
-        return render_form(
-            request,
-            company=company,
-            currencies=CURRENCIES,
-            countries=COUNTRIES,
-            form={
-                "company_name": company_name,
-                "country_code": country_code,
-                "phone": phone,
-                "country": country
-            },
-            errors=errors,
-            status_code=400
-        )
+    # ================= COMPANY TAB =================
+    if active_tab == "company":
 
-    if logo and logo.filename:
-        ext = logo.filename.split(".")[-1].lower()
-        filename = f"company_{company.id}_{uuid.uuid4().hex}.{ext}"
-        filepath = os.path.join(UPLOAD_DIR, filename)
+        try:
+            form = CompanyUpdate(
+                company_name=company_name,
+                country_code=country_code,
+                phone=phone or None,
+                status=company.status,
+                currency=currency,
+                country=country
+            )
+        except ValidationError as e:
+            errors = {err["loc"][0]: err["msg"] for err in e.errors()}
+            return render_form(
+                request,
+                company=company,
+                currencies=CURRENCIES,
+                countries=COUNTRIES,
+                form=request.form(),
+                errors=errors,
+                status_code=400
+            )
 
-        with open(filepath, "wb") as f:
-            f.write(logo.file.read())
+        if logo and logo.filename:
+            ext = logo.filename.split(".")[-1].lower()
+            filename = f"company_{company.id}_{uuid.uuid4().hex}.{ext}"
+            filepath = os.path.join(UPLOAD_DIR, filename)
 
-        company.logo = f"uploads/companies/{filename}"
+            with open(filepath, "wb") as f:
+                f.write(logo.file.read())
 
-    # ✅ Update fields
-    company.company_name = form.company_name
-    company.country_code = form.country_code
-    company.phone = form.phone
-    company.currency = form.currency
-    company.country = form.country
+            company.logo = f"uploads/companies/{filename}"
+
+        company.company_name = form.company_name
+        company.country_code = form.country_code
+        company.phone = form.phone
+        company.currency = form.currency
+        company.country = form.country
+
+        message = "Company profile updated successfully"
+
+    # ================= WHATSAPP TAB =================
+    elif active_tab == "whatsapp":
+
+        company.whatsapp_access_token = whatsapp_access_token
+        company.whatsapp_phone_number_id = whatsapp_phone_number_id
+        company.whatsapp_business_account_id = whatsapp_business_account_id
+        company.whatsapp_webhook_verify_token = whatsapp_webhook_verify_token
+        company.whatsapp_template_lang = whatsapp_template_lang or "en_US"
+
+        message = "WhatsApp configuration updated successfully"
+
+    # ================= STRIPE TAB =================
+    elif active_tab == "stripe":
+        company.stripe_publishable_key = stripe_publishable_key
+        company.stripe_secret_key = stripe_secret_key
+        company.stripe_webhook_secret = stripe_webhook_secret
+
+        message = "Stripe configuration updated successfully"
 
     db.commit()
 
     return flash_redirect(
         url=request.url_for("my_profile"),
-        message="Profile updated successfully"
+        message=message
     )
+
