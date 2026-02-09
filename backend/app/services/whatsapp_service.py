@@ -9,8 +9,10 @@ logger = logging.getLogger(__name__)
 WHATSAPP_API_URL = "https://graph.facebook.com/v17.0"
 
 def send_whatsapp_booking_confirmation(phone_number: str, booking):
-    access_token = os.getenv("WHATSAPP_ACCESS_TOKEN")
-    phone_number_id = os.getenv("WHATSAPP_PHONE_NUMBER_ID")
+
+    company = booking.tour_package.company
+    access_token = company.whatsapp_access_token
+    phone_number_id = company.whatsapp_phone_number_id
 
     if not access_token or not phone_number_id:
         raise ValueError("WhatsApp credentials missing")
@@ -64,12 +66,29 @@ def format_time_12h(t):
     return t.strftime("%I:%M %p")
 
 def send_whatsapp_driver_details(phone_number: str, booking):
-    access_token = os.getenv("WHATSAPP_ACCESS_TOKEN")
-    phone_number_id = os.getenv("WHATSAPP_PHONE_NUMBER_ID")
+
+    company = booking.tour_package.company
+    access_token = company.whatsapp_access_token
+    phone_number_id = company.whatsapp_phone_number_id
 
     url = f"{WHATSAPP_API_URL}/{phone_number_id}/messages"
 
-    driver = booking.driver
+    drivers_text = "-"
+    if booking.vehicles:
+        lines = []
+        for i, vehicle in enumerate(booking.vehicles, start=1):
+            d = vehicle.driver
+            if not d:
+                continue
+
+            lines.append(
+                f"{i}. {d.name}\n"
+                f"📞 {format_phone(d.country_code, d.phone_number)}\n"
+                f"🚗 {d.vehicle_type} ({d.vehicle_number})\n"
+                f"🪑 Seats: {vehicle.seats}"
+            )
+
+        drivers_text = "\n\n".join(lines)
 
     payload = {
         "messaging_product": "whatsapp",
@@ -83,17 +102,10 @@ def send_whatsapp_driver_details(phone_number: str, booking):
                     "type": "body",
                     "parameters": [
                         {"type": "text", "text": booking.customer.guest_name},     # {{1}}
-                        {"type": "text", "text": driver.name if driver else "-"},  # {{2}}
-                        {"type": "text", "text": format_phone(driver.country_code, driver.phone_number) if driver else "-"}, # {{3}}
-                        {
-                            "type": "text",
-                            "text": f"{driver.vehicle_type} ({driver.vehicle_number})"
-                            if driver else "-"
-                        }, # {{4}}
-                        {
-                            "type": "text",
-                            "text": booking.tour_package.itinerary or "-"
-                        }, # {{5}}
+                        {"type": "text", "text": "text"},  # {{2}}
+                        {"type": "text", "text": "test"}, # {{3}}
+                        {"type": "text", "text": "test"},                     # {{4}} ← MULTI DRIVER
+                        {"type": "text", "text": "test"}, # {{5}}
                     ],
                 }
             ],
@@ -110,8 +122,9 @@ def send_whatsapp_driver_details(phone_number: str, booking):
 
 
 def send_whatsapp_text(phone_number: str, message: str):
-    access_token = os.getenv("WHATSAPP_ACCESS_TOKEN")
-    phone_number_id = os.getenv("WHATSAPP_PHONE_NUMBER_ID")
+    company = booking.tour_package.company
+    access_token = company.whatsapp_access_token
+    phone_number_id = company.whatsapp_phone_number_id
 
     url = f"{WHATSAPP_API_URL}/{phone_number_id}/messages"
 

@@ -8,23 +8,30 @@ from app.models.company import Company
 
 router = APIRouter()
 
-VERIFY_TOKEN = os.getenv("WHATSAPP_WEBHOOK_VERIFY_TOKEN")
-WHATSAPP_TOKEN = os.getenv("WHATSAPP_ACCESS_TOKEN")
-PHONE_NUMBER_ID = os.getenv("WHATSAPP_PHONE_NUMBER_ID")
-
 # -------------------------------
 # Webhook Verification (GET)
 # -------------------------------
 @router.get("/webhooks/whatsapp")
-async def verify_webhook(request: Request):
+async def verify_webhook(
+    request: Request,
+    db: Session = Depends(get_db)
+):
     hub_mode = request.query_params.get("hub.mode")
     hub_token = request.query_params.get("hub.verify_token")
     hub_challenge = request.query_params.get("hub.challenge")
 
-    if hub_mode == "subscribe" and hub_token == VERIFY_TOKEN:
-        return int(hub_challenge)
+    if hub_mode != "subscribe" or not hub_token:
+        return "Invalid request"
 
-    return "Invalid token"
+    company = db.query(Company).filter(
+        Company.whatsapp_webhook_verify_token == hub_token,
+        Company.is_deleted == False
+    ).first()
+
+    if not company:
+        return "Invalid token"
+
+    return int(hub_challenge)
 
 # -------------------------------
 # Receive WhatsApp Messages (POST)
@@ -83,22 +90,24 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
                     send_whatsapp_message(
                         phone=phone,
                         text=result.get("text"),
+                        company=company,
                         buttons=result.get("buttons"),
                         list_data=result.get("list_data")
                     )
                 else:
                     send_whatsapp_message(
                         phone=phone,
-                        text=result
+                        text=result,
+                        company=company
                     )
 
     return {"status": "ok"}
 
 
-def send_whatsapp_message(phone, text, buttons=None, list_data=None):
-    url = f"https://graph.facebook.com/v19.0/{PHONE_NUMBER_ID}/messages"
+def send_whatsapp_message(phone, text, company: None, buttons=None, list_data=None):
+    url = f"https://graph.facebook.com/v19.0/{company.whatsapp_phone_number_id}/messages"
     headers = {
-        "Authorization": f"Bearer {WHATSAPP_TOKEN}",
+        "Authorization": f"Bearer {company.whatsapp_access_token}",
         "Content-Type": "application/json"
     }
 

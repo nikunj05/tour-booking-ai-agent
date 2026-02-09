@@ -3695,6 +3695,16 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
     }
 }
 
+/* Company Tabs */
+.company-tabs .nav-link {
+    color: #888;
+}
+.company-tabs .nav-link.active {
+    color: #159957;
+    font-weight: 600;
+    border-bottom: 2px solid #159957;
+}
+
 @media (max-width: 575px) {
     .driver-side-header-button .header-add-new-box-button {
         width: 100% !important;
