@@ -7,18 +7,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/png" href="{{ url_for('static', path='assets/dist/img/favicon.ico') }}" sizes="16x16">
 
-    <link rel="stylesheet"
-        href="{{ url_for('static', path='assets/plugins/fontawesome-free/css/all.min.css', _scheme='https', _external=True) }}">
-    <link rel="stylesheet"
-        href="{{ url_for('static', path='assets/dist/css/adminlte.min.css', _scheme='https', _external=True) }}">
-    <link rel="stylesheet"
-        href="{{ url_for('static', path='assets/plugins/bootstrap/css/bootstrap.min.css', _scheme='https', _external=True) }}">
-    <link rel="stylesheet"
-        href="{{ url_for('static', path='assets/dist/css/style.css', _scheme='https', _external=True) }}">
-    <link rel="stylesheet"
-        href="{{ url_for('static', path='assets/plugins/toastr/toastr.min.css', _scheme='https', _external=True) }}">
-    <link rel="stylesheet"
-        href="{{ url_for('static', path='assets/dist/css/jquery-impromptu.css', _scheme='https', _external=True) }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='assets/plugins/fontawesome-free/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='assets/dist/css/adminlte.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='assets/plugins/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='assets/dist/css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='assets/plugins/toastr/toastr.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='assets/dist/css/jquery-impromptu.css') }}">
 
     {% block extra_css %}{% endblock %}
 </head>
@@ -38,16 +32,11 @@
         {% block content %}{% endblock %}
     </div>
 
-    <script
-        src="{{ url_for('static', path='assets/plugins/jquery/jquery.min.js', _scheme='https', _external=True) }}"></script>
-    <script
-        src="{{ url_for('static', path='assets/plugins/bootstrap/js/bootstrap.bundle.min.js', _scheme='https', _external=True) }}"></script>
-    <script
-        src="{{ url_for('static', path='assets/dist/js/adminlte.min.js', _scheme='https', _external=True) }}"></script>
-    <script
-        src="{{ url_for('static', path='assets/dist/js/jquery.validate.min.js', _scheme='https', _external=True) }}"></script>
-    <script
-        src="{{ url_for('static', path='assets/plugins/toastr/toastr.min.js', _scheme='https', _external=True) }}"></script>
+    <script src="{{ url_for('static', path='assets/plugins/jquery/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', path='assets/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', path='assets/dist/js/adminlte.min.js') }}"></script>
+    <script src="{{ url_for('static', path='assets/dist/js/jquery.validate.min.js') }}"></script>
+    <script src="{{ url_for('static', path='assets/plugins/toastr/toastr.min.js') }}"></script>
     {% if request.cookies.get('flash_error') %}
     <script>
         toastr.error("{{ request.cookies.get('flash_error') }}");
