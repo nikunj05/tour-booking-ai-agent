@@ -1,0 +1,240 @@
+{% extends "layout.html" %}
+
+{% block extra_css %}
+<style>
+.upload-box {
+    border: 2px dashed #ced4da;
+    border-radius: 6px;
+    padding: 25px;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+}
+
+.upload-box input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.gallery-image-wrapper {
+    position: relative;
+}
+
+.gallery-image-wrapper .remove-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: rgba(255, 0, 0, 0.7);
+    border: none;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="content-header px-1">
+    <div class="container-fluid">
+        <h1>{{ "Edit Vehicle" if vehicle else "Create Vehicle" }}</h1>
+        <hr>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+
+                <form id="vehicle-form" method="post" enctype="multipart/form-data"
+                      action="{% if vehicle %}{{ url_for('vehicle_update', vehicle_id=vehicle.id) }}{% else %}{{ url_for('vehicle_create') }}{% endif %}"
+                      class="shadow-sm p-4 rounded bg-white border">
+
+                    <div class="row">
+                        <!-- Vehicle Name -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Vehicle Name</label>
+                            <input type="text" name="name" class="form-control"
+                                   value="{{ vehicle.name if vehicle else '' }}">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Vehicle Type</label>
+                            <input type="text" name="vehicle_type" class="form-control"
+                                   value="{{ vehicle.vehicle_type if vehicle else '' }}">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Vehicle Number</label>
+                            <input type="text" name="vehicle_number" class="form-control"
+                                   value="{{ vehicle.vehicle_number if vehicle else '' }}">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Seats</label>
+                            <input type="text" name="seats" class="form-control"
+                                   value="{{ vehicle.seats if vehicle else '' }}">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Status</label>
+                            <select name="is_active" class="form-select">
+                                <option value="true" {% if vehicle and vehicle.is_active %}selected{% endif %}>Active</option>
+                                <option value="false" {% if vehicle and not vehicle.is_active %}selected{% endif %}>Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Photos -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Vehicle Photos</label>
+                            <div class="upload-box">
+                                <input type="file" id="vehicleGalleryInput" name="gallery_images" accept="image/*" multiple>
+                                <p>Upload multiple photos</p>
+                            </div>
+
+                            <!-- Existing Images -->
+                            <div id="existingGalleryWrapper" class="mt-3" style="display:none;">
+                                <h6>Existing Images</h6>
+                                <div id="existingGallery" class="d-flex gap-3 flex-wrap mt-3">
+                                    {% if vehicle and vehicle.photos %}
+                                        {% for img in vehicle.photos %}
+                                            <div class="gallery-image-wrapper">
+                                                <img src="{{ url_for('static', path=img.file_path) }}" class="rounded border"
+                                                     style="width:70px;height:70px;object-fit:cover;">
+                                                <button type="button" class="remove-btn delete-db-image" data-image-id="{{ img.id }}">&times;</button>
+                                            </div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- New Images Preview -->
+                            <div id="newGalleryWrapper" class="mt-3" style="display:none;">
+                                <h6>New Images</h6>
+                                <div id="newGallery" class="d-flex gap-2 flex-wrap mt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="page-bottom-action-btn mt-4">
+                        <button type="submit" class="btn btn-submit">{{ "Update" if vehicle else "Create" }}</button>
+                        <a href="{{ url_for('vehicle_list') }}" class="btn btn-cancel ms-2">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; 
+let selectedGalleryFiles = [];
+
+ $("#vehicle-form").validate({
+            rules: {
+                name: { required: true },
+                vehicle_number: { required: true },
+                vehicle_type: { required: true },
+                seats: { required: true ,digits:true,min:1},
+            },
+
+            errorElement: "span",
+            errorClass: "invalid-feedback",
+
+            highlight: function (element) {
+                $(element).addClass("is-invalid");
+            },
+            unhighlight: function (element) {
+                $(element).removeClass("is-invalid");
+            },
+            errorPlacement: function (error, element) {
+                error.insertAfter(element);
+            }
+        });
+
+// Show existing gallery if any
+$(document).ready(function () {
+    if ($('#existingGallery .gallery-image-wrapper').length > 0) {
+        $('#existingGalleryWrapper').show();
+    }
+});
+
+// Handle new image selection
+$('#vehicleGalleryInput').on('change', function () {
+    Array.from(this.files).forEach(file => {
+
+        if (!file.type.startsWith('image/')) {
+            toastr.error("Only image files are allowed");
+            return;
+        }
+
+        if (file.size > MAX_IMAGE_SIZE) {
+            toastr.error("Some images were skipped because they exceed the 10 MB size limit");
+            return;
+        }
+
+        if (selectedGalleryFiles.some(f => f.name === file.name)) return;
+
+        selectedGalleryFiles.push(file);
+
+        const reader = new FileReader();
+        reader.onload = e => {
+            $('#newGallery').append(`
+                <div class="gallery-image-wrapper" data-name="${file.name}">
+                    <img src="${e.target.result}" class="rounded border" style="width:70px;height:70px;object-fit:cover;">
+                    <button type="button" class="remove-btn remove-new-image">&times;</button>
+                </div>
+            `);
+            $('#newGalleryWrapper').show();
+        };
+        reader.readAsDataURL(file);
+    });
+
+    syncGalleryInput();
+});
+
+// Remove new images
+$('#newGallery').on('click', '.remove-new-image', function () {
+    const wrapper = $(this).closest('.gallery-image-wrapper');
+    const fileName = wrapper.data('name');
+
+    selectedGalleryFiles = selectedGalleryFiles.filter(f => f.name !== fileName);
+    wrapper.remove();
+    syncGalleryInput();
+    if (selectedGalleryFiles.length === 0) $('#newGalleryWrapper').hide();
+});
+
+// Delete existing DB images
+$('#existingGallery').on('click', '.delete-db-image', function () {
+    const btn = $(this);
+    const imageId = btn.data('image-id');
+
+    confirmDelete(`/vehicles/gallery-image/${imageId}/delete`, "Do you really want to delete this image permanently?", "POST", function () {
+        btn.closest('.gallery-image-wrapper').fadeOut(200, function () {
+            $(this).remove();
+            if ($('#existingGallery .gallery-image-wrapper').length === 0) $('#existingGalleryWrapper').hide();
+        });
+    });
+});
+
+// Sync files to input for form submission
+function syncGalleryInput() {
+    const dt = new DataTransfer();
+    selectedGalleryFiles.forEach(file => dt.items.add(file));
+    document.getElementById('vehicleGalleryInput').files = dt.files;
+}
+</script>
+{% endblock %}

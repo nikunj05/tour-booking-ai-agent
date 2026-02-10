@@ -44,13 +44,48 @@ uvicorn app.main:app --reload --port 8000
 ngrok http 8000
 server : uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
+sudo nano /etc/systemd/system/tourbot.service
 after take pull
+sudo systemctl restart gunicorn
 sudo systemctl restart tourbot
-
-
 
 12. Setup WhatsApp Webhook
 Go to Meta Developer Dashboard → Your App → WhatsApp → Configure → Webhooks
 Copy ngrok URL → Add endpoint: /webhooks/whatsapp
 Verify token: my_whatsapp_webhook_token
 
+
+ssl : sudo nano /etc/nginx/sites-available/tourbot
+
+# Redirect all HTTP requests to HTTPS
+server {
+    listen 80;
+    server_name tourbookingaiagent.coderscotch.com;
+    return 301 https://$host$request_uri;
+}
+
+# Main HTTPS server
+server {
+    listen 443 ssl;
+    server_name tourbookingaiagent.coderscotch.com;
+
+    # SSL certs from Let's Encrypt
+    ssl_certificate /etc/letsencrypt/live/tourbookingaiagent.coderscotch.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/tourbookingaiagent.coderscotch.com/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    # Serve static files
+    location /static/ {
+        alias /var/www/html/tour-booking-ai-agent/backend/app/static/;
+    }
+
+    # Proxy to Gunicorn
+    location / {
+        proxy_pass http://unix:/run/tourbot.sock;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

@@ -62,7 +62,12 @@ class BookingVehicle(Base):
     driver_id = Column(
         Integer,
         ForeignKey("drivers.id"),
-        nullable=False
+        nullable=True
+    )
+    vehicle_id = Column(
+        Integer,
+        ForeignKey("vehicles.id"),
+        nullable=True
     )
 
     seats = Column(Integer, nullable=False)
@@ -71,3 +76,4 @@ class BookingVehicle(Base):
 
     booking = relationship("ManualBooking", back_populates="vehicles")
     driver = relationship("Driver")
+    vehicle = relationship("Vehicle")

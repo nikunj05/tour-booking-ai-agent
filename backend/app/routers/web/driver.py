@@ -78,9 +78,8 @@ def driver_datatable(
         data.append({
             "id": d.id,
             "name": d.name,
-            "vehicle": f"{d.vehicle_type} ({d.vehicle_number})",
-            "seats": d.seats,
             "phone": f"{d.country_code}{d.phone_number}",
+            "status": "Active" if d.is_active else "Inactive",
             "actions": f"""
                 <a href="{request.url_for('driver_edit_page', driver_id=d.id)}"
                    class="btn btn-sm btn-edit">
@@ -113,9 +112,8 @@ async def driver_create(
     name: str = Form(...),
     country_code: str = Form(...),
     phone_number: str = Form(...),
-    vehicle_type: str = Form(...),
-    vehicle_number: str = Form(...),
-    seats: int = Form(...),
+    is_active: bool = Form(...),
+    license_number: str = Form(...),
     image: UploadFile = File(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(company_only),
@@ -126,9 +124,8 @@ async def driver_create(
         name=name,
         country_code=country_code,
         phone_number=phone_number,
-        vehicle_type=vehicle_type,
-        vehicle_number=vehicle_number,
-        seats=seats,
+        is_active=is_active,
+        license_number=license_number,
     )
 
     # ✅ IMAGE UPLOAD
@@ -177,11 +174,10 @@ def update_driver(
     driver_id: int,
     request: Request,
     name: str = Form(...),
-    vehicle_type: str = Form(...),
-    vehicle_number: str = Form(...),
-    seats: int = Form(...),
     country_code: str = Form(...),
     phone_number: str = Form(...),
+    is_active: bool = Form(...),
+    license_number: str = Form(...),
     image: UploadFile = File(None),
 
     db: Session = Depends(get_db),
@@ -192,11 +188,10 @@ def update_driver(
         return flash_redirect(request.url_for("driver_list"), "Driver not found")
 
     driver.name = name
-    driver.vehicle_type = vehicle_type
-    driver.vehicle_number = vehicle_number
-    driver.seats = seats
     driver.country_code = country_code
     driver.phone_number = phone_number
+    driver.is_active = is_active
+    driver.license_number = license_number
 
     if image and image.filename:
         ext = image.filename.split(".")[-1]

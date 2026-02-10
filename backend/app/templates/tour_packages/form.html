@@ -432,28 +432,6 @@
         updateGalleryHeaders();
     });
 
-    // Delete existing DB images
-    // $('#existingGallery').on('click', '.delete-db-image', function () {
-    //     const btn = $(this);
-    //     const imageId = btn.data('image-id');
-
-    //     if (!confirm("Delete this image permanently?")) return;
-
-    //     $.ajax({
-    //         url: `/tour-packages/gallery-image/${imageId}/delete`,
-    //         type: 'POST',
-    //         success: function () {
-    //             btn.closest('.gallery-image-wrapper').fadeOut(200, function () {
-    //                 $(this).remove();
-    //                 updateGalleryHeaders();
-    //             });
-    //         },
-    //         error: function () {
-    //             alert("Failed to delete image");
-    //         }
-    //     });
-    // });
-
     $('#existingGallery').on('click', '.delete-db-image', function () {
 
         const btn = $(this);

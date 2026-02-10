@@ -16,11 +16,10 @@ class Driver(Base):
     name = Column(String, nullable=False)
     country_code = Column(String(10), nullable=False, server_default='+91')
     phone_number = Column(String, nullable=False)
-    vehicle_type = Column(String, nullable=True)   
-    vehicle_number = Column(String, nullable=True)
-    seats = Column(Integer, nullable=True)
+    license_number = Column(String, unique=True, nullable=True)
     image = Column(String, nullable=True)
     is_deleted = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
     company = relationship("Company", backref="drivers")
 
     tour_packages = relationship(
