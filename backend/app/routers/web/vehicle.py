@@ -181,40 +181,27 @@ async def vehicle_update(
 
     form = await request.form()
     
-    # Update basic fields
     vehicle.name = form.get("name")
     vehicle.vehicle_type = form.get("vehicle_type")
     vehicle.vehicle_number = form.get("vehicle_number")
     vehicle.seats = form.get("seats")
     vehicle.is_active = bool(form.get("is_active"))
-    
-    # Handle multiple photo upload
-    files = form.getlist("gallery_images")
-    if files and files[0].filename:  # if any new file is uploaded
-        # Delete old photos
-        for photo in vehicle.photos:
-            if os.path.exists(os.path.join("app/static", photo.file_path)):
-                os.remove(os.path.join("app/static", photo.file_path))
-            db.delete(photo)
-        db.commit()  # commit deletion
 
-        # Save new photos
-        for file in files:
+    # Handle multiple new gallery images (add only, do NOT delete old ones)
+    files = form.getlist("gallery_images")  # input name="gallery_images" in form
+    for file in files:
+        if file.filename:  # skip empty files
             filename = f"{datetime.utcnow().timestamp()}_{file.filename}"
-            # Absolute path to save the file
-            save_path = os.path.join(UPLOAD_DIR, filename)
-            with open(save_path, "wb") as f:
+            file_path = os.path.join(UPLOAD_DIR, filename)
+            with open(file_path, "wb") as f:
                 f.write(await file.read())
-
-            # Relative path to store in DB (after 'static/')
+            # Store relative path in DB
             relative_path = f"uploads/vehicles/{filename}"
             db.add(VehiclePhoto(vehicle_id=vehicle.id, file_path=relative_path))
 
     db.commit()
 
-    
     return flash_redirect(url=request.url_for("vehicle_list"), message="Vehicle updated successfully")
-
 # =================================================
 # DELETE API
 # =================================================
@@ -233,3 +220,29 @@ def vehicle_delete(
     db.commit()
     
     return flash_redirect(url=request.url_for("vehicle_list"), message="Vehicle deleted successfully")
+
+
+@router.post("/gallery-image/{image_id}/delete", name="vehicle_gallery_image_delete")
+def delete_vehicle_image(
+    image_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(company_only)
+):
+    # Fetch the image
+    photo = db.query(VehiclePhoto).get(image_id)
+    if not photo:
+        raise HTTPException(status_code=404, detail="Image not found")
+
+    # Optional: verify the vehicle belongs to the user's company
+    if photo.vehicle.company_id != current_user.company.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Delete file from disk
+    if os.path.exists(photo.file_path):
+        os.remove(photo.file_path)
+
+    # Delete DB record
+    db.delete(photo)
+    db.commit()
+
+    return {"success": True, "message": "Image deleted successfully"}

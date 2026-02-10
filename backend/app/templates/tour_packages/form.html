@@ -1,49 +1,5 @@
 {% extends "layout.html" %}
 
-{% block extra_css %}
-<style>
-    .rich-editor {
-        height: 180px;
-        border: 1px solid #ced4da;
-        border-radius: 6px;
-    }
-
-    .upload-box {
-        border: 2px dashed #ced4da;
-        border-radius: 6px;
-        padding: 25px;
-        text-align: center;
-        cursor: pointer;
-        position: relative;
-    }
-
-    .upload-box input {
-        position: absolute;
-        inset: 0;
-        opacity: 0;
-        cursor: pointer;
-    }
-
-    .gallery-image-wrapper {
-        position: relative;
-    }
-
-    .gallery-image-wrapper .remove-btn {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        background: rgba(255, 0, 0, 0.7);
-        border: none;
-        color: white;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        cursor: pointer;
-        font-weight: bold;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
 <section class="content-header px-1">
     <div class="container-fluid">
