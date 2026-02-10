@@ -42,8 +42,15 @@ SELECT * FROM agents;
 11. run ngrok Server
 uvicorn app.main:app --reload --port 8000
 ngrok http 8000
+server : uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+after take pull
+sudo systemctl restart tourbot
+
+
 
 12. Setup WhatsApp Webhook
 Go to Meta Developer Dashboard → Your App → WhatsApp → Configure → Webhooks
 Copy ngrok URL → Add endpoint: /webhooks/whatsapp
 Verify token: my_whatsapp_webhook_token
+
