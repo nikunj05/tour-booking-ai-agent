@@ -74,10 +74,22 @@ def driver_datatable(
     data = []
     edit_icon = "/static/assets/icon/edit.svg"
     trash_icon = "/static/assets/icon/trash.svg"
+
     for d in drivers:
+        if d.image and d.image.strip():
+            image_url = request.url_for('static', path=d.image)
+        else:
+            image_url = request.url_for('static', path='assets/icon/profile.png')
         data.append({
             "id": d.id,
-            "name": d.name,
+            "name": f"""
+                <div class="d-flex align-items-center">
+                    <img src="{image_url}" 
+                        class="driver-avatar me-2" 
+                        alt="Driver">
+                    <span>{d.name}</span>
+                </div>
+            """,
             "phone": f"{d.country_code}{d.phone_number}",
             "status": "Active" if d.is_active else "Inactive",
             "actions": f"""

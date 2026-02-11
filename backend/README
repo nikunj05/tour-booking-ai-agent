@@ -47,6 +47,7 @@ server : uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 sudo nano /etc/systemd/system/tourbot.service
 after take pull
 sudo systemctl restart gunicorn
+sudo systemctl restart nginx
 sudo systemctl restart tourbot
 
 12. Setup WhatsApp Webhook
