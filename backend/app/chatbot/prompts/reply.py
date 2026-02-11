@@ -171,28 +171,34 @@ IMPORTANT:
 """
 
 def build_booking_confirmation_message(booking):
-    drivers = [bd.driver for bd in booking.vehicles]
+    # Vehicles & Drivers
+    vehicles = [bd.vehicle for bd in booking.vehicles_drivers if bd.vehicle]
+    drivers = [bd.driver for bd in booking.vehicles_drivers if bd.driver]
 
+    # Vehicle Details
+    if vehicles:
+        vehicle_lines = []
+        for idx, vehicle in enumerate(vehicles, start=1):
+            vehicle_lines.append(
+                f"""• {vehicle.name} {vehicle.vehicle_type or 'N/A'} ({vehicle.seats or 'N/A'} seats) {vehicle.vehicle_number or 'N/A'}"""
+            )
+        vehicle_details = "\n".join(vehicle_lines)
+    else:
+        vehicle_details = "• Vehicle details will be assigned and shared before pickup."
+
+    # Driver Details
     if drivers:
         driver_lines = []
         for idx, driver in enumerate(drivers, start=1):
             driver_lines.append(
-                f"""• *Vehicle {idx}:* {driver.vehicle_type} ({driver.seats} seats)
-  - Vehicle No: {driver.vehicle_number}
-  - Driver Name: {driver.name}
-  - Contact: {driver.country_code}{driver.phone_number}
-"""
+                f"• *Driver {idx}:* {driver.name} ({driver.country_code or ''}{driver.phone_number or ''})"
             )
         driver_details = "\n".join(driver_lines)
     else:
-        driver_details = (
-            "• Driver details will be assigned and shared before pickup."
-        )
+        driver_details = "• Driver details will be assigned and shared before pickup."
 
     travel_time = (
-        f" at {booking.travel_time.strftime('%I:%M %p')}"
-        if booking.travel_time
-        else ""
+        f" at {booking.travel_time.strftime('%I:%M %p')}" if booking.travel_time else ""
     )
 
     summary_text = f"""
@@ -201,19 +207,17 @@ Hello *{booking.customer.guest_name}*,
 ✅ Your booking has been *successfully confirmed*
 
 📄 *Booking Details*
-
 • Booking ID: {booking.id}
 • Package: {booking.tour_package.title}
 • Travel Date: {booking.travel_date}{travel_time}
 • Pickup Location: {booking.pickup_location}
 
 💳 *Payment Summary*
-
 • Amount Paid: {booking.advance_amount}
 • Remaining Amount: {booking.remaining_amount}
 
 🚘 *Vehicle & Driver Information*
-
+{vehicle_details}
 {driver_details}
 
 Thank you for choosing us.
@@ -229,7 +233,6 @@ Would you like to change any booking details?
             {"id": "CHANGE_DETAILS_NO", "title": "No"}
         ]
     }
-
 def build_payment_failed_message(booking, session):
     text = f"""
 Hello *{booking.customer.guest_name}*,

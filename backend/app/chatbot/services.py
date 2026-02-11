@@ -1,6 +1,7 @@
 from sqlalchemy import distinct
 from app.models.manual_booking import ManualBooking,BookingVehicleDriver
 from app.models.driver import Driver
+from app.models.vehicle import Vehicle
 from app.models.tour_package import TourPackage,TourPackageDriver
 from app.models.customer import Customer
 from decimal import Decimal
@@ -57,9 +58,9 @@ def build_vehicle_combinations(drivers, total_pax, max_combo=2):
     return options[:5]  # limit list
 
 def get_available_drivers(db, company_id, package_id, travel_date):
-    booked_driver_ids = (
-        db.query(BookingVehicle.driver_id)
-        .join(ManualBooking, ManualBooking.id == BookingVehicle.booking_id)
+    booked_vehicle_ids = (
+        db.query(BookingVehicleDriver.vehicle_id)
+        .join(ManualBooking, ManualBooking.id == BookingVehicleDriver.booking_id)
         .filter(
             ManualBooking.travel_date == travel_date,
             ManualBooking.is_deleted == False
@@ -68,15 +69,15 @@ def get_available_drivers(db, company_id, package_id, travel_date):
         .all()
     )
 
-    booked_driver_ids = [d[0] for d in booked_driver_ids]
+    booked_vehicle_ids = [d[0] for d in booked_vehicle_ids]
 
-    drivers = (
-        db.query(Driver)
+    vehicles = (
+        db.query(Vehicle)
         .filter(
-            Driver.company_id == company_id,
-            Driver.is_deleted == False,
-            ~Driver.id.in_(booked_driver_ids),
-            Driver.seats > 0
+            Vehicle.company_id == company_id,
+            Vehicle.is_deleted == False,
+            ~Vehicle.id.in_(booked_vehicle_ids),
+            Vehicle.seats > 0
         )
         .all()
     )
@@ -88,7 +89,7 @@ def get_available_drivers(db, company_id, package_id, travel_date):
             "vehicle_number": d.vehicle_number,
             "seats": d.seats
         }
-        for d in drivers
+        for d in vehicles
     ]
 
 def to_decimal(value):
@@ -150,24 +151,24 @@ def create_booking(
     for v in vehicles or []:
         if isinstance(v, dict):
             normalized.append({
-                "driver_id": v["id"],
+                "vehicle_id": v["id"],
                 "seats": v["seats"]
             })
         else:
             normalized.append({
-                "driver_id": v,
+                "vehicle_id": v,
                 "seats": 0
             })
 
-    driver_ids = [v["driver_id"] for v in normalized]
+    vehicle_ids = [v["vehicle_id"] for v in normalized]
 
     # ✅ Availability check
-    if driver_ids:
+    if vehicle_ids:
         conflict = (
-            db.query(BookingVehicle)
+            db.query(BookingVehicleDriver)
             .join(ManualBooking)
             .filter(
-                BookingVehicle.driver_id.in_(driver_ids),
+                BookingVehicleDriver.vehicle_id.in_(vehicle_ids),
                 ManualBooking.travel_date == travel_date,
                 ManualBooking.is_deleted == False
             )
@@ -203,9 +204,9 @@ def create_booking(
     # ✅ Attach vehicles
     for v in normalized:
         db.add(
-            BookingVehicle(
+            BookingVehicleDriver(
                 booking_id=booking.id,
-                driver_id=v["driver_id"],
+                vehicle_id=v["vehicle_id"],
                 seats=v["seats"]
             )
         )

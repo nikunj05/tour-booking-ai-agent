@@ -1,5 +1,4 @@
 # app/routers/revenue.py
-
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session

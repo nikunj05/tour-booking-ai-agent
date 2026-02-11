@@ -340,6 +340,7 @@ def manual_booking_datatable(
             
             "status": "Paid" if booking.remaining_amount == 0 else "Pending",
             "actions": f"""
+        
                 <a href="{request.url_for('manual_booking_edit', booking_id=booking.id)}"
                    class="btn btn-sm btn-edit"
                    title="Edit Booking">
