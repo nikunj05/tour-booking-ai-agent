@@ -15,8 +15,8 @@
                 <input type="text" id="live-search" class="form-control" placeholder="Search by title, city, country..."
                     value="{{ search }}">
 
-                <input type="text" id="availability-date" class="form-control" placeholder="Select date"
-                    value="{% if travel_date %}{{ travel_date }}{% endif %}">
+                <!-- <input type="text" id="availability-date" class="form-control" placeholder="Select date"
+                    value="{% if travel_date %}{{ travel_date }}{% endif %}"> -->
 
                 <!-- Add Button -->
                 <a href="{{ url_for('tour_package_create_page') }}" class="btn btn-submit">
@@ -55,7 +55,7 @@
 
     // ---------------- SEARCH + DATE FILTER ----------------
     const searchInput = document.getElementById("live-search");
-    const dateInput = document.getElementById("availability-date");
+    // const dateInput = document.getElementById("availability-date");
     const tableContainer = document.getElementById("table-container");
 
     let searchTimer = null;
@@ -67,9 +67,9 @@
             params.append("search", searchInput.value.trim());
         }
 
-        if (dateInput.value) {
-            params.append("travel_date", dateInput.value);
-        }
+        // if (dateInput.value) {
+        //     params.append("travel_date", dateInput.value);
+        // }
 
         fetch(`?${params.toString()}`, {
             headers: {
@@ -90,24 +90,24 @@
     });
 
     // 📅 Date change
-    dateInput.addEventListener("change", function () {
-        loadTours();
-    });
+    // dateInput.addEventListener("change", function () {
+    //     loadTours();
+    // });
 
     // ---------------- FILTER DATE PICKER ----------------
-    const availabilityFilterPicker = flatpickr(dateInput, {
-        dateFormat: "Y-m-d",
-        minDate: "today",
-        disableMobile: true,
-        allowInput: true,
-        defaultDate: dateInput.value || null,
-        onReady: function (selectedDates, dateStr, instance) {
-            instance.calendarContainer.classList.add('custom-flatpickr');
-        },
-        onChange: function () {
-            loadTours(); // auto reload table
-        }
-    });
+    // const availabilityFilterPicker = flatpickr(dateInput, {
+    //     dateFormat: "Y-m-d",
+    //     minDate: "today",
+    //     disableMobile: true,
+    //     allowInput: true,
+    //     defaultDate: dateInput.value || null,
+    //     onReady: function (selectedDates, dateStr, instance) {
+    //         instance.calendarContainer.classList.add('custom-flatpickr');
+    //     },
+    //     onChange: function () {
+    //         loadTours(); // auto reload table
+    //     }
+    // });
 
 
     let availabilityPicker = null;

@@ -69,10 +69,9 @@ def vehicle_datatable(
     for v in vehicles:
         data.append({
             "id": v.id,
-            "name": v.name,
-            "vehicle_type": v.vehicle_type,
+            "name": f"{v.name} ({v.vehicle_type})",
             "vehicle_number": v.vehicle_number,
-            "seats": v.seats,
+            "seats": f"{v.seats} Seater",
             "status": "Active" if v.is_active else "Inactive",
             "actions": f"""
                 <a href="{request.url_for('vehicle_edit_page', vehicle_id=v.id)}"

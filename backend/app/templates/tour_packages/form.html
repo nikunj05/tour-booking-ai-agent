@@ -104,8 +104,7 @@
                                     {% for driver in drivers %}
                                     <option value="{{ driver.id }}" {% if package and driver.id in assigned_driver_ids
                                         %} selected {% endif %}>
-                                        {{ driver.name }} —
-                                        {{ driver.vehicle_type }} {{driver.seats}} seats ({{ driver.vehicle_number }})
+                                        {{ driver.name }} ({{ driver.country_code }}{{ driver.phone_number }})
                                     </option>
                                     {% endfor %}
                                 </select>
