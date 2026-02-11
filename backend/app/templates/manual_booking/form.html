@@ -12,15 +12,14 @@
     <div class="container-fluid py-4">
         <div class="row justify-content-center">
             <div class="col-lg-12">
-
-                <form id="manual-booking-form" method="post" action="{% if booking %}
+           <form id="manual-booking-form" method="post" action="{% if booking %}
                 {{ request.url_for('manual_booking_update', booking_id=booking.id) }}
               {% else %}
                 {{ request.url_for('manual_booking_create') }}
-              {% endif %}" class="shadow-sm p-4 rounded bg-white border" novalidate>
-                    <!-- ================= TOUR DETAILS ================= -->
-                    <h5 class="mt-4 mb-3 fw-semibold manual-booking-title">Tour Details</h5>
-
+              {% endif %}" novalidate>
+            <!-- TOUR DETAILS -->
+            <div class="card custom-card mb-4">
+                <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold">Tour Package</label>
@@ -53,12 +52,13 @@
                             <input type="time" name="travel_time" class="form-control time-picker"
                                 value="{{ booking.travel_time if booking else '' }}">
                         </div>
-                    </div>
-                    
+                    </div>                    
+                </div>
+            </div>
 
-                    <!-- ================= GUEST DETAILS ================= -->
-                    <h5 class="my-3 fw-semibold manual-booking-title">Guest Details</h5>
-
+            <!-- GUEST DETAILS -->
+            <div class="card custom-card mb-4">
+                <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold">Select Customer</label>
@@ -110,19 +110,19 @@
                             </div>
                         </div>
 
-                    </div>
-
-                    <!-- <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="showAllDrivers">
-                                <label class="form-check-label fw-semibold" for="showAllDrivers">
-                                    Show other drivers
-                                </label>
-                            </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Pickup Location</label>
+                            <input type="text" name="pickup_location" class="form-control"
+                                value="{{ booking.pickup_location if booking else '' }}">
                         </div>
-                    </div> -->
 
+                    </div>
+                </div>
+            </div>
+
+            <!-- VEHICLE & DRIVER -->
+            <div class="card custom-card mb-4">
+                <div class="card-body">
                     <div class="row">
                         <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
                             <h5 class="fw-semibold manual-booking-title mb-0">Assign Vehicles & Drivers</h5>
@@ -218,16 +218,13 @@
                                 </div>
                             {% endif %}
                         </div>
-                        <div class="col-md-8">
-                            <label class="form-label fw-semibold">Pickup Location</label>
-                            <input type="text" name="pickup_location" class="form-control"
-                                value="{{ booking.pickup_location if booking else '' }}">
-                        </div>
                     </div>
+                </div>
+            </div>
 
-                    <!-- ================= PAYMENT DETAILS ================= -->
-                    <h5 class="mt-4 mb-3 fw-semibold manual-booking-title">Payment Details</h5>
-
+            <!-- PAYMENT -->
+            <div class="card custom-card mb-4">
+                <div class="card-body">
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label class="form-label fw-semibold">Total Amount</label>
@@ -254,12 +251,15 @@
                         </button>
                         <a href="{{ request.url_for('manual_booking_list') }}" class="btn btn-cancel ms-2">Cancel</a>
                     </div>
-
-                </form>
+                </div>
+            </div>
+</form>
             </div>
         </div>
     </div>
 </section>
+
+
 {% endblock %}
 
 {% block extra_js %}
@@ -274,7 +274,7 @@
                 email: { email: true },  
                 adults: { required: true, min: 1 },
                 kids: { required: true, min: 0 },
-                pickup_location: { required: true },
+                pickup_location: { required: false },
                 tour_package_id: { required: true },
                 travel_date: { required: true },
                 total_amount: { required: true, number: true },
