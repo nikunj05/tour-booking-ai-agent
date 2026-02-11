@@ -18,6 +18,12 @@ class Vehicle(Base):
     company = relationship("Company", backref="vehicles")
     photos = relationship("VehiclePhoto", back_populates="vehicle", cascade="all, delete-orphan")
 
+    booking_vehicles = relationship(
+        "BookingVehicleDriver",
+        back_populates="vehicle",
+        cascade="all, delete-orphan"
+    )
+
 class VehiclePhoto(Base):
     __tablename__ = "vehicle_photos"
 

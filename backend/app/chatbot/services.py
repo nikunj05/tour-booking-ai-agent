@@ -1,5 +1,5 @@
 from sqlalchemy import distinct
-from app.models.manual_booking import ManualBooking,BookingVehicle
+from app.models.manual_booking import ManualBooking,BookingVehicleDriver
 from app.models.driver import Driver
 from app.models.tour_package import TourPackage,TourPackageDriver
 from app.models.customer import Customer

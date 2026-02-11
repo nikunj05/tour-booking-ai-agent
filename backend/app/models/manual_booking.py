@@ -42,14 +42,10 @@ class ManualBooking(Base):
 
     tour_package = relationship("TourPackage")
     customer = relationship("Customer", back_populates="bookings")
-    vehicles = relationship(
-        "BookingVehicle",
-        back_populates="booking",
-        cascade="all, delete-orphan"
-    )
+    vehicles_drivers = relationship("BookingVehicleDriver", back_populates="booking", cascade="all, delete-orphan")
 
-class BookingVehicle(Base):
-    __tablename__ = "booking_vehicles"
+class BookingVehicleDriver(Base):
+    __tablename__ = "booking_vehicle_drivers"
 
     id = Column(Integer, primary_key=True, index=True)
 
@@ -59,21 +55,22 @@ class BookingVehicle(Base):
         nullable=False
     )
 
-    driver_id = Column(
-        Integer,
-        ForeignKey("drivers.id"),
-        nullable=True
-    )
     vehicle_id = Column(
         Integer,
         ForeignKey("vehicles.id"),
         nullable=True
     )
 
-    seats = Column(Integer, nullable=False)
+    driver_id = Column(
+        Integer,
+        ForeignKey("drivers.id"),
+        nullable=True
+    )
+
+    seats = Column(Integer, nullable=True)  # optional seats for this assignment
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    booking = relationship("ManualBooking", back_populates="vehicles")
-    driver = relationship("Driver")
+    booking = relationship("ManualBooking", back_populates="vehicles_drivers")
     vehicle = relationship("Vehicle")
+    driver = relationship("Driver")

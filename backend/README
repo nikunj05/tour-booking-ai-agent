@@ -20,7 +20,7 @@ alembic init alembic
 5️⃣ Create Migration (After Model Change)
 alembic revision --autogenerate -m "migration message"
 Example:
-alembic revision --autogenerate -m "added stripe keys and webhook to company model"
+alembic revision --autogenerate -m "make booking vehicle and driver table"
 
 6️⃣ Apply Migration to Database
 alembic upgrade head

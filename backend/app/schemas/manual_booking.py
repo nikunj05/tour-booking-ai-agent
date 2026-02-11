@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from datetime import date, time
-from typing import Optional
+from typing import Optional, List
 
 
 class ManualBookingCreate(BaseModel):
@@ -9,6 +9,8 @@ class ManualBookingCreate(BaseModel):
     phone: str
     email: Optional[EmailStr] = None
     pickup_location: Optional[str] = None
+    driver_ids: Optional[List[int]] = None
+    vehicle_ids: Optional[List[int]] = None
     tour_package_id: int
     travel_date: date
     travel_time: Optional[time] = None
@@ -22,6 +24,8 @@ class ManualBookingUpdate(BaseModel):
     phone: str
     email: Optional[EmailStr] = None
     pickup_location: Optional[str] = None
+    driver_ids: Optional[List[int]] = None
+    vehicle_ids: Optional[List[int]] = None
     travel_date: date
     travel_time: Optional[time] = None
     total_amount: float
