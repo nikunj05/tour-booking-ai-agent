@@ -1,0 +1,137 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-0">Vehicle Bookings</h3>
+            <small class="text-muted">Year {{ year }}</small>
+        </div>
+
+        <form method="get">
+            <select name="year" class="year-select" onchange="this.form.submit()">
+                {% for y in range(current_year, current_year-10, -1) %}
+                    <option value="{{ y }}" {% if y == year %}selected{% endif %}>
+                        {{ y }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <div class="matrix-wrapper">
+
+        <table class="revenue-matrix">
+            <thead>
+                <tr>
+                    <th class="sticky-col text-start">Vehicle</th>
+                    {% for m in ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"] %}
+                        <th>{{ m }}</th>
+                    {% endfor %}
+                    <th>Total Bookings</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for vehicle, info in vehicle_data.items() %}
+                <tr>
+                    <td class="sticky-col fw-semibold text-start">
+                        {{ vehicle }}
+                    </td>
+
+                    {% for month in range(1,13) %}
+                        <td>
+                            {% if info.months[month] > 0 %}
+                                <span class="booking-badge">
+                                    {{ info.months[month] }}
+                                </span>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+
+                    <td class="fw-bold text-primary">
+                        {{ info.total_bookings }}
+                    </td>
+                </tr>
+                {% endfor %}
+
+                <!-- GRAND TOTAL -->
+                <tr class="grand-total-row">
+                    <td class="sticky-col fw-bold text-start">Grand Total</td>
+                    {% for month in range(1,13) %}
+                        <td></td>
+                    {% endfor %}
+                    <td class="fw-bold text-success">
+                        {{ grand_total_bookings }}
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
+
+<style>
+
+.matrix-wrapper {
+    overflow-x: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+}
+
+.revenue-matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.revenue-matrix thead th {
+    background: #f8f9fa;
+    padding: 14px;
+    font-weight: 600;
+    text-align: center;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.revenue-matrix tbody td {
+    padding: 14px;
+    text-align: center;
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.sticky-col {
+    position: sticky;
+    left: 0;
+    background: white;
+    z-index: 2;
+}
+
+.booking-badge {
+    padding: 4px 10px;
+    font-size: 13px;
+    background: #eef2ff;
+    color: #4c6ef5;
+    border-radius: 20px;
+}
+
+.year-select {
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+}
+
+.grand-total-row {
+    background: #f1f5ff;
+}
+
+</style>
+
+{% endblock %}
