@@ -3,11 +3,9 @@ from typing import Optional
 
 class DriverBase(BaseModel):
     name: str
-    vehicle_type: str
-    vehicle_number: str
-    seats: int
     country_code: str
     phone: str
+    is_active: bool
     image: Optional[str] = None
 
 class DriverCreate(DriverBase):

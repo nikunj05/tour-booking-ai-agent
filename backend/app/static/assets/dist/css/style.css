@@ -3705,6 +3705,50 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
     border-bottom: 2px solid #159957;
 }
 
+/* Vehicle Form and tour form */
+.rich-editor {
+    height: 180px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+}
+
+.upload-box {
+    border: 2px dashed #ced4da;
+    border-radius: 6px;
+    padding: 25px;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+}
+
+.upload-box input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.gallery-image-wrapper {
+    position: relative;
+}
+
+.gallery-image-wrapper .remove-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: rgba(255, 0, 0, 0.7);
+    border: none;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+}
+
 @media (max-width: 575px) {
     .driver-side-header-button .header-add-new-box-button {
         width: 100% !important;

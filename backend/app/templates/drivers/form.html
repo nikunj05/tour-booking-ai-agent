@@ -44,7 +44,7 @@
                     <div class="row">
 
                         <!-- Driver Name -->
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold">Driver Name</label>
                             <input type="text" name="name"
                                 class="form-control {% if errors.name %}is-invalid{% endif %}"
@@ -55,7 +55,7 @@
                         </div>
 
                         <!-- Phone -->
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold">Phone Number</label>
                             <div class="input-group">
                                 <select name="country_code" id="country_code" class="form-select"
@@ -76,25 +76,26 @@
                             </span>
                         </div>
 
-                        <!-- Vehicle Type -->
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label fw-semibold">Vehicle Type</label>
-                            <input type="text" name="vehicle_type" class="form-control"
-                                value="{{ form.vehicle_type | default(driver.vehicle_type if driver else '') }}">
+                        <!-- License Number -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">License Number</label>
+                            <input type="text" name="license_number"
+                                class="form-control {% if errors.license_number %}is-invalid{% endif %}"
+                                value="{{ form.license_number | default(driver.license_number if driver else '') }}">
+                            <span class="invalid-feedback">
+                                {{ errors.license_number | default('') }}
+                            </span>
                         </div>
 
-                        <!-- Vehicle Number -->
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label fw-semibold">Vehicle Number</label>
-                            <input type="text" name="vehicle_number" class="form-control"
-                                value="{{ form.vehicle_number | default(driver.vehicle_number if driver else '') }}">
-                        </div>
-
-                        <!-- Seats -->
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label fw-semibold">Seats</label>
-                            <input type="number" name="seats" min="1" class="form-control"
-                                value="{{ form.seats | default(driver.seats if driver else '') }}">
+                        <!-- Is Active -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Status</label>
+                            <select name="is_active" class="form-select">
+                                <option value="true" {% if driver and driver.is_active %}selected{% endif %}>Active
+                                </option>
+                                <option value="false" {% if driver and not driver.is_active %}selected{% endif %}>
+                                    Inactive</option>
+                            </select>
                         </div>
 
                     </div>

@@ -41,7 +41,7 @@
               </span>
               <span class="text-muted d-block">
                 <i class="far fa-clock me-1"></i>
-                {{ booking.travel_time.strftime('%I:%M %p') or '-' }}
+                {{ booking.travel_time or '-' }}
               </span>
               <span class="text-muted d-block">
                 <i class="fas fa-map-marker-alt me-1"></i>
@@ -80,64 +80,83 @@
       </div>
 
       <!-- RIGHT: DRIVER -->
-<!-- RIGHT: DRIVERS -->
 <div class="col-lg-5">
   <div class="card shadow-sm rounded-3 p-3">
     <h6 class="text-muted mb-3">Assigned Vehicles & Drivers</h6>
 
-    {% if booking.vehicles %}
-      <div class="row">
-        {% for bv in booking.vehicles %}
-          {% set driver = bv.driver %}
-          <div class="col-md-6 mb-3">
-            <div class="border rounded-3 p-3 h-100 text-center">
+    {% if booking.vehicles_drivers %}
 
-              {% if driver %}
-                {% if driver.image %}
+      <div class="row">
+        {% for item in booking.vehicles_drivers %}
+        <div class="col-md-6 mb-3">
+          <div class="border rounded-3 p-3 h-100">
+
+            <!-- DRIVER SECTION -->
+            <div class="text-center mb-3">
+              {% if item.driver %}
+                {% if item.driver.image %}
                   <div class="rounded-circle overflow-hidden mx-auto mb-2"
                        style="width:70px; height:70px;">
-                    <img src="{{ url_for('static', path=driver.image) }}"
+                    <img src="{{ url_for('static', path=item.driver.image) }}"
                          class="img-fluid h-100 w-100"
                          style="object-fit: cover;"
-                         alt="{{ driver.name }}">
+                         alt="{{ item.driver.name }}">
                   </div>
                 {% else %}
                   <div class="rounded-circle bg-secondary text-white
                               d-flex justify-content-center align-items-center
                               mx-auto mb-2 fw-bold"
                        style="width:70px; height:70px;">
-                    {{ driver.name[:2]|upper }}
+                    {{ item.driver.name[:2]|upper }}
                   </div>
                 {% endif %}
 
                 <div class="fw-bold">
-                  {{ driver.name }}
+                  {{ item.driver.name }}
                 </div>
-
-                <div class="text-muted small">
+                <small class="text-muted d-block">
                   <i class="fas fa-phone-alt me-1"></i>
-                  {{ driver.country_code }}{{ driver.phone_number }}
-                </div>
-
-                <div class="text-muted small">
-                  <i class="fas fa-car me-1"></i>
-                  {{ driver.vehicle_type }}
-                </div>
-
-                <div class="text-muted small">
-                  <i class="fas fa-chair me-1"></i>
-                  Seats: {{ bv.seats }}
-                </div>
+                  {{ item.driver.phone_number }}
+                </small>
               {% else %}
-                <span class="text-muted">Driver not available</span>
+                <div class="text-muted">
+                  No driver assigned
+                </div>
               {% endif %}
-
             </div>
+
+            <hr>
+
+            <!-- VEHICLE SECTION -->
+            <div class="text-center">
+              {% if item.vehicle %}
+                <div class="fw-semibold">
+                  <i class="fas fa-car me-1"></i>
+                  {{ item.vehicle.name or item.vehicle.vehicle_type }}
+                </div>
+                <small class="text-muted d-block">
+                  {{ item.vehicle.vehicle_number or '-' }}
+                </small>
+                <small class="text-muted d-block">
+                  <i class="fas fa-chair me-1"></i>
+                  Seats: {{ item.seats or item.vehicle.seats or '-' }}
+                </small>
+              {% else %}
+                <div class="text-muted">
+                  No vehicle assigned
+                </div>
+              {% endif %}
+            </div>
+
           </div>
+        </div>
         {% endfor %}
       </div>
+
     {% else %}
-      <span class="text-muted">No vehicle assigned</span>
+      <span class="text-muted d-block">
+        No vehicle or driver assigned
+      </span>
     {% endif %}
   </div>
 </div>

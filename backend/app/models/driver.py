@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from app.database.base import Base
-from app.models.manual_booking import BookingVehicle
+from app.models.manual_booking import BookingVehicleDriver
 
 class Driver(Base):
     __tablename__ = "drivers"
@@ -16,11 +16,10 @@ class Driver(Base):
     name = Column(String, nullable=False)
     country_code = Column(String(10), nullable=False, server_default='+91')
     phone_number = Column(String, nullable=False)
-    vehicle_type = Column(String, nullable=True)   
-    vehicle_number = Column(String, nullable=True)
-    seats = Column(Integer, nullable=True)
+    license_number = Column(String, unique=True, nullable=True)
     image = Column(String, nullable=True)
     is_deleted = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
     company = relationship("Company", backref="drivers")
 
     tour_packages = relationship(
@@ -29,8 +28,8 @@ class Driver(Base):
         cascade="all, delete-orphan"
     )
 
-    booking_drivers = relationship(
-        "BookingVehicle",
+    booking_vehicle_drivers = relationship(
+        "BookingVehicleDriver",
         back_populates="driver",
         cascade="all, delete-orphan"
     )
