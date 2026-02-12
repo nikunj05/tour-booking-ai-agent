@@ -135,7 +135,7 @@
                                 {% for bv in booking.vehicles_drivers %}
                                 <div class="row vehicle-driver-row mb-3">
 
-                                    <div class="col-md-4">
+                                    <div class="col-md-7">
                                         {% if loop.first %}
                                             <label class="form-label fw-semibold">Vehicle</label>
                                         {% endif %}
@@ -196,7 +196,7 @@
                             {% else %}
                                 <!-- empty initial row -->
                                 <div class="row vehicle-driver-row mb-3">
-                                    <div class="col-md-4">
+                                    <div class="col-md-7">
                                         <label class="form-label fw-semibold">Vehicle</label>
                                         <select name="vehicle_ids[]" class="form-select vehicle-select select2" data-placeholder="Select vehicle">
                                             <option value="">Select vehicle</option>
@@ -526,7 +526,7 @@ $('#add-vehicle-row').on('click', function () {
 
     const newRow = `
         <div class="row vehicle-driver-row mb-3">
-            <div class="col-md-4">
+            <div class="col-md-7">
                 <select name="vehicle_ids[]" class="form-select vehicle-select" data-placeholder="Select vehicle">
                     <option value="">Select vehicle</option>
                 </select>
@@ -587,7 +587,7 @@ refreshOptions();
         $(document).ready(function () {
             calculateRemaining();
         });
-        
+
         $('#manual-booking-form').on('submit', function () {
 
             let index = 0;
