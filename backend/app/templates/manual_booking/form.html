@@ -587,9 +587,32 @@ refreshOptions();
         $(document).ready(function () {
             calculateRemaining();
         });
-
+        
         $('#manual-booking-form').on('submit', function () {
-            $('[name="driver_ids[]"]').trigger('change');
+
+            let index = 0;
+
+            $('.vehicle-driver-row').each(function () {
+
+                const vehicle = $(this).find('.vehicle-select').val();
+                const driver = $(this).find('.driver-select').val();
+
+                // Skip fully empty rows
+                if (!vehicle && !driver) {
+                    $(this).remove();
+                    return;
+                }
+
+                // Rename fields to match backend
+                $(this).find('.vehicle-select')
+                    .attr('name', `assignments[${index}][vehicle_id]`);
+
+                $(this).find('.driver-select')
+                    .attr('name', `assignments[${index}][driver_id]`);
+
+                index++;
+            });
+
         });
     });
 </script>

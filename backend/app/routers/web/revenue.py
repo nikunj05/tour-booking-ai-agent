@@ -1,5 +1,4 @@
 # app/routers/revenue.py
-
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
@@ -39,7 +38,7 @@ def revenue_matrix_page(
         )
         .join(TourPackage, ManualBooking.tour_package_id == TourPackage.id)
         .filter(
-            TourPackage.company_id == current_user.company.id,   # ✅ FIXED HERE
+            TourPackage.company_id == current_user.company.id,
             extract("year", ManualBooking.travel_date) == year,
         )
         .group_by(TourPackage.title, "month")
