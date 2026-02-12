@@ -4,8 +4,7 @@
 <section class="content-header px-1">
     <div class="container-fluid d-flex justify-content-between align-items-center">
         <h1>Manual Tour Bookings</h1>
-        <a href="{{ url_for('manual_booking_create_page') }}"
-           class="btn btn-submit">
+        <a href="{{ url_for('manual_booking_create_page') }}" class="btn btn-submit">
             Add Booking
         </a>
     </div>
@@ -30,6 +29,21 @@
             <tbody></tbody>
         </table>
 
+        <!-- Modal -->
+        <div class="modal fade" id="assignVehicleModal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-md">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Assign Vehicle & Driver</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <!-- AJAX form will load here -->
+              </div>
+            </div>
+          </div>
+        </div>
+
     </div>
 </section>
 {% endblock %}
@@ -40,9 +54,12 @@
 
 <script src="{{ url_for('static', path='assets/plugins/datatables/jquery-3.6.0.min.js') }}"></script>
 <script src="{{ url_for('static', path='assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 $(document).ready(function () {
+
+    // Initialize DataTable
     let bookingTable = $('#manualBookingTable').DataTable({
         processing: true,
         serverSide: false,
@@ -71,6 +88,7 @@ $(document).ready(function () {
         }
     });
 
+    // Delete booking
     $(document).on('click', '.confirm-manual-booking-delete', function (e) {
         e.preventDefault();
         confirmDelete(
@@ -80,6 +98,19 @@ $(document).ready(function () {
             bookingTable
         );
     });
+
+    // Open Assign Vehicle modal
+$(document).on('click', '.btn-assign-vehicle', function() {
+    const url = $(this).data('url');
+    
+    // Load modal content dynamically
+    $('#assignVehicleModal .modal-body').load(url, function() {
+
+        let modal = new bootstrap.Modal(document.getElementById('assignVehicleModal'));
+        modal.show();
+
+    });
+});
 
 });
 </script>

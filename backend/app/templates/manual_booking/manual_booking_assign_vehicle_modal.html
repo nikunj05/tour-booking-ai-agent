@@ -1,0 +1,205 @@
+<form id="assign-vehicle-form" method="post" action="{{ request.url_for('manual_booking_assign_vehicle', booking_id=booking.id) }}">
+    <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <label class="form-label fw-semibold">Assign Vehicles & Drivers</label>
+            <button type="button" id="add-vehicle-row" class="btn btn-submit btn-sm">Add Vehicle</button>
+        </div>
+
+        <div id="vehicle-driver-container">
+            {% if booking and booking.vehicles_drivers %}
+                {% for bv in booking.vehicles_drivers %}
+                <div class="row vehicle-driver-row mb-3">
+                    <div class="col-md-5">
+                        <select name="vehicle_ids[]" class="form-select vehicle-select select2" data-placeholder="Select vehicle">
+                            <option value="">Select vehicle</option>
+                            {% set selected_vehicle_ids = booking.vehicles_drivers | selectattr('vehicle') | map(attribute='vehicle.id') | list %}
+                            {% for v in vehicles %}
+                                {% if v.id not in selected_vehicle_ids or (bv.vehicle and v.id == bv.vehicle.id) %}
+                                <option value="{{ v.id }}" {% if bv.vehicle and bv.vehicle.id == v.id %}selected{% endif %}>
+                                    {{ v.name }} ({{ v.vehicle_type }})
+                                </option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-5">
+                        <select name="driver_ids[]" class="form-select driver-select select2" data-placeholder="Select driver">
+                            <option value="">Select driver</option>
+                            {% set selected_driver_ids = booking.vehicles_drivers | selectattr('driver') | map(attribute='driver.id') | list %}
+                            {% for d in drivers %}
+                                {% if d.id not in selected_driver_ids or (bv.driver and d.id == bv.driver.id) %}
+                                <option value="{{ d.id }}" {% if bv.driver and bv.driver.id == d.id %}selected{% endif %}>
+                                    {{ d.name }} ({{ d.country_code }}{{ d.phone_number }})
+                                </option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-danger remove-row">×</button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="row vehicle-driver-row mb-3">
+                    <div class="col-md-5">
+                        <select name="vehicle_ids[]" class="form-select vehicle-select select2" data-placeholder="Select vehicle">
+                            <option value="">Select vehicle</option>
+                            {% for v in vehicles %}<option value="{{ v.id }}">{{ v.name }} ({{ v.vehicle_type }})</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <select name="driver_ids[]" class="form-select driver-select select2" data-placeholder="Select driver">
+                            <option value="">Select driver</option>
+                            {% for d in drivers %}<option value="{{ d.id }}">{{ d.name }} ({{ d.country_code }}{{ d.phone_number }})</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-danger remove-row">×</button>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-submit">Assign</button>
+</form>
+
+<script>
+$(document).ready(function () {
+    const BOOKING_PACKAGE_ID = "{{ booking.tour_package_id if booking else '' }}";
+    const BOOKING_TRAVEL_DATE = "{{ booking.travel_date if booking else '' }}";
+
+    function initSelect2() {
+        $('.vehicle-select, .driver-select').select2({
+            width: '100%',
+            allowClear: true,
+            placeholder: function () { return $(this).data('placeholder'); }
+        });
+    }
+
+    // Refresh selected lists
+    function getSelectedValues() {
+        return {
+            vehicles: $('.vehicle-select').map(function(){ return $(this).val(); }).get().filter(Boolean),
+            drivers: $('.driver-select').map(function(){ return $(this).val(); }).get().filter(Boolean)
+        };
+    }
+
+    function refreshOptions() {
+        const selected = getSelectedValues();
+
+        $('.vehicle-select').each(function(){
+            const currentVal = $(this).val();
+            $(this).find('option').each(function(){
+                if($(this).val() && $(this).val() !== currentVal && selected.vehicles.includes($(this).val())){
+                    $(this).prop('disabled', true);
+                } else { 
+                    $(this).prop('disabled', false); 
+                }
+            });
+        });
+
+        $('.driver-select').each(function(){
+            const currentVal = $(this).val();
+            $(this).find('option').each(function(){
+                if($(this).val() && $(this).val() !== currentVal && selected.drivers.includes($(this).val())){
+                    $(this).prop('disabled', true);
+                } else { 
+                    $(this).prop('disabled', false); 
+                }
+            });
+        });
+    }
+
+    function loadAvailableDriversForRow(row) {
+        const packageId = $('[name="tour_package_id"]').val() || BOOKING_PACKAGE_ID;
+        const travelDate = $('[name="travel_date"]').val() || BOOKING_TRAVEL_DATE;
+        if (!packageId || !travelDate) return;
+
+        const bookingId = "{{ booking.id if booking else '' }}";
+        let url = `/manual-bookings/availability/${packageId}/${travelDate}`;
+        if (bookingId) url += `?booking_id=${bookingId}`;
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                const selected = getSelectedValues();
+
+                // Populate vehicle select
+                const vehicleSelect = row.find('.vehicle-select');
+                const currentVehicle = vehicleSelect.val();
+                vehicleSelect.empty().append('<option value="">Select vehicle</option>');
+                data.vehicles.forEach(v => {
+                    const disabled = selected.vehicles.includes(v.id.toString()) && v.id != currentVehicle ? true : false;
+                    const option = new Option(`${v.name}, ${v.vehicle_type} (${v.seats} seats) - ${v.vehicle_number}`, v.id, currentVehicle==v.id, currentVehicle==v.id);
+                    $(option).prop('disabled', disabled);
+                    vehicleSelect.append(option);
+                });
+
+                // Populate driver select
+                const driverSelect = row.find('.driver-select');
+                const currentDriver = driverSelect.val();
+                driverSelect.empty().append('<option value="">Select driver</option>');
+                data.drivers.forEach(d => {
+                    const disabled = selected.drivers.includes(d.id.toString()) && d.id != currentDriver ? true : false;
+                    const option = new Option(`${d.name} (${d.country_code}${d.phone_number})`, d.id, currentDriver==d.id, currentDriver==d.id);
+                    $(option).prop('disabled', disabled);
+                    driverSelect.append(option);
+                });
+
+                initSelect2();
+                refreshOptions();
+            });
+    }
+
+    // Add new row
+    $('#add-vehicle-row').on('click', function() {
+        const newRow = $(`
+            <div class="row vehicle-driver-row mb-3">
+                <div class="col-md-5">
+                    <select name="vehicle_ids[]" class="form-select vehicle-select" data-placeholder="Select vehicle">
+                        <option value="">Select vehicle</option>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <select name="driver_ids[]" class="form-select driver-select" data-placeholder="Select driver">
+                        <option value="">Select driver</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-danger remove-row">×</button>
+                </div>
+            </div>
+        `);
+        $('#vehicle-driver-container').append(newRow);
+        loadAvailableDriversForRow(newRow);
+    });
+
+    // Remove row
+    $(document).on('click', '.remove-row', function() {
+        $(this).closest('.vehicle-driver-row').remove();
+        refreshOptions();
+    });
+
+    // Refresh options on change
+    $(document).on('change', '.vehicle-select, .driver-select', function(){
+        refreshOptions();
+    });
+
+    // Load for existing rows
+    $('.vehicle-driver-row').each(function() {
+        loadAvailableDriversForRow($(this));
+    });
+
+    // Reload when package/date changes
+    $('[name="tour_package_id"], [name="travel_date"]').on('change', function() {
+        $('.vehicle-driver-row').each(function() {
+            loadAvailableDriversForRow($(this));
+        });
+    });
+
+});
+</script>
