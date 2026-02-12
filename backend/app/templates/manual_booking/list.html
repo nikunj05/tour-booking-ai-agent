@@ -13,7 +13,6 @@
 
 <section class="content">
     <div class="container-fluid py-4">
-
         <table id="manualBookingTable"
                class="table table-striped table-bordered"
                style="width:100%">
@@ -23,6 +22,7 @@
                     <th>Guest Details</th>
                     <th>Travel Details</th>
                     <th>Payment</th>
+                    <th>Assigned</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -31,7 +31,7 @@
 
         <!-- Modal -->
         <div class="modal fade" id="assignVehicleModal" tabindex="-1" aria-hidden="true">
-          <div class="modal-dialog modal-md">
+          <div class="modal-dialog modal-lg">
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title">Assign Vehicle & Driver</h5>
@@ -43,7 +43,6 @@
             </div>
           </div>
         </div>
-
     </div>
 </section>
 {% endblock %}
@@ -77,6 +76,7 @@ $(document).ready(function () {
             { data: "guest_details" },
             { data: "travel_details" },
             { data: "payment_details" },
+            { data: "assigned" },
             { data: "actions", orderable: false, searchable: false },
         ],
         language: {

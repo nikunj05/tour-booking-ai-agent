@@ -55,7 +55,6 @@ Go to Meta Developer Dashboard → Your App → WhatsApp → Configure → Webho
 Copy ngrok URL → Add endpoint: /webhooks/whatsapp
 Verify token: my_whatsapp_webhook_token
 
-
 ssl : sudo nano /etc/nginx/sites-available/tourbot
 
 # Redirect all HTTP requests to HTTPS

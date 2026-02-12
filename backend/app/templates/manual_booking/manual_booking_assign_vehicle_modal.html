@@ -69,6 +69,7 @@
 
 <script>
 $(document).ready(function () {
+
     const BOOKING_PACKAGE_ID = "{{ booking.tour_package_id if booking else '' }}";
     const BOOKING_TRAVEL_DATE = "{{ booking.travel_date if booking else '' }}";
 
@@ -76,45 +77,59 @@ $(document).ready(function () {
         $('.vehicle-select, .driver-select').select2({
             width: '100%',
             allowClear: true,
-            placeholder: function () { return $(this).data('placeholder'); }
+            placeholder: function () {
+                return $(this).data('placeholder');
+            }
         });
     }
 
-    // Refresh selected lists
+    // Get selected values
     function getSelectedValues() {
         return {
-            vehicles: $('.vehicle-select').map(function(){ return $(this).val(); }).get().filter(Boolean),
-            drivers: $('.driver-select').map(function(){ return $(this).val(); }).get().filter(Boolean)
+            vehicles: $('.vehicle-select').map(function () {
+                return $(this).val();
+            }).get().filter(Boolean),
+
+            drivers: $('.driver-select').map(function () {
+                return $(this).val();
+            }).get().filter(Boolean)
         };
     }
 
+    // Disable already selected options
     function refreshOptions() {
         const selected = getSelectedValues();
 
-        $('.vehicle-select').each(function(){
+        $('.vehicle-select').each(function () {
             const currentVal = $(this).val();
-            $(this).find('option').each(function(){
-                if($(this).val() && $(this).val() !== currentVal && selected.vehicles.includes($(this).val())){
+            $(this).find('option').each(function () {
+                if ($(this).val() &&
+                    $(this).val() !== currentVal &&
+                    selected.vehicles.includes($(this).val())) {
                     $(this).prop('disabled', true);
-                } else { 
-                    $(this).prop('disabled', false); 
+                } else {
+                    $(this).prop('disabled', false);
                 }
             });
         });
 
-        $('.driver-select').each(function(){
+        $('.driver-select').each(function () {
             const currentVal = $(this).val();
-            $(this).find('option').each(function(){
-                if($(this).val() && $(this).val() !== currentVal && selected.drivers.includes($(this).val())){
+            $(this).find('option').each(function () {
+                if ($(this).val() &&
+                    $(this).val() !== currentVal &&
+                    selected.drivers.includes($(this).val())) {
                     $(this).prop('disabled', true);
-                } else { 
-                    $(this).prop('disabled', false); 
+                } else {
+                    $(this).prop('disabled', false);
                 }
             });
         });
     }
 
+    // Load availability
     function loadAvailableDriversForRow(row) {
+
         const packageId = $('[name="tour_package_id"]').val() || BOOKING_PACKAGE_ID;
         const travelDate = $('[name="travel_date"]').val() || BOOKING_TRAVEL_DATE;
         if (!packageId || !travelDate) return;
@@ -126,26 +141,39 @@ $(document).ready(function () {
         fetch(url)
             .then(res => res.json())
             .then(data => {
+
                 const selected = getSelectedValues();
 
-                // Populate vehicle select
+                // VEHICLES
                 const vehicleSelect = row.find('.vehicle-select');
                 const currentVehicle = vehicleSelect.val();
                 vehicleSelect.empty().append('<option value="">Select vehicle</option>');
+
                 data.vehicles.forEach(v => {
-                    const disabled = selected.vehicles.includes(v.id.toString()) && v.id != currentVehicle ? true : false;
-                    const option = new Option(`${v.name}, ${v.vehicle_type} (${v.seats} seats) - ${v.vehicle_number}`, v.id, currentVehicle==v.id, currentVehicle==v.id);
+                    const disabled = selected.vehicles.includes(v.id.toString()) && v.id != currentVehicle;
+                    const option = new Option(
+                        `${v.name}, ${v.vehicle_type} (${v.seats} seats) - ${v.vehicle_number}`,
+                        v.id,
+                        currentVehicle == v.id,
+                        currentVehicle == v.id
+                    );
                     $(option).prop('disabled', disabled);
                     vehicleSelect.append(option);
                 });
 
-                // Populate driver select
+                // DRIVERS
                 const driverSelect = row.find('.driver-select');
                 const currentDriver = driverSelect.val();
                 driverSelect.empty().append('<option value="">Select driver</option>');
+
                 data.drivers.forEach(d => {
-                    const disabled = selected.drivers.includes(d.id.toString()) && d.id != currentDriver ? true : false;
-                    const option = new Option(`${d.name} (${d.country_code}${d.phone_number})`, d.id, currentDriver==d.id, currentDriver==d.id);
+                    const disabled = selected.drivers.includes(d.id.toString()) && d.id != currentDriver;
+                    const option = new Option(
+                        `${d.name} (${d.country_code}${d.phone_number})`,
+                        d.id,
+                        currentDriver == d.id,
+                        currentDriver == d.id
+                    );
                     $(option).prop('disabled', disabled);
                     driverSelect.append(option);
                 });
@@ -156,7 +184,7 @@ $(document).ready(function () {
     }
 
     // Add new row
-    $('#add-vehicle-row').on('click', function() {
+    $('#add-vehicle-row').on('click', function () {
         const newRow = $(`
             <div class="row vehicle-driver-row mb-3">
                 <div class="col-md-5">
@@ -174,32 +202,61 @@ $(document).ready(function () {
                 </div>
             </div>
         `);
+
         $('#vehicle-driver-container').append(newRow);
         loadAvailableDriversForRow(newRow);
     });
 
     // Remove row
-    $(document).on('click', '.remove-row', function() {
+    $(document).on('click', '.remove-row', function () {
         $(this).closest('.vehicle-driver-row').remove();
         refreshOptions();
     });
 
-    // Refresh options on change
-    $(document).on('change', '.vehicle-select, .driver-select', function(){
+    // Change event
+    $(document).on('change', '.vehicle-select, .driver-select', function () {
         refreshOptions();
     });
 
-    // Load for existing rows
-    $('.vehicle-driver-row').each(function() {
+    // Load existing rows
+    $('.vehicle-driver-row').each(function () {
         loadAvailableDriversForRow($(this));
     });
 
-    // Reload when package/date changes
-    $('[name="tour_package_id"], [name="travel_date"]').on('change', function() {
-        $('.vehicle-driver-row').each(function() {
+    $('[name="tour_package_id"], [name="travel_date"]').on('change', function () {
+        $('.vehicle-driver-row').each(function () {
             loadAvailableDriversForRow($(this));
         });
     });
 
+    // ✅ IMPORTANT FIX — CLEAN BLANK ROWS BEFORE SUBMIT
+    $('#assign-vehicle-form').on('submit', function () {
+
+        let index = 0;
+
+        $('.vehicle-driver-row').each(function () {
+
+            const vehicle = $(this).find('.vehicle-select').val();
+            const driver = $(this).find('.driver-select').val();
+
+            // Remove fully empty row
+            if (!vehicle && !driver) {
+                $(this).remove();
+                return;
+            }
+
+            // Rename fields properly per row
+            $(this).find('.vehicle-select')
+                .attr('name', `assignments[${index}][vehicle_id]`);
+
+            $(this).find('.driver-select')
+                .attr('name', `assignments[${index}][driver_id]`);
+
+            index++;
+        });
+
+    });
+
+    initSelect2();
 });
 </script>

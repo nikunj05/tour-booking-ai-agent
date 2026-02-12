@@ -27,28 +27,76 @@ router = APIRouter(prefix="/manual-bookings", tags=["Manual Booking"])
 def save_booking_vehicles_drivers(
     db: Session,
     booking_id: int,
-    vehicle_ids: List[int],
-    driver_ids: List[int],
+    assignments: list[dict] | None = None,
+    vehicle_ids: list[int] | None = None,
+    driver_ids: list[int] | None = None,
 ):
-    """Clear old assignments and save new vehicle-driver pairs"""
+    """
+    Can accept either:
+    1) assignments = [{"vehicle_id": int|None, "driver_id": int|None}]
+    OR
+    2) vehicle_ids + driver_ids lists
+    """
+
+    # Convert vehicle_ids + driver_ids → assignments
+    if assignments is None:
+        assignments = []
+
+        vehicle_ids = vehicle_ids or []
+        driver_ids = driver_ids or []
+
+        for i in range(max(len(vehicle_ids), len(driver_ids))):
+            vehicle_id = vehicle_ids[i] if i < len(vehicle_ids) else None
+            driver_id = driver_ids[i] if i < len(driver_ids) else None
+
+            assignments.append({
+                "vehicle_id": vehicle_id,
+                "driver_id": driver_id
+            })
+
+    # Clear old
     db.query(BookingVehicleDriver).filter(
         BookingVehicleDriver.booking_id == booking_id
     ).delete()
 
-    for i in range(max(len(vehicle_ids), len(driver_ids))):
-        vehicle_id = vehicle_ids[i] if i < len(vehicle_ids) else None
-        driver_id = driver_ids[i] if i < len(driver_ids) else None
+    # Save new
+    for item in assignments:
+        vehicle_id = item.get("vehicle_id")
+        driver_id = item.get("driver_id")
 
-        if vehicle_id or driver_id:
-            db.add(
-                BookingVehicleDriver(
-                    booking_id=booking_id,
-                    vehicle_id=vehicle_id,
-                    driver_id=driver_id
-                )
+        if not vehicle_id and not driver_id:
+            continue
+
+        db.add(
+            BookingVehicleDriver(
+                booking_id=booking_id,
+                vehicle_id=vehicle_id,
+                driver_id=driver_id
             )
+        )
 
     db.commit()
+def parse_assignments_from_form(form):
+    assignments_dict = {}
+
+    for key, value in form.items():
+        if key.startswith("assignments"):
+            index = key.split("[")[1].split("]")[0]
+            field = key.split("[")[2].split("]")[0]
+
+            assignments_dict.setdefault(index, {})[field] = value
+
+    assignments = []
+
+    for index in sorted(assignments_dict.keys(), key=int):
+        assignments.append({
+            "vehicle_id": int(assignments_dict[index].get("vehicle_id"))
+                          if assignments_dict[index].get("vehicle_id") else None,
+            "driver_id": int(assignments_dict[index].get("driver_id"))
+                         if assignments_dict[index].get("driver_id") else None
+        })
+
+    return assignments
 
 def check_driver_vehicle_conflict(
     db: Session,
@@ -177,7 +225,7 @@ def customer_search(
     return {"results": results}
 
 @router.post("/create", name="manual_booking_create")
-def create_manual_booking(
+async def create_manual_booking(
     request: Request,
     guest_name: str = Form(...),
     country_code: str = Form(...),
@@ -187,8 +235,6 @@ def create_manual_booking(
     kids: int = Form(...),
     pickup_location: str = Form(None),
     tour_package_id: int = Form(...),
-    driver_ids: List[str] = Form(default=[], alias="driver_ids[]"),
-    vehicle_ids: List[str] = Form(default=[], alias="vehicle_ids[]"),
     travel_date: str = Form(...),
     travel_time: str = Form(None),
     total_amount: float = Form(...),
@@ -196,12 +242,33 @@ def create_manual_booking(
     db: Session = Depends(get_db),
     current_user=Depends(company_only),
 ):
-    # Convert and clean IDs
-    driver_ids = [int(i) for i in driver_ids if i.strip()] if driver_ids else []
-    vehicle_ids = [int(i) for i in vehicle_ids if i.strip()] if vehicle_ids else []
 
-    # Parse date
+    # Parse assignments
+    form = await request.form()
+    assignments = parse_assignments_from_form(form)
+
+    # Parse date properly
     travel_date_obj = datetime.strptime(travel_date, "%Y-%m-%d").date()
+
+    # Extract IDs for conflict check
+    vehicle_ids = [a["vehicle_id"] for a in assignments if a["vehicle_id"]]
+    driver_ids = [a["driver_id"] for a in assignments if a["driver_id"]]
+
+    # Conflict check (booking_id=None for create)
+    conflict_type = check_driver_vehicle_conflict(
+        db,
+        booking_id=None,
+        travel_date=travel_date_obj,
+        vehicle_ids=vehicle_ids,
+        driver_ids=driver_ids
+    )
+
+    if conflict_type:
+        return flash_redirect(
+            url=request.url_for("manual_booking_create"),
+            message=f"Selected {conflict_type} already booked for this date.",
+            category="error",
+        )
 
     # Create or fetch customer
     customer = db.query(Customer).filter(
@@ -210,6 +277,7 @@ def create_manual_booking(
         Customer.country_code == country_code,
         Customer.is_deleted == False
     ).first()
+
     if not customer:
         customer = Customer(
             company_id=current_user.company.id,
@@ -222,18 +290,14 @@ def create_manual_booking(
         db.commit()
         db.refresh(customer)
 
-    # Conflict check
-    conflict_type = check_driver_vehicle_conflict(db, None, travel_date_obj, vehicle_ids, driver_ids)
-    if conflict_type:
-        return flash_redirect(
-            url=request.url_for("manual_booking_create"),
-            message=f"Selected {conflict_type} already booked for this date.",
-            category="error",
-        )
-
     # Create booking
     remaining_amount = total_amount - advance_amount
-    payment_status = "paid" if remaining_amount == 0 else "partial" if advance_amount > 0 else "pending"
+    payment_status = (
+        "paid" if remaining_amount == 0
+        else "partial" if advance_amount > 0
+        else "pending"
+    )
+
     booking = ManualBooking(
         customer_id=customer.id,
         adults=adults,
@@ -247,12 +311,18 @@ def create_manual_booking(
         remaining_amount=remaining_amount,
         payment_status=payment_status,
     )
+
     db.add(booking)
     db.commit()
     db.refresh(booking)
 
-    # Save vehicle-driver assignments
-    save_booking_vehicles_drivers(db, booking.id, vehicle_ids, driver_ids)
+    # Save assignments (common function)
+    save_booking_vehicles_drivers(
+        db=db,
+        booking_id=booking.id,
+        assignments=assignments
+    )
+
 
     # ✅ WhatsApp notification
     try:
@@ -317,10 +387,41 @@ def manual_booking_datatable(
     trash_icon = "/static/assets/icon/trash.svg"
 
     data = []
+
     for booking in bookings:
+
+        # --------------------------
+        # Build Assigned HTML First
+        # --------------------------
+        assigned_html = ""
+
+        if booking.vehicles_drivers:
+            for assign in booking.vehicles_drivers:
+                vehicle_name = assign.vehicle.name if assign.vehicle else "-"
+                vehicle_type = assign.vehicle.vehicle_type if assign.vehicle else ""
+                driver_name = assign.driver.name if assign.driver else "-"
+                driver_phone = assign.driver.phone_number if assign.driver else ""
+
+                assigned_html += f"""
+                            <div class="mb-1">
+                                <i class="fa fa-car text-dark"></i>
+                                <strong>{vehicle_name}</strong>
+                                &nbsp; | &nbsp;
+                                <i class="fa fa-user text-dark"></i>
+                                {driver_name}
+                            </div>
+                """
+        else:
+            assigned_html = '<span class="text-muted">Not Assigned</span>'
+
+        # --------------------------
+        # Now Append Data
+        # --------------------------
+
         data.append({
             "id": booking.id,
-           "guest_details": f"""
+
+            "guest_details": f"""
                 <strong>{booking.customer.guest_name}</strong><br>
                 <i class="fas fa-phone-alt text-dark"></i> {booking.customer.country_code}{booking.customer.phone}<br>
                 <i class="fas fa-envelope text-dark"></i> {booking.customer.email or "-"}<br>
@@ -330,41 +431,53 @@ def manual_booking_datatable(
             "travel_details": f"""
                 <strong>{booking.tour_package.title}</strong><br>
                 <i class="fas fa-calendar-alt text-dark"></i> {booking.travel_date.strftime("%d-%m-%Y")}<br>
-                <i class="far fa-clock text-dark"></i> {booking.travel_time.strftime("%I:%M %p") or "-"}<br>
-                <i class="fas fa-map-marker-alt text-dark"></i> {booking.pickup_location or "-"}
+                <i class="far fa-clock text-dark"></i> 
+                {booking.travel_time.strftime("%I:%M %p") if booking.travel_time else "-"}<br>
             """,
 
             "payment_details": f"""
                 <strong>{booking.tour_package.currency} {booking.total_amount}</strong><br>
-                Advance: {booking.tour_package.currency} {booking.advance_amount}<br>
-                Remaining: {booking.tour_package.currency} {booking.remaining_amount}<br>
+                ADV: {booking.tour_package.currency} {booking.advance_amount}<br>
+                DUE: {booking.tour_package.currency} {booking.remaining_amount}<br>
             """,
-            
+
+            "assigned": assigned_html,
+
             "status": "Paid" if booking.remaining_amount == 0 else "Pending",
+
             "actions": f"""
+                <div class="d-flex align-items-center gap-1">
 
-                <a href="javascript:void(0)"
-                   class="btn btn-sm btn-assign-vehicle"
-                   data-url="{request.url_for('manual_booking_assign_vehicle_popup', booking_id=booking.id)}"
-                   title="Assign Vehicle">
-                   <i class="fa fa-car"></i>
-                </a>
+                    <a href="javascript:void(0)"
+                    class="btn btn-sm btn-assign-vehicle p-1"
+                    data-url="{request.url_for('manual_booking_assign_vehicle_popup', booking_id=booking.id)}"
+                    title="Assign Vehicle">
+                    <i class="fa fa-car"></i>
+                    </a>
 
-                <a href="{request.url_for('manual_booking_edit', booking_id=booking.id)}"
-                   class="btn btn-sm btn-edit"
-                   title="Edit Booking">
-                    <img src="{edit_icon}" class="table-icon">
-                </a>
+                    <a href="{request.url_for('manual_booking_edit', booking_id=booking.id)}"
+                    class="btn btn-sm btn-edit p-1"
+                    title="Edit Booking">
+                        <img src="{edit_icon}" class="table-icon">
+                    </a>
 
-                <a href="javascript:void(0)"
-                   class="confirm-manual-booking-delete btn btn-sm btn-delete"
-                   data-route="{request.url_for('manual_booking_delete', booking_id=booking.id)}"
-                   title="Delete Booking">
-                    <img src="{trash_icon}" class="table-icon">
-                </a>
-                
+                    <a href="javascript:void(0)"
+                    class="confirm-manual-booking-delete btn btn-sm btn-delete p-1"
+                    data-route="{request.url_for('manual_booking_delete', booking_id=booking.id)}"
+                    title="Delete Booking">
+                        <img src="{trash_icon}" class="table-icon">
+                    </a>
+
+                    <a href="{request.url_for('manual_booking_detail', booking_id=booking.id)}"
+                    class="btn btn-sm btn-detail p-1"
+                    title="Detail Booking">
+                        <i class="fa fa-eye"></i>
+                    </a>
+
+                </div>
             """
         })
+
 
     return JSONResponse({"data": data})
 
@@ -426,15 +539,13 @@ def edit_manual_booking(
     )
 
 @router.post("/{booking_id}/update", name="manual_booking_update")
-def update_manual_booking(
+async def update_manual_booking(
     request: Request,
     booking_id: int,
     guest_name: str = Form(...),
     adults: int = Form(...),
     kids: int = Form(...),
     tour_package_id: int = Form(...),
-    driver_ids: List[str] = Form(default=[], alias="driver_ids[]"),
-    vehicle_ids: List[str] = Form(default=[], alias="vehicle_ids[]"),
     country_code: str = Form(...),
     phone: str = Form(...),
     email: str = Form(None),
@@ -446,6 +557,9 @@ def update_manual_booking(
     db: Session = Depends(get_db),
     current_user=Depends(company_only),
 ):
+    form = await request.form()
+    assignments = parse_assignments_from_form(form)
+
     # 1️⃣ Fetch the booking
     booking = db.query(ManualBooking).get(booking_id)
     if not booking:
@@ -489,12 +603,13 @@ def update_manual_booking(
     db.commit()
     db.refresh(customer)
 
-    # 3️⃣ Parse IDs
-    driver_ids = [int(i) for i in driver_ids if i.strip()] if driver_ids else []
-    vehicle_ids = [int(i) for i in vehicle_ids if i.strip()] if vehicle_ids else []
-
     # 4️⃣ Conflict check
-    conflict_type = check_driver_vehicle_conflict(db, booking_id, travel_date, vehicle_ids, driver_ids)
+    vehicle_ids = [a["vehicle_id"] for a in assignments if a["vehicle_id"]]
+    driver_ids = [a["driver_id"] for a in assignments if a["driver_id"]]
+
+    conflict_type = check_driver_vehicle_conflict(
+        db, booking_id, travel_date, vehicle_ids, driver_ids
+    )
     if conflict_type:
         return flash_redirect(
             url=request.url_for("manual_booking_edit", booking_id=booking_id),
@@ -522,8 +637,12 @@ def update_manual_booking(
     db.commit()
 
     # 6️⃣ Save vehicle-driver assignments using helper
-    save_booking_vehicles_drivers(db, booking.id, vehicle_ids, driver_ids)
-
+    save_booking_vehicles_drivers(
+        db=db,
+        booking_id=booking.id,
+        assignments=assignments
+    )
+    
     return flash_redirect(
         url=request.url_for("manual_booking_list"),
         message="Booking updated successfully.",
@@ -926,21 +1045,21 @@ def manual_booking_assign_vehicle_popup(
 
 
 @router.post("/manual-bookings/{booking_id}/assign-vehicle")
-def manual_booking_assign_vehicle(
-    request: Request, 
+async def manual_booking_assign_vehicle(
+    request: Request,
     booking_id: int,
-    vehicle_ids: List[int] = Form(..., alias="vehicle_ids[]"),
-    driver_ids: List[int] = Form(..., alias="driver_ids[]"),
     db: Session = Depends(get_db)
 ):
-    booking = db.query(ManualBooking).get(booking_id)
-    if not booking:
-        return {"status": "error", "message": "Booking not found"}
-    print(vehicle_ids,"vehicle_ids")
-    print(driver_ids,"driver_ids")
-    # Save vehicle-driver assignments
-    save_booking_vehicles_drivers(db, booking.id, vehicle_ids, driver_ids)
-    print("Vehicle and driver assigned successfully.")
+
+    form = await request.form()
+    assignments = parse_assignments_from_form(form)
+
+    save_booking_vehicles_drivers(
+        db=db,
+        booking_id=booking_id,
+        assignments=assignments
+    )
+
     return flash_redirect(
         url=request.url_for("manual_booking_list"),
         message="Vehicle and driver assigned successfully."
