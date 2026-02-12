@@ -9,7 +9,7 @@
             {% if booking and booking.vehicles_drivers %}
                 {% for bv in booking.vehicles_drivers %}
                 <div class="row vehicle-driver-row mb-3">
-                    <div class="col-md-5">
+                    <div class="col-md-7">
                         <select name="vehicle_ids[]" class="form-select vehicle-select select2" data-placeholder="Select vehicle">
                             <option value="">Select vehicle</option>
                             {% set selected_vehicle_ids = booking.vehicles_drivers | selectattr('vehicle') | map(attribute='vehicle.id') | list %}
@@ -23,7 +23,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         <select name="driver_ids[]" class="form-select driver-select select2" data-placeholder="Select driver">
                             <option value="">Select driver</option>
                             {% set selected_driver_ids = booking.vehicles_drivers | selectattr('driver') | map(attribute='driver.id') | list %}
@@ -37,26 +37,26 @@
                         </select>
                     </div>
 
-                    <div class="col-md-2 d-flex align-items-end">
+                    <div class="col-md-1 d-flex align-items-end">
                         <button type="button" class="btn btn-danger remove-row">×</button>
                     </div>
                 </div>
                 {% endfor %}
             {% else %}
                 <div class="row vehicle-driver-row mb-3">
-                    <div class="col-md-5">
+                    <div class="col-md-7">
                         <select name="vehicle_ids[]" class="form-select vehicle-select select2" data-placeholder="Select vehicle">
                             <option value="">Select vehicle</option>
                             {% for v in vehicles %}<option value="{{ v.id }}">{{ v.name }} ({{ v.vehicle_type }})</option>{% endfor %}
                         </select>
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         <select name="driver_ids[]" class="form-select driver-select select2" data-placeholder="Select driver">
                             <option value="">Select driver</option>
                             {% for d in drivers %}<option value="{{ d.id }}">{{ d.name }} ({{ d.country_code }}{{ d.phone_number }})</option>{% endfor %}
                         </select>
                     </div>
-                    <div class="col-md-2 d-flex align-items-end">
+                    <div class="col-md-1 d-flex align-items-end">
                         <button type="button" class="btn btn-danger remove-row">×</button>
                     </div>
                 </div>
@@ -187,17 +187,17 @@ $(document).ready(function () {
     $('#add-vehicle-row').on('click', function () {
         const newRow = $(`
             <div class="row vehicle-driver-row mb-3">
-                <div class="col-md-5">
+                <div class="col-md-7">
                     <select name="vehicle_ids[]" class="form-select vehicle-select" data-placeholder="Select vehicle">
                         <option value="">Select vehicle</option>
                     </select>
                 </div>
-                <div class="col-md-5">
+                <div class="col-md-4">
                     <select name="driver_ids[]" class="form-select driver-select" data-placeholder="Select driver">
                         <option value="">Select driver</option>
                     </select>
                 </div>
-                <div class="col-md-2 d-flex align-items-end">
+                <div class="col-md-1 d-flex align-items-end">
                     <button type="button" class="btn btn-danger remove-row">×</button>
                 </div>
             </div>
