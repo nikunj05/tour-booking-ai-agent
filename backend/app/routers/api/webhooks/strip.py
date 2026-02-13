@@ -6,7 +6,7 @@ from app.database.session import get_db
 from sqlalchemy.orm import Session
 from app.models.manual_booking import ManualBooking
 from app.models.chat_session import ChatSession
-from app.chatbot.states import PAYMENT_SUCCESS,CONFIRM_CHANGE_DETAILS
+from app.chatbot.states import BOOKING_PAYMENT_SUCCESS,BOOKING_CONFIRM_CHANGE_DETAILS
 from app.routers.api.webhooks.whatsapp import send_whatsapp_message
 from app.chatbot.prompts.reply import build_booking_confirmation_message
 from app.models.company import Company
@@ -89,7 +89,7 @@ def handle_payment_success(session_obj, db):
     # ✅ Update chat session
     chat_session = db.query(ChatSession).get(chat_session_id)
     if chat_session:
-        chat_session.state = CONFIRM_CHANGE_DETAILS
+        chat_session.state = BOOKING_DONE
 
         booking = db.query(ManualBooking).get(booking_id)
 
@@ -129,7 +129,7 @@ def handle_payment_failure(session_obj, db):
     # ✅ Update chat session
     chat_session = db.query(ChatSession).get(chat_session_id)
     if chat_session:
-        chat_session.state = WAITING_FOR_PAYMENT
+        chat_session.state = BOOKING_WAITING_FOR_PAYMENT
 
         booking = db.query(ManualBooking).get(booking_id)
 

@@ -72,13 +72,13 @@ def build_vehicle_option_list(options, total_pax):
         if len(opt["vehicles"]) == 1:
             v = opt["vehicles"][0]
 
-            title = v["vehicle_type"]                    
+            title = v["name"]                    
             desc = f"{v['seats']} seats • {v['vehicle_number']}"
 
         # ---------- COMBO VEHICLES ----------
         else:
             # Title: vehicle names only
-            title = " + ".join(v["vehicle_type"] for v in opt["vehicles"])
+            title = " + ".join(v["name"] for v in opt["vehicles"])
 
             # Description: seats breakdown
             seat_parts = [f"{v['vehicle_type']} {v['seats']}" for v in opt["vehicles"]]
@@ -222,17 +222,12 @@ Hello *{booking.customer.guest_name}*,
 
 Thank you for choosing us.
 We wish you a pleasant and memorable trip.
-
-Would you like to change any booking details?
 """.strip()
 
     return {
         "text": summary_text,
-        "buttons": [
-            {"id": "CHANGE_DETAILS_YES", "title": "Yes"},
-            {"id": "CHANGE_DETAILS_NO", "title": "No"}
-        ]
     }
+    
 def build_payment_failed_message(booking, session):
     text = f"""
 Hello *{booking.customer.guest_name}*,
@@ -302,7 +297,6 @@ BASE_REPLY_PROMPT = """
     """
 
 NO_CITIES_REPLY_PROMPT = "Sorry, no cities are available right now."
-CITY_FALLBACK_PROMPT = "Please select a city from the list.we not provide tours in this city."
 
 FAQ_REPLY_PROMPT = """
     You are a WhatsApp tour booking assistant.
@@ -365,7 +359,8 @@ The possible fields that can be updated are:
 
 - guest_name
 - pickup_location
-- travel_time
+- pickup_time
+- phone_number
 
 Your task: 
 

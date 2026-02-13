@@ -32,28 +32,53 @@ Return JSON:
 """
 
 CITY_EXTRACT_PROMPT = """
-Extract city name from user message.
+Extract the city name from the user's message.
 
-Return JSON:
+The user may type any city name such as:
+- Goa
+- Surat
+- Dubai
+- Abu Dhabi
+- Sharjah
+- Mumbai
+- Delhi
+- etc.
+
+Rules:
+- Return only the city name mentioned in the message.
+- Preserve proper capitalization (e.g., Goa, Surat, Abu Dhabi).
+- If no city is found, return null.
+- Do not restrict to specific cities.
+- Always return JSON only.
+
+Return format:
 {
-  "city": "Dubai | Abu Dhabi | Sharjah | null"
+  "city": "string or null"
 }
 """
 
 TRAVEL_DATE_EXTRACT_PROMPT = """
-Extract travel date from user message and convert to format DD-MM-YYYY.
+Extract the travel date from the user's message and convert it into the format DD-MM-YYYY.
+
+The user may enter the date in ANY common format, including but not limited to:
 
 Accepted formats:
 - DD-MM-YYYY
 - DD/MM/YYYY
-- 12th Feb, Feb 12, 2026
-- tomorrow, next Monday, next Friday
+- YYYY-MM-DD
+- 12th Feb 2026
+- Feb 12, 2026
+- 14 feb (if year is not given take current running year)
+- tomorrow
+- next Monday
+- next Friday
+- day after tomorrow
 
 Rules:
-- Always return JSON
-- Field name: "travel_date"
-- Value: standardized DD-MM-YYYY
-- If date cannot be parsed, return today's date as default
+- Always return JSON.
+- Field name must be exactly: "travel_date"
+- Value must always be in DD-MM-YYYY format.
+- Do not include any extra text. Only return JSON.
 
 Example response:
 {
@@ -61,38 +86,76 @@ Example response:
 }
 """
 TRAVEL_TIME_EXTRACT_PROMPT = """
-Extract travel time from the message.
+Extract the travel time from the user's message and convert it into 24-hour format (HH:MM).
+
+The user may enter the time in ANY common format, including but not limited to:
+
+Accepted formats:
+- 14:30
+- 2:30 PM
+- 2 PM
+- 02:30 pm
+- 1430
+- 9am
+- 9 am
+- 09:00
+- noon
+- midnight
+- morning
+- afternoon
+- evening
+- night
 
 Rules:
-- Understand 24h and 12h formats
-- Understand words like morning, evening, night
-- Return null if unclear
+- Always return JSON.
+- Field name must be exactly: "time"
+- Convert all valid times into 24-hour format HH:MM.
+- If only hour is given (e.g., 2 PM), assume minutes as 00.
+- If words are used:
+    - morning → 09:00
+    - afternoon → 14:00
+    - evening → 18:00
+    - night → 21:00
+    - noon → 12:00
+    - midnight → 00:00
+- If the time cannot be clearly understood, return null.
+- Do not include any extra text. Only return JSON.
 
-Output JSON:
+Example responses:
 {
-  "time": "string or null"
+  "time": "14:30"
+}
+
+{
+  "time": null
 }
 """
 
 PAX_EXTRACT_PROMPT = """
-Extract number of adults and kids.
+Extract the number of adults and kids from the user's message.
 
-User examples:
+The user may respond in different formats such as:
 - 2 adults 1 kid
 - 3,2
 - 4 adults
 - 2 kids
+- 4
 
-Return JSON:
+Rules:
+- If only one number is provided without specifying adults or kids,
+  assume it represents the number of adults.
+- Adults must be >= 1.
+- Kids can be 0.
+- If a value is not provided, return null for that field.
+- Always return JSON only.
+
+Return format:
 {
   "adults": number | null,
   "kids": number | null
 }
-
-Rules:
-- adults must be >= 1
-- kids can be 0
 """
+
 
 SMART_BOOKING_EXTRACT_PROMPT = """
 You are a smart tour booking assistant.
