@@ -6,7 +6,7 @@ from app.database.session import get_db
 from sqlalchemy.orm import Session
 from app.models.manual_booking import ManualBooking
 from app.models.chat_session import ChatSession
-from app.chatbot.states import BOOKING_PAYMENT_SUCCESS,BOOKING_CONFIRM_CHANGE_DETAILS
+from app.chatbot.states import BOOKING_PAYMENT_SUCCESS,BOOKING_CONFIRM_CHANGE_DETAILS,BOOKING_DONE
 from app.routers.api.webhooks.whatsapp import send_whatsapp_message
 from app.chatbot.prompts.reply import build_booking_confirmation_message
 from app.models.company import Company

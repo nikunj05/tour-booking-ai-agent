@@ -227,7 +227,7 @@ We wish you a pleasant and memorable trip.
     return {
         "text": summary_text,
     }
-    
+
 def build_payment_failed_message(booking, session):
     text = f"""
 Hello *{booking.customer.guest_name}*,
@@ -296,8 +296,6 @@ BASE_REPLY_PROMPT = """
     - Do NOT explain internal logic
     """
 
-NO_CITIES_REPLY_PROMPT = "Sorry, no cities are available right now."
-
 FAQ_REPLY_PROMPT = """
     You are a WhatsApp tour booking assistant.
 
@@ -309,23 +307,6 @@ FAQ_REPLY_PROMPT = """
     - Ask only ONE question at a time
     - Do NOT explain internal logic
     """
-
-BASE_INTENT_PROMPT = """
-    You are an intent & entity extraction engine for a WhatsApp tour booking chatbot.
-
-    Your job:
-    - Analyze user input
-    - Return structured data only
-
-    DO NOT:
-    - Chat
-    - Ask questions
-    - Explain anything
-
-    Return ONLY valid JSON.
-    """
-
-ASK_PACKAGE_REPLY_PROMPT = "Please select a tour package."
 
 ASK_TIME_REPLY_PROMPT = """
 ⏰ Please enter pickup time in format (e.g., 10:00 AM):
@@ -343,43 +324,5 @@ INVALID_TIME_REPLY_PROMPT = "Invalid time format.\n Please enter time as *HH:MM 
 
 ASK_GUEST_NAME_REPLY_PROMPT = "Please enter your good name"
 
-INVALID_PACKAGE_REPLY_PROMPT = "Please select a valid tour package."
-
-INVALID_DATE_REPLY_PROMPT = "Please enter a valid travel date."
-
-INVALID_PAX_REPLY_PROMPT = "Please enter a valid number of adults and kids."
-
-
 INVALID_PICKUP_LOCATION_REPLY_PROMPT = "Please enter a valid pickup location (hotel or address)."
 
-EXTRACT_UPDATE_FIELD_PROMPT = """
-You are a helpful assistant for a travel booking system. 
-The user may respond with text indicating which booking detail they want to change. 
-The possible fields that can be updated are:
-
-- guest_name
-- pickup_location
-- pickup_time
-- phone_number
-
-Your task: 
-
-1. Identify **exactly one field** the user wants to update.  
-2. Extract the new value the user wants for that field.  
-3. Return the result strictly in JSON format like this:
-
-{
-  "field": "<field_name>",
-  "value": "<new_value>"
-}
-
-Do not include any extra text, explanation, or formatting.  
-If you cannot determine a valid field or value, return:
-
-{
-  "field": null,
-  "value": null
-}
-
-User message: "{user_message}"
-"""
