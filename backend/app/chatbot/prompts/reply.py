@@ -302,9 +302,7 @@ FAQ_REPLY_PROMPT = """
     Rules:
     - Keep replies SHORT
     - Friendly and clear
-    - WhatsApp style
     - Use SAME language as user
-    - Ask only ONE question at a time
     - Do NOT explain internal logic
     """
 

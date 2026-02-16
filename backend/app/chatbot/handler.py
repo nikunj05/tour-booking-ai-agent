@@ -29,7 +29,7 @@ def handle_message(phone: str, text: str, db, company):
 
     # 🔥 FAQ intent
     if intent == "ask_question":
-        return handle_faq_flow(text)
+        return handle_faq_flow(text, db, company)
 
     # 🔥 Continue existing booking flow
     if session.state.startswith("BOOKING_"):
@@ -37,7 +37,7 @@ def handle_message(phone: str, text: str, db, company):
 
     # 🔥 Continue FAQ flow
     if session.state == "FAQ":
-        return handle_faq_flow(text)
+        return handle_faq_flow(text, db, company)
 
     # -------------------------
     # 4️⃣ Default reply
