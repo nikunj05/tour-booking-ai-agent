@@ -15,6 +15,7 @@ from app.chatbot.prompts.intent import (
 from app.chatbot.prompts.reply import (
     ASK_TIME_REPLY_PROMPT,
     INVALID_TIME_REPLY_PROMPT,
+    ASK_PAX_REPLY_PROMPT,
 )
 from app.services.openai_service import detect_intent_and_extract, generate_reply
 

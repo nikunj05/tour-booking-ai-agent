@@ -326,3 +326,4 @@ ASK_GUEST_NAME_REPLY_PROMPT = "Please enter your good name"
 
 INVALID_PICKUP_LOCATION_REPLY_PROMPT = "Please enter a valid pickup location (hotel or address)."
 
+ASK_PAX_REPLY_PROMPT = "How many adults and kids are traveling?"
