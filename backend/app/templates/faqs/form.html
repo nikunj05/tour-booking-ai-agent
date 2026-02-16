@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="content-header px-1">
+    <div class="container-fluid">
+        <h1>{{ "Edit FAQ Document" if faq else "Create FAQ Document" }}</h1>
+        <hr>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+
+                <form method="post"
+                      action="{% if faq %}{{ url_for('faq_update', faq_id=faq.id) }}{% else %}{{ url_for('faq_create') }}{% endif %}"
+                      class="shadow-sm p-4 rounded bg-white border">
+
+                    <div class="row">
+
+                        <!-- Title -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">
+                                Title <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   name="title"
+                                   class="form-control"
+                                   placeholder="Enter FAQ title"
+                                   value="{{ faq.title if faq else '' }}"
+                                   required>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold d-block">
+                                Status
+                            </label>
+
+                            <div class="form-check form-switch mt-2">
+                                <input type="hidden" name="is_active" value="false">
+                                <input class="form-check-input"
+                                    type="checkbox"
+                                    role="switch"
+                                    id="statusSwitch"
+                                    name="is_active"
+                                    value="true"
+                                    {% if faq and faq.is_active %}checked{% endif %}
+                                    {% if not faq %}checked{% endif %}>
+
+                                <label class="form-check-label fw-medium" for="statusSwitch">
+                                    Active
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-semibold">
+                                Content <span class="text-danger">*</span>
+                            </label>
+                            <textarea name="content"
+                                      class="form-control"
+                                      rows="6"
+                                      placeholder="Enter FAQ content..."
+                                      required>{{ faq.content if faq else '' }}</textarea>
+                        </div>
+
+                    </div>
+
+                    <div class="page-bottom-action-btn mt-4">
+                        <button type="submit" class="btn btn-submit">
+                            {{ "Update" if faq else "Create" }}
+                        </button>
+
+                        <a href="{{ url_for('faq_list') }}"
+                           class="btn btn-cancel ms-2">
+                            Cancel
+                        </a>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

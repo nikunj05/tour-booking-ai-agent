@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>FAQ List</h3>
+        <a href="{{ url_for('faq_create_page') }}" class="btn btn-submit">
+            Add FAQ
+        </a>
+    </div>
+
+    <table id="faqTable" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Status</th>
+                <th width="120">Actions</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<link rel="stylesheet"
+    href="{{ url_for('static', path='assets/plugins/datatables-responsive/css/jquery.dataTables.min.css') }}" />
+
+<script src="{{ url_for('static', path='assets/plugins/datatables/jquery-3.6.0.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
+
+<script>
+    $(document).ready(function () {
+
+        const table = $('#faqTable').DataTable({
+            processing: true,
+            serverSide: false,
+            ajax: "{{ url_for('faq_datatable') }}",
+            responsive: true,
+            columns: [
+                { data: "title" },
+                { data: "status" },
+                {
+                    data: "actions",
+                    orderable: false,
+                    searchable: false,
+                    className: "text-center"
+                }
+            ],
+            language: {
+                searchPlaceholder: "Search FAQ...",
+                search: ""
+            },
+        });
+
+        // Delete confirmation
+        $(document).on("click", ".confirm-faq-delete", function (e) {
+            e.preventDefault();
+            confirmDelete(
+                $(this).data('route'),
+                'Are you sure you want to delete this FAQ?',
+                'POST',
+                table
+            );
+        });
+
+    });
+</script>
+{% endblock %}

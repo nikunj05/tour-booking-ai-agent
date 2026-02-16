@@ -22,6 +22,7 @@ from fastapi import Form
 from typing import List
 from datetime import datetime
 
+
 router = APIRouter(prefix="/manual-bookings", tags=["Manual Booking"])
 
 def save_booking_vehicles_drivers(
@@ -473,7 +474,6 @@ def manual_booking_datatable(
                     title="Detail Booking">
                         <i class="fa fa-eye"></i>
                     </a>
-
                 </div>
             """
         })
