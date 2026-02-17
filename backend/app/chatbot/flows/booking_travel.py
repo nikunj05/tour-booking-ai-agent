@@ -4,10 +4,11 @@ from app.chatbot.states import (
     BOOKING_ASK_TRAVEL_DATE,
     BOOKING_ASK_CUSTOM_TRAVEL_DATE,
     BOOKING_ASK_TIME,
+    BOOKING_CONFIRM_DATETIME,
     BOOKING_ASK_PAX,
 )
 
-from app.services.openai_service import detect_intent_and_extract
+from app.services.openai_service import detect_intent_and_extract, generate_reply
 from app.chatbot.prompts.intent import (
     TRAVEL_DATE_EXTRACT_PROMPT,
     TRAVEL_TIME_EXTRACT_PROMPT,
@@ -16,9 +17,8 @@ from app.chatbot.prompts.reply import (
     ASK_TIME_REPLY_PROMPT,
     INVALID_TIME_REPLY_PROMPT,
     ASK_PAX_REPLY_PROMPT,
+    build_travel_datetime_confirmation_message
 )
-from app.services.openai_service import detect_intent_and_extract, generate_reply
-
 
 def handle_booking_travel_flow(
     session,
@@ -31,9 +31,9 @@ def handle_booking_travel_flow(
     state = session.state
     today_example = datetime.now().strftime("%d-%m-%Y")
 
-    # ==========================================
+    # =====================================================
     # 1️⃣ ASK TRAVEL DATE
-    # ==========================================
+    # =====================================================
     if state == BOOKING_ASK_TRAVEL_DATE:
 
         if text == "DATE_TODAY":
@@ -60,13 +60,14 @@ def handle_booking_travel_flow(
         session.data["travel_date"] = travel_date
         change_state(session, BOOKING_ASK_TIME, db)
 
-        reply = {"text": generate_reply(text, {}, ASK_TIME_REPLY_PROMPT)}
-        save_message(db, session, company, "bot", reply["text"])
+        reply = generate_reply(text, {}, ASK_TIME_REPLY_PROMPT)
+        save_message(db, session, company, "bot", reply)
         return reply
 
-    # ==========================================
+
+    # =====================================================
     # 2️⃣ CUSTOM TRAVEL DATE
-    # ==========================================
+    # =====================================================
     if state == BOOKING_ASK_CUSTOM_TRAVEL_DATE:
 
         ai = detect_intent_and_extract(text, TRAVEL_DATE_EXTRACT_PROMPT)
@@ -102,13 +103,14 @@ def handle_booking_travel_flow(
 
         change_state(session, BOOKING_ASK_TIME, db)
 
-        reply = {"text": generate_reply(text, {}, ASK_TIME_REPLY_PROMPT)}
-        save_message(db, session, company, "bot", reply["text"])
+        reply = generate_reply(text, {}, ASK_TIME_REPLY_PROMPT)
+        save_message(db, session, company, "bot", reply)
         return reply
 
-    # ==========================================
+
+    # =====================================================
     # 3️⃣ ASK TRAVEL TIME
-    # ==========================================
+    # =====================================================
     if state == BOOKING_ASK_TIME:
 
         ai = detect_intent_and_extract(text, TRAVEL_TIME_EXTRACT_PROMPT)
@@ -119,7 +121,7 @@ def handle_booking_travel_flow(
             save_message(db, session, company, "bot", reply)
             return reply
 
-        # 🔥 Check if travel date is today
+        # Validate time if date is today
         travel_date_str = session.data.get("travel_date")
         today_str = datetime.now().strftime("%Y-%m-%d")
 
@@ -135,8 +137,57 @@ def handle_booking_travel_flow(
                 return reply
 
         session.data["travel_time"] = extracted_time
-        change_state(session, BOOKING_ASK_PAX, db)
+        change_state(session, BOOKING_CONFIRM_DATETIME, db)
 
-        reply = {"text": generate_reply(text, {}, ASK_PAX_REPLY_PROMPT)}
-        save_message(db, session, company, "bot", reply["text"])
+        # ✅ Confirmation Message with Buttons
+        formatted_date = datetime.strptime(
+            session.data["travel_date"], "%Y-%m-%d"
+        ).strftime("%d %B %Y")
+
+        formatted_time = extracted_time
+
+        reply = build_travel_datetime_confirmation_message(
+            formatted_date,
+            formatted_time,
+        )
+
+        save_message(db, session, company, "bot", reply)
         return reply
+
+
+    # =====================================================
+    # 4️⃣ CONFIRM DATE & TIME
+    # =====================================================
+    if state == BOOKING_CONFIRM_DATETIME:
+
+        if text == "CONFIRM_YES":
+            change_state(session, BOOKING_ASK_PAX, db)
+
+            reply = generate_reply(text, {}, ASK_PAX_REPLY_PROMPT)
+            save_message(db, session, company, "bot", reply)
+            return reply
+
+        elif text == "CONFIRM_NO":
+            # Reset date & time
+            session.data.pop("travel_date", None)
+            session.data.pop("travel_time", None)
+
+            change_state(session, BOOKING_ASK_CUSTOM_TRAVEL_DATE, db)
+
+            reply = "No worries. Kindly enter your preferred travel date again."
+            save_message(db, session, company, "bot", reply)
+            return reply
+
+        else:
+            formatted_date = datetime.strptime(
+                session.data["travel_date"], "%Y-%m-%d"
+            ).strftime("%d %B %Y")
+
+            formatted_time = session.data["travel_time"]
+
+            reply = build_travel_datetime_confirmation_message(
+                formatted_date,
+                formatted_time,
+            )
+            save_message(db, session, company, "bot", reply)
+            return reply

@@ -97,7 +97,7 @@ def handle_booking_flow(phone,session, text: str, db, company):
         )
 
     # ---------- TRAVEL DATE ----------
-    if state in [BOOKING_ASK_TRAVEL_DATE, BOOKING_ASK_CUSTOM_TRAVEL_DATE, BOOKING_ASK_TIME]:
+    if state in [BOOKING_ASK_TRAVEL_DATE, BOOKING_ASK_CUSTOM_TRAVEL_DATE, BOOKING_ASK_TIME,BOOKING_CONFIRM_DATETIME]:
         return handle_booking_travel_flow(
             session=session,
             text=text,

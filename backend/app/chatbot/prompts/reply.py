@@ -26,7 +26,19 @@ def build_greeting(company_name: str, guest_name: str | None, returning: bool = 
         ]
     }
 
-
+def build_travel_datetime_confirmation_message(date: str, time: str) -> dict:
+    return {
+        "text": (
+            f"📅 Please confirm your travel details:\n\n"
+            f"Date: *{date}*\n"
+            f"Time: *{time}*\n\n"
+            f"Do you want to proceed?"
+        ),
+        "buttons": [
+            {"id": "CONFIRM_YES", "title": "Yes"},
+            {"id": "CONFIRM_NO", "title": "Change date and time"},
+        ],
+    }
 
 def build_city_selection(cities: list[str], heading: str = "Where would you like to go?") -> dict:
     rows = [
@@ -335,3 +347,4 @@ ASK_GUEST_NAME_REPLY_PROMPT = "Please enter your good name"
 
 INVALID_PICKUP_LOCATION_REPLY_PROMPT = "Please enter a valid pickup location (hotel or address)."
 
+GRATITUDE_REPLY_PROMPT = "You're welcome! Have a great day. Let me know if you need any further assistance."
