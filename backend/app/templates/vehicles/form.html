@@ -43,13 +43,24 @@
                             <input type="text" name="seats" class="form-control"
                                    value="{{ vehicle.seats if vehicle else '' }}">
                         </div>
-
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Status</label>
-                            <select name="is_active" class="form-select">
-                                <option value="true" {% if vehicle and vehicle.is_active %}selected{% endif %}>Active</option>
-                                <option value="false" {% if vehicle and not vehicle.is_active %}selected{% endif %}>Inactive</option>
-                            </select>
+                            <label class="form-label fw-semibold d-block">
+                                Status
+                            </label>
+                            <div class="form-switch mt-2 mx-2">
+                                <input type="hidden" name="is_active" value="false">
+                                <input class="form-check-input large-switch"
+                                    type="checkbox"
+                                    role="switch"
+                                    id="statusSwitch"
+                                    name="is_active"
+                                    value="true"
+                                    {% if vehicle and vehicle.is_active %}checked{% endif %}
+                                    {% if not vehicle %}checked{% endif %}>
+                                <label class="mx-2 form-check-label fw-medium" for="statusSwitch">
+                                    Active
+                                </label>
+                            </div>
                         </div>
                     </div>
 

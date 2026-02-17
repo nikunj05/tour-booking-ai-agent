@@ -112,9 +112,6 @@
                         </div>
                     </div>
 
-
-
-
                     <div class="row">
                         {% set cover_img = (
                         package.gallery_images
@@ -182,24 +179,32 @@
 
                         <!-- Status -->
                         {% if package %}
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Status</label>
-                            <select name="status" class="form-select">
-                                <option value="active" {{ 'selected' if package.status=='active' }}>Active</option>
-                                <option value="inactive" {{ 'selected' if package.status=='inactive' }}>Inactive
-                                </option>
-                            </select>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold d-block">
+                                Status
+                            </label>
+                            <div class="form-switch mt-2 mx-2">
+                                <input type="hidden" name="status" value="inactive">
+                                <input class="form-check-input large-switch"
+                                    type="checkbox"
+                                    role="switch"
+                                    id="statusSwitch"
+                                    name="status"
+                                    value="active"
+                                    {% if package and package.status=='active' %}checked{% endif %}
+                                    {% if not package %}checked{% endif %}>
+                                <label class="mx-2 form-check-label fw-medium" for="statusSwitch">
+                                    Active
+                                </label>
+                            </div>
                         </div>
                         {% endif %}
 
                         <!-- Submit -->
                         <div class="mt-4">
-                            <button type="submit" class="btn btn-submit">{{ "Update" if package else "Create"
-                                }}</button>
+                            <button type="submit" class="btn btn-submit">{{ "Update" if package else "Create"}}</button>
                         </div>
-
                 </form>
-
             </div>
         </div>
     </div>
@@ -214,7 +219,6 @@
     "excludes": package.excludes if package else ""
 } | tojson }}
 </script>
-
 
 <script>
     $(document).ready(function () {

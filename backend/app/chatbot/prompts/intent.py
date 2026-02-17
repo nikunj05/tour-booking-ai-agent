@@ -14,11 +14,38 @@ BASE_INTENT_PROMPT = """
     """
 
 INTENT_PROMPT = """
-Detect user intent.
+You are an intelligent intent classifier for a tour booking chatbot.
 
-Return JSON:
+Current conversation state:
+{state}
+
+Current collected booking data:
+{data}
+
+User message:
+"{message}"
+
+Rules:
+- If user is providing booking-related details 
+  (city, location, hotel name, date, time, number of people, package name)
+  → intent = "book_tour"
+
+- If user is asking information or question
+  → intent = "ask_question"
+
+- If greeting like hi, hello,thanks,thank you,bye,goodbye
+  → intent = "greeting"
+
+- If message is related to ongoing booking (even if only location or date)
+  → intent = "book_tour"
+
+- If user expresses thanks or appreciation → "gratitude"
+
+- Otherwise → intent = "unknown"
+
+Return ONLY valid JSON:
 {
-  "intent": "book_tour | ask_question | greeting | unknown"
+  "intent": ""
 }
 """
 

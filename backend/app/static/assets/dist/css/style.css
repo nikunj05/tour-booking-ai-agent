@@ -3756,6 +3756,20 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
     object-fit: cover;
 }
 
+.large-switch {
+    transform: scale(1.5);
+}
+
+.large-switch:checked {
+    background-color: #15717e;   /* Green */
+    border-color: #15717e;
+}
+
+/* Focus color */
+.large-switch:focus {
+    box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
+}
+
 @media (max-width: 575px) {
     .driver-side-header-button .header-add-new-box-button {
         width: 100% !important;

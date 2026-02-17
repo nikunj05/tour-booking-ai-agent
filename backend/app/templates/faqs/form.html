@@ -40,7 +40,7 @@
 
                             <div class="form-check form-switch mt-2">
                                 <input type="hidden" name="is_active" value="false">
-                                <input class="form-check-input"
+                                <input class="form-check-input large-switch"
                                     type="checkbox"
                                     role="switch"
                                     id="statusSwitch"
@@ -48,8 +48,7 @@
                                     value="true"
                                     {% if faq and faq.is_active %}checked{% endif %}
                                     {% if not faq %}checked{% endif %}>
-
-                                <label class="form-check-label fw-medium" for="statusSwitch">
+                                <label class="mx-2 form-check-label fw-medium" for="statusSwitch">
                                     Active
                                 </label>
                             </div>

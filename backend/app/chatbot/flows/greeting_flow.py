@@ -23,7 +23,7 @@ def handle_greeting_flow(phone, session, text, db, company):
     # 2️⃣ Greet user
     response = build_greeting(
         company.company_name,
-        guest_name=session.data.get("guest_name")
+        guest_name=session.data.get("guest_name"),
     )
 
     session.state = "BOOKING_CITY_LIST"
