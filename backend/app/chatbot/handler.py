@@ -4,7 +4,7 @@ from app.chatbot.flows.booking_flow import handle_booking_flow
 from app.chatbot.flows.faq_flow import handle_faq_flow
 from app.chatbot.session_manager import get_or_create_session
 from app.chatbot.prompts.reply import build_greeting
-from app.chatbot.states import BOOKING_GREETING
+from app.services.openai_service import generate_reply
 
 def handle_message(phone: str, text: str, db, company):
 
@@ -24,6 +24,10 @@ def handle_message(phone: str, text: str, db, company):
     # -------------------------
     intent = detect_global_intent(text)
     print(intent,"intent")
+
+    if intent == "gratitude":
+        return generate_reply(text, {}, "gratitude")
+
     if intent == "book_tour":
         return handle_booking_flow(phone, session, text, db, company)
 

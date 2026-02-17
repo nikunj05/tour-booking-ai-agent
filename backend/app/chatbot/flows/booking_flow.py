@@ -31,14 +31,12 @@ from app.chatbot.flows.booking_payment import handle_booking_payment
 
 BASE_URL = os.getenv("BASE_URL")
 
-
 # ------------------- Helpers -------------------
 def save_message(db, session, company, sender, message):
     text = message.get("text") if isinstance(message, dict) else message
     db.add(ChatMessage(session_id=session.id, company_id=company.id, sender=sender, message=text))
     session.updated_at = datetime.utcnow()
     db.commit()
-
 
 def parse_whatsapp_phone(raw_phone: str):
     try:
@@ -49,11 +47,9 @@ def parse_whatsapp_phone(raw_phone: str):
     except:
         return None, None
 
-
 def change_state(session, state, db):
     session.state = state
     db.commit()
-
 
 def build_public_image_url(image_path: str) -> str | None:
     if not image_path:
@@ -73,7 +69,8 @@ def handle_booking_flow(phone,session, text: str, db, company):
         change_state(session, BOOKING_CITY_LIST, db)
         return build_greeting(
             company.company_name,
-            guest_name=session.data.get("guest_name")
+            guest_name=session.data.get("guest_name"),
+            returning=True
         )
 
     if state in [BOOKING_CITY_LIST, BOOKING_CITY]:

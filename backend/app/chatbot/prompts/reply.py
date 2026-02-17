@@ -6,10 +6,18 @@ def fallback():
         "Our team will assist you shortly."
     )
 
-def build_greeting(company_name: str, guest_name: str):
+def build_greeting(company_name: str, guest_name: str | None, returning: bool = False):
+
+    name_part = f"{guest_name}" if guest_name else "there"
+    print("returning", returning)
+    if returning:
+        intro = f"Welcome back {name_part}! 😊"
+    else:
+        intro = f"Hi {name_part}! Welcome to *{company_name}* ✨"
+
     return {
         "text": (
-            f"Hi {guest_name}! Welcome to *{company_name}* ✨\n\n"
+            f"{intro}\n\n"
             "How can I assist you today? Choose an option below:"
         ),
         "buttons": [
@@ -17,6 +25,8 @@ def build_greeting(company_name: str, guest_name: str):
             {"id": "ask_question", "title": "Ask About Tours?"}
         ]
     }
+
+
 
 def build_city_selection(cities: list[str]) -> dict:
     rows = [

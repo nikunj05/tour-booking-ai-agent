@@ -57,6 +57,31 @@ def handle_booking_package_flow(
     # ==========================================
     if state == BOOKING_PACKAGE_DETAIL_ACTION:
 
+        packages = session.data.get("packages", [])
+
+        # ✅ Allow selecting another package again
+        if text and text.startswith("PKG_"):
+
+            pkg_id = text.replace("PKG_", "")
+
+            selected_package = next(
+                (p for p in packages if str(p["id"]) == pkg_id),
+                None
+            )
+
+            if not selected_package:
+                reply = "Please select a valid package from the list."
+                save_message(db, session, company, "bot", reply)
+                return reply
+
+            session.data["selected_package"] = selected_package
+
+            reply = build_package_detail_message(selected_package)
+            save_message(db, session, company, "bot", reply["text"])
+
+            return reply
+
+        # ✅ Book button
         if text == "BOOK_PKG":
 
             p = session.data.get("selected_package")
@@ -87,4 +112,3 @@ def handle_booking_package_flow(
         reply = "You can select another package or tap *Book Now* to continue."
         save_message(db, session, company, "bot", reply)
         return reply
-
