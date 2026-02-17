@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<section class="content-header px-1">
+  <div class="container-fluid d-flex justify-content-between align-items-center">
+    <h1>FAQ List</h1>
+
+    <a href="{{ url_for('faq_create_page') }}" class="btn btn-submit">
+      Add FAQ
+    </a>
+  </div>
+  <hr>
+</section>
+
+<section class="content">
+  <div class="container-fluid py-4">
+    <div class="table-responsive">
+      <table id="faqTable" class="table table-striped table-bordered" style="width:100%">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<link rel="stylesheet"
+    href="{{ url_for('static', path='assets/plugins/datatables-responsive/css/jquery.dataTables.min.css') }}" />
+
+<script src="{{ url_for('static', path='assets/plugins/datatables/jquery-3.6.0.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/plugins/datatables/jquery.dataTables.min.js') }}"></script>
+
+<script>
+    $(document).ready(function () {
+
+        const table = $('#faqTable').DataTable({
+            processing: true,
+            serverSide: false,
+            ajax: "{{ url_for('faq_datatable') }}",
+            responsive: true,
+            columns: [
+                { data: "title" },
+                { data: "status" },
+                {
+                    data: "actions",
+                    orderable: false,
+                    searchable: false,
+                    className: "text-center"
+                }
+            ],
+            language: {
+                searchPlaceholder: "Search FAQ...",
+                search: ""
+            },
+        });
+
+        // Delete confirmation
+        $(document).on("click", ".confirm-faq-delete", function (e) {
+            e.preventDefault();
+            confirmDelete(
+                $(this).data('route'),
+                'Are you sure you want to delete this FAQ?',
+                'POST',
+                table
+            );
+        });
+
+    });
+</script>
+{% endblock %}

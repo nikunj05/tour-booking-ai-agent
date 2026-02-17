@@ -109,15 +109,15 @@ async def vehicle_create(
     db: Session = Depends(get_db),
     current_user: User = Depends(company_only)
 ):
-    form = await request.form()  # await works
-
+    form = await request.form()  
+    value = form.get("is_active")
     vehicle = Vehicle(
         name=form.get("name"),
         vehicle_type=form.get("vehicle_type"),
         vehicle_number=form.get("vehicle_number"),
         seats=form.get("seats"),
         company_id=current_user.company.id,
-        is_active=bool(form.get("is_active"))
+        is_active=True if value == "true" else False
     )
     
     db.add(vehicle)
@@ -179,12 +179,14 @@ async def vehicle_update(
         return flash_redirect(request.url_for("vehicle_list"), "Vehicle not found")
 
     form = await request.form()
-    
+    print("form1",form.get("is_active"))
+    print("form",bool(form.get("is_active")))
     vehicle.name = form.get("name")
     vehicle.vehicle_type = form.get("vehicle_type")
     vehicle.vehicle_number = form.get("vehicle_number")
     vehicle.seats = form.get("seats")
-    vehicle.is_active = bool(form.get("is_active"))
+    value = form.get("is_active")
+    vehicle.is_active = True if value == "true" else False
 
     # Handle multiple new gallery images (add only, do NOT delete old ones)
     files = form.getlist("gallery_images")  # input name="gallery_images" in form

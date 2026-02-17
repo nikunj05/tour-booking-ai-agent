@@ -8,4 +8,4 @@ from .manual_booking import BookingVehicleDriver
 from .vehicle import Vehicle
 from .driver import Driver
 from .vehicle import VehiclePhoto
-
+from .faq_document import FAQDocument

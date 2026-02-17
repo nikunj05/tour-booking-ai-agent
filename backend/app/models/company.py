@@ -48,4 +48,10 @@ class Company(Base):
         cascade="all, delete-orphan"
     )
 
+    faq_documents = relationship(
+        "FAQDocument",
+        back_populates="company",
+        cascade="all, delete-orphan"
+    )
+
 

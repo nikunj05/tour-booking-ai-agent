@@ -46,25 +46,6 @@
 
 <script>
 $(document).ready(function () {
-
-    // Customers
-    $('#customersTable').DataTable({
-        ajax: '{{ url_for("dashboard_customers_datatable") }}',
-        paging: true,
-        searching: true,
-        lengthChange: false,
-        pageLength: 5,
-        responsive: true,
-        columns: [
-            { data: 'name' },
-            { data: 'contact' },
-        ],
-        language: {
-            searchPlaceholder: "Search guest, phone, date...",
-            search: ""
-        },
-    });
-
     // Active Packages
     $('#activePackagesTable').DataTable({
         ajax: '{{ url_for("dashboard_active_packages") }}',

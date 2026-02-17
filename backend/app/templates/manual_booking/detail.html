@@ -27,7 +27,7 @@
             <div class="col-md-6 mb-2">
               <strong>{{ booking.customer.guest_name }}</strong><br>
               <span class="text-muted">
-                <i class="fas fa-phone-alt me-1"></i>{{ booking.customer.phone }}
+                <i class="fas fa-phone-alt me-1"></i>{{ booking.customer.country_code }}{{ booking.customer.phone }}
               </span><br>
               <span class="text-muted">
                 <i class="fas fa-envelope me-1"></i>{{ booking.customer.email or '-' }}
@@ -116,6 +116,7 @@
                 </div>
                 <small class="text-muted d-block">
                   <i class="fas fa-phone-alt me-1"></i>
+                  {{ item.driver.country_code }}
                   {{ item.driver.phone_number }}
                 </small>
                 {% else %}

@@ -7,7 +7,7 @@ from sqlalchemy.orm import relationship
 from app.database.base import Base
 from sqlalchemy.ext.hybrid import hybrid_property
 from app.models.driver import Driver
-
+from pgvector.sqlalchemy import Vector
 
 class TourPackage(Base):
     __tablename__ = "tour_packages"
@@ -35,6 +35,8 @@ class TourPackage(Base):
         back_populates="tour_package",
         cascade="all, delete-orphan"
     )
+    embedding = Column(Vector(1536))
+
 
     @hybrid_property
     def cover_image(self):

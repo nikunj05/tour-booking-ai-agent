@@ -6,10 +6,18 @@ def fallback():
         "Our team will assist you shortly."
     )
 
-def build_greeting(company_name: str, guest_name: str):
+def build_greeting(company_name: str, guest_name: str | None, returning: bool = False):
+
+    name_part = f"{guest_name}" if guest_name else "there"
+    print("returning", returning)
+    if returning:
+        intro = f"Welcome back {name_part}! 😊"
+    else:
+        intro = f"Hi {name_part}! Welcome to *{company_name}* ✨"
+
     return {
         "text": (
-            f"Hi {guest_name}! Welcome to *{company_name}* ✨\n\n"
+            f"{intro}\n\n"
             "How can I assist you today? Choose an option below:"
         ),
         "buttons": [
@@ -17,6 +25,8 @@ def build_greeting(company_name: str, guest_name: str):
             {"id": "ask_question", "title": "Ask About Tours?"}
         ]
     }
+
+
 
 def build_city_selection(cities: list[str]) -> dict:
     rows = [
@@ -72,13 +82,13 @@ def build_vehicle_option_list(options, total_pax):
         if len(opt["vehicles"]) == 1:
             v = opt["vehicles"][0]
 
-            title = v["vehicle_type"]                    
+            title = v["name"]                    
             desc = f"{v['seats']} seats • {v['vehicle_number']}"
 
         # ---------- COMBO VEHICLES ----------
         else:
             # Title: vehicle names only
-            title = " + ".join(v["vehicle_type"] for v in opt["vehicles"])
+            title = " + ".join(v["name"] for v in opt["vehicles"])
 
             # Description: seats breakdown
             seat_parts = [f"{v['vehicle_type']} {v['seats']}" for v in opt["vehicles"]]
@@ -222,17 +232,12 @@ Hello *{booking.customer.guest_name}*,
 
 Thank you for choosing us.
 We wish you a pleasant and memorable trip.
-
-Would you like to change any booking details?
 """.strip()
 
     return {
         "text": summary_text,
-        "buttons": [
-            {"id": "CHANGE_DETAILS_YES", "title": "Yes"},
-            {"id": "CHANGE_DETAILS_NO", "title": "No"}
-        ]
     }
+
 def build_payment_failed_message(booking, session):
     text = f"""
 Hello *{booking.customer.guest_name}*,
@@ -301,37 +306,15 @@ BASE_REPLY_PROMPT = """
     - Do NOT explain internal logic
     """
 
-NO_CITIES_REPLY_PROMPT = "Sorry, no cities are available right now."
-CITY_FALLBACK_PROMPT = "Please select a city from the list.we not provide tours in this city."
-
 FAQ_REPLY_PROMPT = """
     You are a WhatsApp tour booking assistant.
 
     Rules:
     - Keep replies SHORT
     - Friendly and clear
-    - WhatsApp style
     - Use SAME language as user
-    - Ask only ONE question at a time
     - Do NOT explain internal logic
     """
-
-BASE_INTENT_PROMPT = """
-    You are an intent & entity extraction engine for a WhatsApp tour booking chatbot.
-
-    Your job:
-    - Analyze user input
-    - Return structured data only
-
-    DO NOT:
-    - Chat
-    - Ask questions
-    - Explain anything
-
-    Return ONLY valid JSON.
-    """
-
-ASK_PACKAGE_REPLY_PROMPT = "Please select a tour package."
 
 ASK_TIME_REPLY_PROMPT = """
 ⏰ Please enter pickup time in format (e.g., 10:00 AM):
@@ -349,42 +332,6 @@ INVALID_TIME_REPLY_PROMPT = "Invalid time format.\n Please enter time as *HH:MM 
 
 ASK_GUEST_NAME_REPLY_PROMPT = "Please enter your good name"
 
-INVALID_PACKAGE_REPLY_PROMPT = "Please select a valid tour package."
-
-INVALID_DATE_REPLY_PROMPT = "Please enter a valid travel date."
-
-INVALID_PAX_REPLY_PROMPT = "Please enter a valid number of adults and kids."
-
-
 INVALID_PICKUP_LOCATION_REPLY_PROMPT = "Please enter a valid pickup location (hotel or address)."
 
-EXTRACT_UPDATE_FIELD_PROMPT = """
-You are a helpful assistant for a travel booking system. 
-The user may respond with text indicating which booking detail they want to change. 
-The possible fields that can be updated are:
-
-- guest_name
-- pickup_location
-- travel_time
-
-Your task: 
-
-1. Identify **exactly one field** the user wants to update.  
-2. Extract the new value the user wants for that field.  
-3. Return the result strictly in JSON format like this:
-
-{
-  "field": "<field_name>",
-  "value": "<new_value>"
-}
-
-Do not include any extra text, explanation, or formatting.  
-If you cannot determine a valid field or value, return:
-
-{
-  "field": null,
-  "value": null
-}
-
-User message: "{user_message}"
-"""
+ASK_PAX_REPLY_PROMPT = "How many adults and kids are traveling?"

@@ -36,30 +36,6 @@ def dashboard_index(
         {"request": request, "current_user": current_user}
     )
 
-# =================================================
-# CUSTOMER DATATABLE API
-# =================================================
-@router.get("/customers/datatable", name="dashboard_customers_datatable")
-def customers_datatable(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    bookings = (
-        db.query(ManualBooking)
-        .filter(ManualBooking.is_deleted == False)
-        .all()
-    )
-
-    data = [
-        {
-            "name": b.guest_name,
-            "contact": f"{b.country_code}{b.phone} <br> {b.email}",
-        }
-        for b in bookings
-    ]
-
-    return {"data": data}
-
 @router.get("/datatable/active-packages", name="dashboard_active_packages")
 def active_packages_datatable(
     db: Session = Depends(get_db),

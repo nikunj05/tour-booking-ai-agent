@@ -18,6 +18,7 @@ from app.models.driver import Driver
 from app.core.constants import COUNTRIES, CURRENCIES
 from app.utils.flash import flash_redirect
 from app.models.manual_booking import ManualBooking
+from app.utils.embeddings import generate_embedding
 
 router = APIRouter(prefix="/tour-packages", tags=["Tour Packages"])
 
@@ -169,6 +170,16 @@ def create_package(
     company_id=current_user.company.id,
     **validated.dict()
     )
+    
+    combined_text = f"""
+        Title: {title}
+        Description: {description}
+        City: {city}
+        Itinerary: {itinerary}
+        Excludes: {excludes}
+        """
+
+    package.embedding = generate_embedding(combined_text)
     db.add(package)
     db.flush()
     
@@ -284,6 +295,16 @@ def update_package(
             request.url_for("my_tour_list"),
             status_code=303
         )
+
+    combined_text = f"""
+        Title: {package.title}
+        Description: {package.description}
+        City: {package.city}
+        Itinerary: {package.itinerary}
+        Excludes: {package.excludes}
+        """
+
+    package.embedding = generate_embedding(combined_text)
 
     update_data = TourPackageUpdate(
         title=title,
