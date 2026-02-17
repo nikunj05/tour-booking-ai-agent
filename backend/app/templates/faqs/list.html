@@ -1,24 +1,33 @@
 {% extends "layout.html" %}
 {% block content %}
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>FAQ List</h3>
-        <a href="{{ url_for('faq_create_page') }}" class="btn btn-submit">
-            Add FAQ
-        </a>
-    </div>
+<section class="content-header px-1">
+  <div class="container-fluid d-flex justify-content-between align-items-center">
+    <h1>FAQ List</h1>
 
-    <table id="faqTable" class="table table-bordered table-striped">
+    <a href="{{ url_for('faq_create_page') }}" class="btn btn-submit">
+      Add FAQ
+    </a>
+  </div>
+  <hr>
+</section>
+
+<section class="content">
+  <div class="container-fluid py-4">
+    <div class="table-responsive">
+      <table id="faqTable" class="table table-striped table-bordered" style="width:100%">
         <thead>
-            <tr>
-                <th>Title</th>
-                <th>Status</th>
-                <th width="120">Actions</th>
-            </tr>
+          <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
         </thead>
-    </table>
-</div>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
 {% endblock %}
 
