@@ -75,7 +75,7 @@ $(document).ready(function () {
         lengthChange: false,
         responsive: true,
         ajax: {
-            url: "{{ url_for('manual_booking_datatable') }}",
+            url: "{{ url_for('manual_booking_datatable', source='dashboard') }}",
             type: "GET",
             dataSrc: "data"
         },

@@ -26,9 +26,21 @@ def build_greeting(company_name: str, guest_name: str | None, returning: bool = 
         ]
     }
 
+def build_travel_datetime_confirmation_message(date: str, time: str) -> dict:
+    return {
+        "text": (
+            f"📅 Please confirm your travel details:\n\n"
+            f"Date: *{date}*\n"
+            f"Time: *{time}*\n\n"
+            f"Do you want to proceed?"
+        ),
+        "buttons": [
+            {"id": "CONFIRM_YES", "title": "Yes"},
+            {"id": "CONFIRM_NO", "title": "Change date and time"},
+        ],
+    }
 
-
-def build_city_selection(cities: list[str]) -> dict:
+def build_city_selection(cities: list[str], heading: str = "Where would you like to go?") -> dict:
     rows = [
         {
             "id": f"CITY_{city.lower().replace(' ', '_')}",
@@ -38,7 +50,7 @@ def build_city_selection(cities: list[str]) -> dict:
     ]
 
     return {
-        "text": "📍 *Where would you like to go?*\n\nSelect a city from the list below:",
+        "text": heading,
         "list_data": {
             "button": "Select City",
             "sections": [
@@ -50,7 +62,7 @@ def build_city_selection(cities: list[str]) -> dict:
         }
     }
 
-def build_package_list_message(city: str, packages: list[dict]) -> dict:
+def build_package_list_message(city: str, packages: list[dict], heading: str = "") -> dict:
     rows = [
         {
             "id": f"PKG_{p['id']}",
@@ -61,7 +73,7 @@ def build_package_list_message(city: str, packages: list[dict]) -> dict:
     ]
 
     return {
-        "text": f"🏷️ Available tours in *{city}*",
+        "text": heading or f"🏷️ Available tours in *{city}*",
         "list_data": {
             "button": "View Packages",
             "sections": [
@@ -317,7 +329,8 @@ FAQ_REPLY_PROMPT = """
     """
 
 ASK_TIME_REPLY_PROMPT = """
-⏰ Please enter pickup time in format (e.g., 10:00 AM):
+⏰ Please enter your pickup time for {travel_date} 
+in the format (e.g., 10:00 AM):
 """
 
 ASK_PAX_REPLY_PROMPT = """
@@ -334,4 +347,4 @@ ASK_GUEST_NAME_REPLY_PROMPT = "Please enter your good name"
 
 INVALID_PICKUP_LOCATION_REPLY_PROMPT = "Please enter a valid pickup location (hotel or address)."
 
-ASK_PAX_REPLY_PROMPT = "How many adults and kids are traveling?"
+GRATITUDE_REPLY_PROMPT = "You're welcome! Have a great day. Let me know if you need any further assistance."

@@ -3,7 +3,7 @@ from app.chatbot.flows.greeting_flow import handle_greeting_flow
 from app.chatbot.flows.booking_flow import handle_booking_flow
 from app.chatbot.flows.faq_flow import handle_faq_flow
 from app.chatbot.session_manager import get_or_create_session
-from app.chatbot.prompts.reply import build_greeting
+from app.chatbot.prompts.reply import build_greeting, GRATITUDE_REPLY_PROMPT
 from app.services.openai_service import generate_reply
 
 def handle_message(phone: str, text: str, db, company):
@@ -26,7 +26,7 @@ def handle_message(phone: str, text: str, db, company):
     print(intent,"intent")
 
     if intent == "gratitude":
-        return generate_reply(text, {}, "gratitude")
+        return generate_reply(text, {}, GRATITUDE_REPLY_PROMPT)
 
     if intent == "book_tour":
         return handle_booking_flow(phone, session, text, db, company)
@@ -47,5 +47,5 @@ def handle_message(phone: str, text: str, db, company):
     # 4️⃣ Default reply
     # -------------------------
     return {
-        "text": f"How can I help you today? 😊"
+        "text": f"How can I help you today?"
     }

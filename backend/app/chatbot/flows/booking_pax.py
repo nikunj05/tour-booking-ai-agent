@@ -7,7 +7,6 @@ from app.chatbot.services.vehicles import (
 )
 from app.chatbot.prompts.reply import build_vehicle_option_list
 
-
 def handle_booking_pax_flow(
     session,
     text,
@@ -67,31 +66,70 @@ def handle_booking_pax_flow(
             ),
         })
 
-        # ==========================================
-        # VEHICLE LOGIC
-        # ==========================================
-        drivers = get_available_drivers(
-            db=db,
-            company_id=company.id,
-            package_id=session.data["package_id"],
-            travel_date=session.data["travel_date"],
-        )
+# ==========================================
+# VEHICLE LOGIC (Reusable)
+# ==========================================
+    return process_vehicle_selection(
+        db=db,
+        company=company,
+        session=session,
+        total_pax=total_pax,
+        save_message=save_message,
+        change_state=change_state,
+        next_state=BOOKING_ASK_VEHICLE,
+    )
 
-        if not drivers:
-            reply = "No vehicles available for your selected travel date."
-            save_message(db, session, company, "bot", reply)
-            return reply
 
-        options = build_vehicle_combinations(drivers, total_pax)
+def process_vehicle_selection(
+    db,
+    company,
+    session,
+    total_pax,
+    save_message,
+    change_state,
+    next_state,
+):
+    """
+    Reusable vehicle selection logic.
+    Returns reply or None.
+    """
 
-        if not options:
-            reply = "No suitable vehicle combinations available for your group size."
-            save_message(db, session, company, "bot", reply)
-            return reply
+    drivers = get_available_drivers(
+        db=db,
+        company_id=company.id,
+        package_id=session.data.get("package_id"),
+        travel_date=session.data.get("travel_date"),
+    )
 
-        session.data["options"] = options
-        change_state(session, BOOKING_ASK_VEHICLE, db)
-
-        reply = build_vehicle_option_list(options, total_pax)
+    if not drivers:
+        reply = "Unfortunately, no vehicles are available for your selected travel date."
+        change_state(session, BOOKING_ASK_PAX, db)
+        session.data.pop("adults", None)
+        session.data.pop("kids", None)
+        session.data.pop("total_pax", None)
+        session.data.pop("total_amount", None)
         save_message(db, session, company, "bot", reply)
         return reply
+
+    options = build_vehicle_combinations(drivers, total_pax)
+
+    if not options:
+        reply = f"We could not find suitable vehicle options for your group size of {total_pax}. Please adjust the number of passengers or contact support."
+        session.data.pop("adults", None)
+        session.data.pop("kids", None)
+        session.data.pop("total_pax", None)
+        session.data.pop("total_amount", None)
+        change_state(session, BOOKING_ASK_PAX, db)
+        save_message(db, session, company, "bot", reply)
+        return reply
+
+    # Save options in session
+    session.data["options"] = options
+
+    # Move to next state
+    change_state(session, next_state, db)
+
+    reply = build_vehicle_option_list(options, total_pax)
+    save_message(db, session, company, "bot", reply)
+
+    return reply

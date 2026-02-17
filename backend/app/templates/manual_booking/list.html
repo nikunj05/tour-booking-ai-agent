@@ -63,7 +63,7 @@ $(document).ready(function () {
         processing: true,
         serverSide: false,
         ajax: {
-            url: "{{ url_for('manual_booking_datatable') }}",
+            url: "{{ url_for('manual_booking_datatable', source='list') }}",
             type: "GET",
             dataSrc: "data"
         },

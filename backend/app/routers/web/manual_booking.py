@@ -364,12 +364,16 @@ def html_to_whatsapp_text(html: str) -> str:
 # =================================================
 # DATATABLE API
 # =================================================
-@router.get("/datatable", name="manual_booking_datatable")
+@router.get("/datatable/{source}", name="manual_booking_datatable")
 def manual_booking_datatable(
     request: Request,
+    source: str,
     db: Session = Depends(get_db),
     current_user=Depends(company_only),
 ):
+
+    is_dashboard = source == "dashboard"
+
     bookings = (
         db.query(ManualBooking)
         .filter(
@@ -381,8 +385,6 @@ def manual_booking_datatable(
         .order_by(ManualBooking.id.desc())
         .all()
     )
-    
-    company = current_user.company
 
     edit_icon = "/static/assets/icon/edit.svg"
     trash_icon = "/static/assets/icon/trash.svg"
@@ -392,92 +394,102 @@ def manual_booking_datatable(
     for booking in bookings:
 
         # --------------------------
-        # Build Assigned HTML First
+        # Assigned HTML
         # --------------------------
         assigned_html = ""
 
         if booking.vehicles_drivers:
             for assign in booking.vehicles_drivers:
                 vehicle_name = assign.vehicle.name if assign.vehicle else "-"
-                vehicle_type = assign.vehicle.vehicle_type if assign.vehicle else ""
                 driver_name = assign.driver.name if assign.driver else "-"
-                driver_phone = assign.driver.phone_number if assign.driver else ""
 
                 assigned_html += f"""
-                            <div class="mb-1">
-                                <i class="fa fa-car text-dark"></i>
-                                <strong>{vehicle_name}</strong>
-                                &nbsp; | &nbsp;
-                                <i class="fa fa-user text-dark"></i>
-                                {driver_name}
-                            </div>
+                    <div class="mb-1">
+                        <i class="fa fa-car text-dark"></i>
+                        <strong>{vehicle_name}</strong>
+                        &nbsp; | &nbsp;
+                        <i class="fa fa-user text-dark"></i>
+                        {driver_name}
+                    </div>
                 """
         else:
             assigned_html = '<span class="text-muted">Not Assigned</span>'
 
         # --------------------------
-        # Now Append Data
+        # Actions HTML
         # --------------------------
+        actions_html = '<div class="d-flex align-items-center gap-1">'
 
+        # ✅ Show assign button only if NOT dashboard
+        if not is_dashboard:
+            actions_html += f"""
+                <a href="javascript:void(0)"
+                class="btn btn-sm btn-assign-vehicle p-1"
+                data-url="{request.url_for('manual_booking_assign_vehicle_popup', booking_id=booking.id)}"
+                title="Assign Vehicle">
+                    <i class="fa fa-car"></i>
+                </a>
+            """
+
+        # ✅ Always show other buttons
+        actions_html += f"""
+            <a href="{request.url_for('manual_booking_edit', booking_id=booking.id)}"
+            class="btn btn-sm btn-edit p-1"
+            title="Edit Booking">
+                <img src="{edit_icon}" class="table-icon">
+            </a>
+
+            <a href="javascript:void(0)"
+            class="confirm-manual-booking-delete btn btn-sm btn-delete p-1"
+            data-route="{request.url_for('manual_booking_delete', booking_id=booking.id)}"
+            title="Delete Booking">
+                <img src="{trash_icon}" class="table-icon">
+            </a>
+
+            <a href="{request.url_for('manual_booking_detail', booking_id=booking.id)}"
+            class="btn btn-sm btn-detail p-1"
+            title="Detail Booking">
+                <i class="fa fa-eye"></i>
+            </a>
+        </div>
+        """
+
+        # --------------------------
+        # Append Data
+        # --------------------------
         data.append({
             "id": booking.id,
 
             "guest_details": f"""
                 <strong>{booking.customer.guest_name}</strong><br>
-                <i class="fas fa-phone-alt text-dark"></i> {booking.customer.country_code}{booking.customer.phone}<br>
-                <i class="fas fa-envelope text-dark"></i> {booking.customer.email or "-"}<br>
-                <i class="fas fa-users text-dark"></i> {booking.adults} - {booking.kids}
+                <i class="fas fa-phone-alt text-dark"></i>
+                {booking.customer.country_code}{booking.customer.phone}<br>
+                <i class="fas fa-envelope text-dark"></i>
+                {booking.customer.email or "-"}<br>
+                <i class="fas fa-users text-dark"></i>
+                {booking.adults} - {booking.kids}
             """,
 
             "travel_details": f"""
                 <strong>{booking.tour_package.title}</strong><br>
-                <i class="fas fa-calendar-alt text-dark"></i> {booking.travel_date.strftime("%d-%m-%Y")}<br>
-                <i class="far fa-clock text-dark"></i> 
-                {booking.travel_time.strftime("%I:%M %p") if booking.travel_time else "-"}<br>
+                <i class="fas fa-calendar-alt text-dark"></i>
+                {booking.travel_date.strftime("%d-%m-%Y")}<br>
+                <i class="far fa-clock text-dark"></i>
+                {booking.travel_time.strftime("%I:%M %p") if booking.travel_time else "-"}
             """,
 
             "payment_details": f"""
                 <strong>{booking.tour_package.currency} {booking.total_amount}</strong><br>
                 ADV: {booking.tour_package.currency} {booking.advance_amount}<br>
-                DUE: {booking.tour_package.currency} {booking.remaining_amount}<br>
+                DUE: {booking.tour_package.currency} {booking.remaining_amount}
             """,
 
             "assigned": assigned_html,
 
             "status": "Paid" if booking.remaining_amount == 0 else "Pending",
 
-            "actions": f"""
-                <div class="d-flex align-items-center gap-1">
-
-                    <a href="javascript:void(0)"
-                    class="btn btn-sm btn-assign-vehicle p-1"
-                    data-url="{request.url_for('manual_booking_assign_vehicle_popup', booking_id=booking.id)}"
-                    title="Assign Vehicle">
-                    <i class="fa fa-car"></i>
-                    </a>
-
-                    <a href="{request.url_for('manual_booking_edit', booking_id=booking.id)}"
-                    class="btn btn-sm btn-edit p-1"
-                    title="Edit Booking">
-                        <img src="{edit_icon}" class="table-icon">
-                    </a>
-
-                    <a href="javascript:void(0)"
-                    class="confirm-manual-booking-delete btn btn-sm btn-delete p-1"
-                    data-route="{request.url_for('manual_booking_delete', booking_id=booking.id)}"
-                    title="Delete Booking">
-                        <img src="{trash_icon}" class="table-icon">
-                    </a>
-
-                    <a href="{request.url_for('manual_booking_detail', booking_id=booking.id)}"
-                    class="btn btn-sm btn-detail p-1"
-                    title="Detail Booking">
-                        <i class="fa fa-eye"></i>
-                    </a>
-                </div>
-            """
+            "actions": actions_html
         })
-
 
     return JSONResponse({"data": data})
 
