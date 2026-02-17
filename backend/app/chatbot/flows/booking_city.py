@@ -35,7 +35,7 @@ def handle_booking_city_flow(
             save_message(db, session, company, "bot", reply_text)
             return reply_text
 
-        response = build_city_selection(cities)
+        response = build_city_selection(cities, heading="📍 *Where would you like to go?*\n\nSelect a city from the list below:")
 
         change_state(session, BOOKING_CITY, db)
         save_message(db, session, company, "bot", response["text"])
@@ -57,9 +57,10 @@ def handle_booking_city_flow(
         city = (city or "").strip().title()
 
         if not city:
-            reply = "Please select a valid city from the list."
-            save_message(db, session, company, "bot", reply)
-            return reply
+            cities = get_active_cities(db, company.id)
+            response = build_city_selection(cities, heading="Please select a valid city from the list.")
+            save_message(db, session, company, "bot", response["text"])
+            return response
 
         return fetch_and_send_packages(
             session=session,
@@ -82,6 +83,7 @@ def fetch_and_send_packages(
     save_message,
     change_state,
     build_public_image_url,
+    heading: str = ""
 ):
     packages = filter_packages(db, company.id, city)
 
@@ -90,8 +92,10 @@ def fetch_and_send_packages(
             f"Currently, there are no packages available for {city}. "
             "Kindly select a different city to continue."
         )
-        save_message(db, session, company, "bot", reply)
-        return reply
+        cities = get_active_cities(db, company.id)
+        response = build_city_selection(cities, heading=reply)
+        save_message(db, session, company, "bot", response["text"])
+        return response
 
     session.data["city"] = city
     session.data["packages"] = [
@@ -110,7 +114,7 @@ def fetch_and_send_packages(
 
     change_state(session, BOOKING_SHOW_PACKAGE, db)
 
-    response = build_package_list_message(city, session.data["packages"])
+    response = build_package_list_message(city, session.data["packages"], heading)
     save_message(db, session, company, "bot", response["text"])
 
     return response

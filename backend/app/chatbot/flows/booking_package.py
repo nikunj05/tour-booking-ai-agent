@@ -7,6 +7,7 @@ from app.chatbot.prompts.reply import (
     build_package_detail_message,
     build_travel_date_buttons,
 )
+from app.chatbot.flows.booking_city import fetch_and_send_packages
 
 def handle_booking_package_flow(
     session,
@@ -35,9 +36,17 @@ def handle_booking_package_flow(
             )
 
             if not selected_package:
-                reply = "Please select a valid package from the list."
-                save_message(db, session, company, "bot", reply)
-                return reply
+                city = session.data.get("city")
+                return fetch_and_send_packages(
+                    session=session,
+                    db=db,
+                    company=company,
+                    city=city,
+                    save_message=save_message,
+                    change_state=change_state,
+                    build_public_image_url=build_public_image_url,
+                    heading="Please select one of the available packages from the list below."
+                )
 
             session.data["selected_package"] = selected_package
 
@@ -48,9 +57,17 @@ def handle_booking_package_flow(
 
             return reply
 
-        reply = "Please select a package from the list."
-        save_message(db, session, company, "bot", reply)
-        return reply
+        city = session.data.get("city")
+        return fetch_and_send_packages(
+            session=session,
+            db=db,
+            company=company,
+            city=city,
+            save_message=save_message,
+            change_state=change_state,
+            build_public_image_url=build_public_image_url,
+            heading="Please select one of the available packages from the list below."
+        )
 
     # ==========================================
     # 2️⃣ PACKAGE DETAIL ACTION STATE
@@ -109,6 +126,14 @@ def handle_booking_package_flow(
 
             return reply
 
-        reply = "You can select another package or tap *Book Now* to continue."
-        save_message(db, session, company, "bot", reply)
-        return reply
+        city = session.data.get("city")
+        return fetch_and_send_packages(
+            session=session,
+            db=db,
+            company=company,
+            city=city,
+            save_message=save_message,
+            change_state=change_state,
+            build_public_image_url=build_public_image_url,
+            heading="You can select another package or tap *Book Now* to continue."
+        )

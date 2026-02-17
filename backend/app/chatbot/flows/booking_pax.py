@@ -7,7 +7,6 @@ from app.chatbot.services.vehicles import (
 )
 from app.chatbot.prompts.reply import build_vehicle_option_list
 
-
 def handle_booking_pax_flow(
     session,
     text,

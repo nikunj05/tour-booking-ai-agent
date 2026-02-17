@@ -119,7 +119,7 @@ def faq_edit_page(
 
     return templates.TemplateResponse(
         "faqs/form.html",
-        {"request": request, "faq": faq}
+        {"request": request, "faq": {"id": faq.id, "title": faq.title, "content": faq.content, "is_active": faq.is_active}}
     )
 
 

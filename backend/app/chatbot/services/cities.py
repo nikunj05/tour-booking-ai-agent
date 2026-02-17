@@ -11,5 +11,7 @@ def get_active_cities(db, company_id: int):
         .all()
     )
 
-    # Convert [('Dubai',), ('Abu Dhabi',)] → ['Dubai', 'Abu Dhabi']
-    return [c[0] for c in cities if c[0]]
+    if cities:
+        cities = [c[0] for c in cities if c[0]]
+        
+    return cities
