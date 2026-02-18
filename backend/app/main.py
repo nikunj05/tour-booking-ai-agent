@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from app.routers.web import auth, admin_dashboard, tour_package, company, manual_booking, driver, company_dashboard, customer, vehicle , revenue,faq_document
 from app.routers.api.webhooks import whatsapp,strip
 from sqlalchemy.orm import Session
+from app.utils.flash import flash_redirect
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -51,3 +52,15 @@ async def auth_exception_handler(request: Request, exc: FastAPIHTTPException):
 
     # Let FastAPI handle other errors
     raise exc
+
+@app.exception_handler(RuntimeError)
+async def runtime_exception_handler(request: Request, exc: RuntimeError):
+
+    if str(exc) == "DB_CONNECTION_FAILED":
+        return flash_redirect(
+            url=request.url_for("login_page"),
+            message="Our service is temporarily unavailable. Please try again later.",
+            category="error"
+        )
+
+    return RedirectResponse(request.url_for("login_page"))
