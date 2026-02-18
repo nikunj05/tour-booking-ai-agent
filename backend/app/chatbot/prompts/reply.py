@@ -1,5 +1,5 @@
 from app.utils.text_formate import format_package_text
-
+import re
 def fallback():
     return (
         "Sorry, I didn’t understand that 🤖\n"
@@ -60,6 +60,49 @@ def build_city_selection(cities: list[str], heading: str = "Where would you like
                 }
             ]
         }
+    }
+
+def clean_html(text):
+    return re.sub('<.*?>', '', text or "").strip()
+
+
+def build_package_carousel_message(city, packages):
+    cards = []
+
+    for index, p in enumerate(packages[:10]):
+
+        description = clean_html(p.get("description", ""))
+
+        card = {
+            "card_index": index,
+            "type": "cta_url",   # ✅ CHANGE THIS LINE
+            "header": {
+                "type": "image",
+                "image": {
+                    "link": p["cover_image"]
+                }
+            },
+            "body": {
+                "text": f"*{p['name']}*\n\n₹ {p['price']} {p['currency']}\n\n{description[:120]}..."
+            },
+            "action": {
+                "buttons": [
+                    {
+                        "type": "quick_reply",
+                        "quick_reply": {
+                            "id": f"PKG_{p['id']}",
+                            "title": "View Details"
+                        }
+                    }
+                ]
+            }
+        }
+
+        cards.append(card)
+
+    return {
+        "text": f"Explore the most popular and highly recommended packages in {city}, crafted just for you:",
+        "carousel": cards
     }
 
 def build_package_list_message(city: str, packages: list[dict], heading: str = "") -> dict:

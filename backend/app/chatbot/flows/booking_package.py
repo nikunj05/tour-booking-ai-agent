@@ -31,9 +31,8 @@ def handle_booking_package_flow(
     # 1️⃣ SHOW PACKAGE LIST STATE
     # ==========================================
     if state == BOOKING_SHOW_PACKAGE:
-
         packages = session.data.get("packages", [])
-
+        print("packages",packages)
         if text and text.startswith("PKG_"):
             pkg_id = text.replace("PKG_", "")
 
@@ -41,6 +40,7 @@ def handle_booking_package_flow(
                 (p for p in packages if str(p["id"]) == pkg_id),
                 None
             )
+            print("selected_package",selected_package)
 
             if not selected_package:
                 city = session.data.get("city")

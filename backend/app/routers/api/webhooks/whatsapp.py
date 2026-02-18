@@ -39,12 +39,10 @@ async def verify_webhook(
 @router.post("/webhooks/whatsapp")
 async def receive_message(request: Request, db: Session = Depends(get_db)):
     data = await request.json()
-
     for entry in data.get("entry", []):
         for change in entry.get("changes", []):
             value = change.get("value", {})
 
-            # Ignore status updates
             if "messages" not in value:
                 continue
 
@@ -72,6 +70,10 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
 
                     elif interactive.get("type") == "list_reply":
                         text = interactive.get("list_reply", {}).get("id", "")
+
+                elif msg_type == "button":  
+                    text = msg.get("button", {}).get("payload", "")
+                    
                 elif msg_type == "location":
                     location = msg.get("location")
 
@@ -97,7 +99,8 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
                         buttons=result.get("buttons"),
                         list_data=result.get("list_data"),
                         location_request=result.get("location_request", False),
-                        image=result.get("image")
+                        image=result.get("image"),
+                        carousel=result.get("carousel")
                     )
                 else:
                     send_whatsapp_message(
@@ -109,8 +112,8 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
     return {"status": "ok"}
 
 
-def send_whatsapp_message(phone, text, company: None, buttons=None, list_data=None, location_request=False, image=None):
-    url = f"https://graph.facebook.com/v19.0/{company.whatsapp_phone_number_id}/messages"
+def send_whatsapp_message(phone, text, company: None, buttons=None, list_data=None, location_request=False, image=None, carousel=None):
+    url = f"https://graph.facebook.com/v23.0/{company.whatsapp_phone_number_id}/messages"
     headers = {
         "Authorization": f"Bearer {company.whatsapp_access_token}",
         "Content-Type": "application/json"
@@ -194,7 +197,21 @@ def send_whatsapp_message(phone, text, company: None, buttons=None, list_data=No
                     "name": "send_location"
                 }
             }
-        })      
+        }) 
+    elif carousel:
+        payload.update({
+            "recipient_type": "individual",
+            "type": "interactive",
+            "interactive": {
+                "type": "carousel",
+                "body": {
+                    "text": text
+                },
+                "action": {
+                    "cards": carousel
+                }
+            }
+        })
 
     else:
         payload.update({
@@ -206,4 +223,6 @@ def send_whatsapp_message(phone, text, company: None, buttons=None, list_data=No
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print("WhatsApp API Exception:", str(e))
+        print("STATUS:", response.status_code)
+        print("META RESPONSE:", response.text)
+

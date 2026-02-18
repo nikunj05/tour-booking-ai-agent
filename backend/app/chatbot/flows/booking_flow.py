@@ -61,7 +61,8 @@ def handle_booking_flow(phone,session, text: str, db, company,location=None):
     text = text.strip()
     today_example = datetime.now().strftime("%d-%m-%Y")
     state = session.state
-
+    print("state",state)
+    print("Enter in the booking flow")
     # -------------------------
     # 3️⃣ If guest_name exists & state is GREETING → send greeting directly
     # -------------------------
