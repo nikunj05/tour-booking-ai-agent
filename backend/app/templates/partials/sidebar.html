@@ -16,7 +16,7 @@
                         </g>
                     </svg>
                 </div>
-                <div class="info brand-name ">
+                <div class="info brand-name">
                     <span id="sidebar-role"></span>
                 </div>
             </a>
@@ -31,7 +31,6 @@
                     <a href="{{ url_for('dashboard_index') }}" class="nav-link d-flex align-items-center
                         {% if request.url.path.startswith(url_for('dashboard_index').path) %}active{% endif %}">
                         <div class="sidebar-nav-icon">
-                            <!-- Dashboard SVG -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                                 fill="none">
                                 <path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z"
@@ -46,7 +45,6 @@
                     <a href="{{ url_for('dashboard') }}" class="nav-link d-flex align-items-center
                         {% if request.url.path.startswith(url_for('dashboard').path) %}active{% endif %}">
                         <div class="sidebar-nav-icon">
-                            <!-- Dashboard SVG -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                                 fill="none">
                                 <path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z"
@@ -66,7 +64,6 @@
                     {% if request.url.path.startswith(url_for('company_list').path) %}active{% endif %}">
 
                         <div class="sidebar-nav-icon">
-                            <!-- Company / User SVG -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                                 fill="none">
                                 <path
@@ -206,7 +203,7 @@
                     </a>
                 </li>
 
-                <li class="nav-item logout-btn d-flex align-items-center">
+                <li class="nav-item logout-btn d-flex align-items-center role-admin role-company">
                     <a href="javascript:void(0)" class="nav-link logout-user" data-route="{{ url_for('logout') }}"
                         data-login-url="{{ url_for('login_page') }}" data-message="Are you sure you want to logout?">
                         <div class="sidebar-nav-icon">

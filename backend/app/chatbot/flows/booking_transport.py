@@ -11,7 +11,7 @@ from app.chatbot.prompts.reply import (
 )
 
 from app.services.openai_service import detect_intent_and_extract, generate_reply
-from app.chatbot.prompts.reply import build_transport_type_buttons, build_payment_type_buttons
+from app.chatbot.prompts.reply import build_transport_type_buttons, build_payment_type_buttons, build_location_request
 
 def handle_booking_transport_flow(
     session,
@@ -20,6 +20,7 @@ def handle_booking_transport_flow(
     company,
     save_message,
     change_state,
+    location=None
 ):
     state = session.state
 
@@ -51,8 +52,9 @@ def handle_booking_transport_flow(
 
         change_state(session, BOOKING_ASK_PICKUP_LOCATION, db)
 
-        reply = "📍 Please share your *pickup location* (hotel name / address)."
-        save_message(db, session, company, "bot", reply)
+        reply = build_location_request()
+        save_message(db, session, company, "bot", "Asking for pickup location")
+
         return reply
 
     # ==========================================
@@ -60,21 +62,42 @@ def handle_booking_transport_flow(
     # ==========================================
     if state == BOOKING_ASK_PICKUP_LOCATION:
 
-        if not text or len(text.strip()) < 3:
-            reply = generate_reply(
-                text, {}, INVALID_PICKUP_LOCATION_REPLY_PROMPT
-            )
-            save_message(db, session, company, "bot", reply)
+        # ✅ CASE 1: User shared live location
+        if location:
+            session.data["pickup_location"] = {
+                "type": "coordinates",
+                "latitude": location.get("latitude"),
+                "longitude": location.get("longitude"),
+                "name": location.get("name"),
+                "address": location.get("address"),
+            }
+
+            change_state(session, BOOKING_ASK_TRANSPORT_TYPE, db)
+
+            reply = build_transport_type_buttons()
+            save_message(db, session, company, "bot", reply["text"])
+
             return reply
 
-        session.data["pickup_location"] = text.strip()
+        # ✅ CASE 2: User typed address manually
+        if text and len(text.strip()) >= 3:
 
-        change_state(session, BOOKING_ASK_TRANSPORT_TYPE, db)
+            session.data["pickup_location"] = {
+                "type": "text",
+                "value": text.strip()
+            }
 
-        reply = build_transport_type_buttons()
-        save_message(db, session, company, "bot", reply["text"])
+            change_state(session, BOOKING_ASK_TRANSPORT_TYPE, db)
 
+            reply = build_transport_type_buttons()
+            save_message(db, session, company, "bot", reply["text"])
+
+            return reply
+
+        reply = "📍 Please share your location using the button or type your hotel name/address."
+        save_message(db, session, company, "bot", reply)
         return reply
+
 
     # ==========================================
     # 3️⃣ TRANSPORT TYPE

@@ -57,7 +57,7 @@ def build_public_image_url(image_path: str) -> str | None:
     return f"{BASE_URL.rstrip('/')}/static/{image_path.lstrip('/')}"
 
 # ------------------- Booking Flow -------------------
-def handle_booking_flow(phone,session, text: str, db, company):
+def handle_booking_flow(phone,session, text: str, db, company,location=None):
     text = text.strip()
     today_example = datetime.now().strftime("%d-%m-%Y")
     state = session.state
@@ -125,6 +125,7 @@ def handle_booking_flow(phone,session, text: str, db, company):
             company=company,
             save_message=save_message,
             change_state=change_state,
+            location=location,
         )
 
     # ---------- PAYMENT ----------

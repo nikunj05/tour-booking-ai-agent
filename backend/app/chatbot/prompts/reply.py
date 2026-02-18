@@ -305,6 +305,12 @@ def build_change_details_buttons():
         ]
     }
 
+def build_location_request():
+    return {
+        "text": "📍 Please share your pickup location using the button below, or type your hotel name or full address.",
+        "location_request": True
+    }
+
 
 BASE_REPLY_PROMPT = """
     You are a WhatsApp tour booking assistant.

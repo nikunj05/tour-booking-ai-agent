@@ -59,6 +59,7 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
                 msg_type = msg.get("type")
                 phone = msg.get("from")
                 text = ""
+                location = None
 
                 if msg_type == "text":
                     text = msg.get("text", {}).get("body", "").strip()
@@ -71,8 +72,10 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
 
                     elif interactive.get("type") == "list_reply":
                         text = interactive.get("list_reply", {}).get("id", "")
+                elif msg_type == "location":
+                    location = msg.get("location")
 
-                if not text:
+                if not text and not location:
                     continue
 
                 company = db.query(Company).filter_by(
@@ -83,7 +86,7 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
                     print(f"No company found for phone_number_id: {whatsapp_phone_number_id}")
                     continue
 
-                result = handle_message(phone, text, db, company=company)
+                result = handle_message(phone, text, db, company=company,location=location)
                 print(result)
 
                 if isinstance(result, dict):
@@ -92,7 +95,8 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
                         text=result.get("text"),
                         company=company,
                         buttons=result.get("buttons"),
-                        list_data=result.get("list_data")
+                        list_data=result.get("list_data"),
+                        location_request=result.get("location_request", False)
                     )
                 else:
                     send_whatsapp_message(
@@ -104,7 +108,7 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
     return {"status": "ok"}
 
 
-def send_whatsapp_message(phone, text, company: None, buttons=None, list_data=None):
+def send_whatsapp_message(phone, text, company: None, buttons=None, list_data=None, location_request=False):
     url = f"https://graph.facebook.com/v19.0/{company.whatsapp_phone_number_id}/messages"
     headers = {
         "Authorization": f"Bearer {company.whatsapp_access_token}",
@@ -165,6 +169,19 @@ def send_whatsapp_message(phone, text, company: None, buttons=None, list_data=No
                 }
             }
         })
+    elif location_request:
+        payload.update({
+            "type": "interactive",
+            "interactive": {
+                "type": "location_request_message",
+                "body": {
+                    "text": text
+                },
+                "action": {
+                    "name": "send_location"
+                }
+            }
+        })      
 
     else:
         payload.update({

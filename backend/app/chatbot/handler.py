@@ -6,7 +6,7 @@ from app.chatbot.session_manager import get_or_create_session
 from app.chatbot.prompts.reply import build_greeting, GRATITUDE_REPLY_PROMPT
 from app.services.openai_service import generate_reply
 
-def handle_message(phone: str, text: str, db, company):
+def handle_message(phone: str, text: str, db, company,location=None):
 
     text = text.strip()
 
@@ -29,7 +29,7 @@ def handle_message(phone: str, text: str, db, company):
         return generate_reply(text, {}, GRATITUDE_REPLY_PROMPT)
 
     if intent == "book_tour":
-        return handle_booking_flow(phone, session, text, db, company)
+        return handle_booking_flow(phone, session, text, db, company,location)
 
     # 🔥 FAQ intent
     if intent == "ask_question":
@@ -37,7 +37,7 @@ def handle_message(phone: str, text: str, db, company):
 
     # 🔥 Continue existing booking flow
     if session.state.startswith("BOOKING_"):
-        return handle_booking_flow(phone, session, text, db, company)
+        return handle_booking_flow(phone, session, text, db, company,location)
 
     # 🔥 Continue FAQ flow
     if session.state == "FAQ":
