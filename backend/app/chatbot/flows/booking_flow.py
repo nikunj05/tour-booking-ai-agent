@@ -87,6 +87,7 @@ def handle_booking_flow(phone,session, text: str, db, company,location=None):
     # ---------- PACKAGE LIST ----------
     if state in [BOOKING_SHOW_PACKAGE, BOOKING_PACKAGE_DETAIL_ACTION]:
         return handle_booking_package_flow(
+            phone=phone,
             session=session,
             text=text,
             db=db,

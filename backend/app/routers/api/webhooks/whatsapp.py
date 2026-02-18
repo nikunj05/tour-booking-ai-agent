@@ -152,7 +152,6 @@ def send_whatsapp_message(phone, text, company: None, buttons=None, list_data=No
         })
 
     elif isinstance(buttons, list) and buttons:
-
         if len(buttons) > 3:
             buttons = buttons[:3] 
         interactive_data = {
@@ -171,7 +170,6 @@ def send_whatsapp_message(phone, text, company: None, buttons=None, list_data=No
             }
         }
 
-        # ✅ Add image header if exists
         if image:
             interactive_data["header"] = {
                 "type": "image",
@@ -207,5 +205,5 @@ def send_whatsapp_message(phone, text, company: None, buttons=None, list_data=No
     try:
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
-    except requests.exceptions.HTTPError:
-        print("WhatsApp API Error:", response.status_code, response.text)
+    except requests.exceptions.RequestException as e:
+        print("WhatsApp API Exception:", str(e))

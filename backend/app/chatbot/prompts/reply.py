@@ -138,6 +138,23 @@ def build_package_detail_message(package: dict) -> dict:
 
     return message
 
+def build_package_detail_button(package, base_url):
+    detail_url = f"{base_url}/tour-packages/tours/{package['id']}"
+    return {
+        "text": (
+            f"📄 *{package['name']}*\n\n"
+            "Want to explore full itinerary, inclusions & gallery?\n\n"
+            "Tap the button below to view complete details."
+        ),
+        "buttons": [
+            {
+                "type": "url",
+                "title": "View Details",
+                "url": detail_url,
+            }
+        ]
+    }
+
 def build_travel_date_buttons():
     return {
         "text": "📅 When would you like to travel?",
