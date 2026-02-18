@@ -3,19 +3,34 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Tours{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title or "TourBot" }}</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', path='assets/dist/img/favicon.ico') }}" sizes="16x16">
     {% include 'partials/css.html' %}
-
-
     {% block extra_css %}{% endblock %}
 </head>
 
-<body>
+<body class="hold-transition sidebar-mini">
 
-    {% block content %}{% endblock %}
-    {% include 'partials/js.html' %}
-    {% block extra_js %}{% endblock %}
+    <div class="wrapper">
+
+        {% include 'partials/pop-up.html' %}
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            {% block content %}
+            {% endblock %}
+        </div>
+
+        <!-- Footer -->
+        {% include 'partials/footer.html' %}
+        {% include 'partials/js.html' %}
+    </div>
+
+    {% block extra_js %}
+
+    {% endblock %}
+
 </body>
 
 </html>

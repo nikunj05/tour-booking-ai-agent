@@ -59,7 +59,10 @@ def handle_booking_city_flow(
 
         if not city:
             cities = get_active_cities(db, company.id)
-            response = build_city_selection(cities, heading="Please select a valid city from the list.")
+            response = build_city_selection(
+                cities,
+                heading="Could you please select a city from the list below?"
+            )
             save_message(db, session, company, "bot", response["text"])
             return response
 

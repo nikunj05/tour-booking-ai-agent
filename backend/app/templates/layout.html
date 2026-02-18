@@ -14,21 +14,17 @@
 
     <div class="wrapper">
 
-        <!-- Header -->
         {% include 'partials/header.html' %}
 
-        <!-- Sidebar -->
         {% include 'partials/sidebar.html' %}
 
         {% include 'partials/pop-up.html' %}
 
-        <!-- Content Wrapper -->
         <div class="content-wrapper">
             {% block content %}
             {% endblock %}
         </div>
 
-        <!-- Footer -->
         {% include 'partials/footer.html' %}
         {% include 'partials/js.html' %}
     </div>

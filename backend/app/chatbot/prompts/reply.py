@@ -1,5 +1,8 @@
 from app.utils.text_formate import format_package_text
 import re
+import os
+BASE_URL = os.getenv("BASE_URL")
+
 def fallback():
     return (
         "Sorry, I didn’t understand that 🤖\n"
@@ -83,7 +86,7 @@ def build_package_carousel_message(city, packages):
                 }
             },
             "body": {
-                "text": f"*{p['name']}*\n\n₹ {p['price']} {p['currency']}\n\n{description[:120]}..."
+                "text": f"*{p['name']}*\n\n₹ {p['price']} {p['currency']}\n\n{description[:100]}..."
             },
             "action": {
                 "buttons": [
@@ -156,7 +159,7 @@ def build_vehicle_option_list(options, total_pax):
         })
 
     return {
-        "text": f"Vehicle options for {total_pax} guests",
+        "text": f"We’ve selected the most suitable vehicle options for your group of {total_pax} guests:",
         "list_data": {
             "button": "Select Vehicle",
             "sections": [
@@ -306,8 +309,17 @@ Thank you for choosing us.
 We wish you a pleasant and memorable trip.
 """.strip()
 
+    booking_url = f"{BASE_URL}/manual-bookings/{booking.id}"
+
     return {
         "text": summary_text,
+        "buttons": [
+            {
+                "type": "url",
+                "title": "View Booking Details",
+                "url": booking_url
+            }
+        ]
     }
 
 def build_payment_failed_message(booking, session):
@@ -409,7 +421,7 @@ Examples:
 
 INVALID_TIME_REPLY_PROMPT = "Invalid time format.\n Please enter time as *HH:MM AM/PM* (e.g., 10:00 AM)."
 
-ASK_GUEST_NAME_REPLY_PROMPT = "Please enter your good name"
+ASK_GUEST_NAME_REPLY_PROMPT = "Could you please share your name with me?"
 
 INVALID_PICKUP_LOCATION_REPLY_PROMPT = "Please enter a valid pickup location (hotel or address)."
 

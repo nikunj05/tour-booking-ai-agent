@@ -14,7 +14,7 @@ def handle_greeting_flow(phone, session, text, db, company):
 
         if not guest_name:
             # Ask name again
-            reply = generate_reply("", {}, ASK_GUEST_NAME_REPLY_PROMPT)
+            reply = generate_reply(text, {}, ASK_GUEST_NAME_REPLY_PROMPT)
             return reply
 
         session.data["guest_name"] = guest_name

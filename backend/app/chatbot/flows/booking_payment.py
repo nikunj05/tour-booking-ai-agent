@@ -62,7 +62,12 @@ def handle_booking_payment(phone, session, text, db, company,save_message,change
                 email=session.data.get("email"),
                 adults=session.data.get("adults"),
                 kids=session.data.get("kids"),
-                pickup_location=session.data.get("pickup_location"),
+                pickup_location=(
+                    f"{session.data.get('pickup_location', {}).get('name', '')} - "
+                    f"{session.data.get('pickup_location', {}).get('address', '')}"
+                    if isinstance(session.data.get("pickup_location"), dict)
+                    else session.data.get("pickup_location")
+                ),                
                 tour_package_id=session.data["package_id"],
                 vehicles=session.data.get("selected_vehicles", []),
                 travel_date=session.data["travel_date"],
