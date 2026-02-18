@@ -96,7 +96,8 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
                         company=company,
                         buttons=result.get("buttons"),
                         list_data=result.get("list_data"),
-                        location_request=result.get("location_request", False)
+                        location_request=result.get("location_request", False),
+                        image=result.get("image")
                     )
                 else:
                     send_whatsapp_message(
@@ -108,7 +109,7 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
     return {"status": "ok"}
 
 
-def send_whatsapp_message(phone, text, company: None, buttons=None, list_data=None, location_request=False):
+def send_whatsapp_message(phone, text, company: None, buttons=None, list_data=None, location_request=False, image=None):
     url = f"https://graph.facebook.com/v19.0/{company.whatsapp_phone_number_id}/messages"
     headers = {
         "Authorization": f"Bearer {company.whatsapp_access_token}",
@@ -151,23 +152,37 @@ def send_whatsapp_message(phone, text, company: None, buttons=None, list_data=No
         })
 
     elif isinstance(buttons, list) and buttons:
-        payload.update({
-            "type": "interactive",
-            "interactive": {
-                "type": "button",
-                "body": {"text": text},
-                "action": {
-                    "buttons": [
-                        {
-                            "type": "reply",
-                            "reply": {
-                                "id": b["id"],
-                                "title": b["title"]
-                            }
-                        } for b in buttons
-                    ]
+
+        if len(buttons) > 3:
+            buttons = buttons[:3] 
+        interactive_data = {
+            "type": "button",
+            "body": {"text": text},
+            "action": {
+                "buttons": [
+                    {
+                        "type": "reply",
+                        "reply": {
+                            "id": b["id"],
+                            "title": b["title"]
+                        }
+                    } for b in buttons
+                ]
+            }
+        }
+
+        # ✅ Add image header if exists
+        if image:
+            interactive_data["header"] = {
+                "type": "image",
+                "image": {
+                    "link": image
                 }
             }
+
+        payload.update({
+            "type": "interactive",
+            "interactive": interactive_data
         })
     elif location_request:
         payload.update({
