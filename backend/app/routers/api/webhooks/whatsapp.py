@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Depends
 import os
 import requests
 from datetime import datetime
-from app.chatbot.handler import handle_message
+from app.chatbot.message_router import route_message
 from app.database.session import get_db
 from sqlalchemy.orm import Session
 from app.models.company import Company
@@ -114,7 +114,7 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
                     session.last_message_at = datetime.utcnow()
                     db.commit()
 
-                result = handle_message(phone, text, db, company=company, location=location)
+                result = route_message(phone, text, db, company, location)
                 print(result)
 
                 # result is None when session is in MANUAL mode — do not send any AI reply
