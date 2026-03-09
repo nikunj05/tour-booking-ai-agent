@@ -251,8 +251,9 @@ def send_whatsapp_message(phone, text, company: None, buttons=None, list_data=No
 
     try:
         response = requests.post(url, json=payload, headers=headers)
+        print("PAYLOAD:", payload)
+        print("RESPONSE:", response.status_code, response.text)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print("STATUS:", response.status_code)
-        print("META RESPONSE:", response.text)
+        print("ERROR:", str(e))
 

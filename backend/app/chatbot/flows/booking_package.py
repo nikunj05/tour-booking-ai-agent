@@ -60,7 +60,7 @@ def handle_booking_package_flow(
             change_state(session, BOOKING_PACKAGE_DETAIL_ACTION, db)
 
             message1 = build_package_detail_message(selected_package)
-            message2 = build_package_detail_button(selected_package, BASE_URL)
+            # message2 = build_package_detail_button(selected_package, BASE_URL)
 
             send_and_save_messages(
                 phone,
@@ -69,7 +69,7 @@ def handle_booking_package_flow(
                 db,
                 save_message,
                 message1,
-                message2
+                # message2
             )
 
             return None
@@ -111,7 +111,7 @@ def handle_booking_package_flow(
             session.data["selected_package"] = selected_package
             
             message1 = build_package_detail_message(selected_package)
-            message2 = build_package_detail_button(selected_package, BASE_URL)
+            # message2 = build_package_detail_button(selected_package, BASE_URL)
 
             send_and_save_messages(
                 phone,
@@ -120,7 +120,7 @@ def handle_booking_package_flow(
                 db,
                 save_message,
                 message1,
-                message2
+                # message2
             )
 
             return None

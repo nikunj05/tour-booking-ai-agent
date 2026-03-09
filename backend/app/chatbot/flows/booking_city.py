@@ -118,8 +118,8 @@ def fetch_and_send_packages(
 
     change_state(session, BOOKING_SHOW_PACKAGE, db)
 
-    # response = build_package_list_message(city, session.data["packages"], heading)
-    response = build_package_carousel_message(city, session.data["packages"])
+    response = build_package_list_message(city, session.data["packages"], heading)
+    # response = build_package_carousel_message(city, session.data["packages"])
     save_message(db, session, company, "bot", response["text"])
 
     return response
