@@ -38,9 +38,19 @@ def _build_session_list(db: Session, company_id: int):
             .order_by(desc(ChatMessage.created_at))
             .first()
         )
+        phone = s.phone
+
+        # remove country code if present
+        if phone.startswith("91") and len(phone) > 10:
+            phone = phone[-10:]
+
         customer = (
             db.query(Customer)
-            .filter(Customer.phone == s.phone, Customer.company_id == company_id, Customer.is_deleted == False)
+            .filter(
+                Customer.phone == phone,
+                Customer.company_id == company_id,
+                Customer.is_deleted == False
+            )
             .first()
         )
         session_data.append({"session": s, "last_message": last_msg, "customer": customer})
@@ -114,6 +124,7 @@ def chat_conversation(
     )
 
     session_data = _build_session_list(db, company.id)
+
 
     return templates.TemplateResponse(
         "chat_messages/conversation.html",
