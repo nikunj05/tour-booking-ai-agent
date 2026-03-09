@@ -28,3 +28,4 @@ BOOKING_PAYMENT_FAILED = "BOOKING_PAYMENT_FAILED"
 # ----------------- Other Flows -----------------
 FAQ = "FAQ"
 FALLBACK = "FALLBACK"
+MANUAL = "MANUAL"   # Company has taken over — AI must NOT reply

@@ -3,7 +3,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.exceptions import HTTPException as FastAPIHTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from app.routers.web import auth, admin_dashboard, tour_package, company, manual_booking, driver, company_dashboard, customer, vehicle , revenue,faq_document
+from app.routers.web import auth, admin_dashboard, tour_package, company, manual_booking, driver, company_dashboard, customer, vehicle , revenue, faq_document, chat_messages
 from app.routers.api.webhooks import whatsapp,strip
 from sqlalchemy.orm import Session
 from app.utils.flash import flash_redirect
@@ -24,6 +24,7 @@ app.include_router(whatsapp.router)
 app.include_router(strip.router)
 app.include_router(revenue.router)
 app.include_router(faq_document.router)
+app.include_router(chat_messages.router)
 
 @app.exception_handler(FastAPIHTTPException)
 async def auth_exception_handler(request: Request, exc: FastAPIHTTPException):

@@ -50,3 +50,28 @@ def generate_reply(
     )
 
     return response.choices[0].message.content.strip()
+
+# ---------- AGENTIC CHAT ----------
+def run_chat_agent(
+    messages: list[dict],
+    tools: list[dict] = None
+):
+    """
+    Sends a list of messages (including system, user, and tool responses) to OpenAI
+    with the specified tools. Returns the full message dictionary from the AI
+    (which may include content or tool_calls).
+    """
+    kwargs = {
+        "model": "gpt-4o-mini",
+        "messages": messages,
+        "temperature": 0.2
+    }
+    
+    if tools:
+        kwargs["tools"] = tools
+        kwargs["tool_choice"] = "auto"
+
+    response = client.chat.completions.create(**kwargs)
+    
+    # Return the full message object so the caller can check for tool_calls
+    return response.choices[0].message

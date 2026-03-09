@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Request, Depends
 import os
 import requests
+from datetime import datetime
 from app.chatbot.handler import handle_message
 from app.database.session import get_db
 from sqlalchemy.orm import Session
 from app.models.company import Company
+from app.models.chat_session import ChatSession, ChatMessage
 
 router = APIRouter()
 
@@ -88,8 +90,36 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
                     print(f"No company found for phone_number_id: {whatsapp_phone_number_id}")
                     continue
 
-                result = handle_message(phone, text, db, company=company,location=location)
+                # -------------------------------------------------------
+                # Always save the incoming user message BEFORE running the
+                # chatbot handler. This ensures it appears in the dashboard
+                # even in MANUAL mode (where the handler skips flow logic).
+                # -------------------------------------------------------
+                session = (
+                    db.query(ChatSession)
+                    .filter_by(phone=phone, company_id=company.id)
+                    .order_by(ChatSession.updated_at.desc())
+                    .first()
+                )
+
+                if session and (text or location):
+                    save_text = text if text else f"[Location: lat={location.get('latitude')}, lng={location.get('longitude')}]"
+                    db.add(ChatMessage(
+                        session_id=session.id,
+                        company_id=company.id,
+                        sender="user",
+                        message=save_text,
+                        whatsapp_message_id=msg.get("id")
+                    ))
+                    session.last_message_at = datetime.utcnow()
+                    db.commit()
+
+                result = handle_message(phone, text, db, company=company, location=location)
                 print(result)
+
+                # result is None when session is in MANUAL mode — do not send any AI reply
+                if result is None:
+                    continue
 
                 if isinstance(result, dict):
                     send_whatsapp_message(

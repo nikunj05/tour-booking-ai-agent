@@ -1,12 +1,9 @@
-from app.chatbot.intent_router import detect_global_intent
 from app.chatbot.flows.greeting_flow import handle_greeting_flow
-from app.chatbot.flows.booking_flow import handle_booking_flow
-from app.chatbot.flows.faq_flow import handle_faq_flow
 from app.chatbot.session_manager import get_or_create_session
-from app.chatbot.prompts.reply import build_greeting, GRATITUDE_REPLY_PROMPT
-from app.services.openai_service import generate_reply
+from app.chatbot.states import MANUAL
+from app.chatbot.agent import run_smart_agent
 
-def handle_message(phone: str, text: str, db, company,location=None):
+def handle_message(phone: str, text: str, db, company, location=None):
 
     text = text.strip()
 
@@ -14,38 +11,42 @@ def handle_message(phone: str, text: str, db, company,location=None):
     state = session.state
 
     # -------------------------
-    # 1️⃣ If guest name missing
+    # 🛑 MANUAL MODE GUARD
+    # Company has taken over — AI must NOT send any reply.
+    # Incoming user message is already saved by the webhook before
+    # this function is called, so we simply return None here.
     # -------------------------
+    if state == MANUAL:
+        return None
+
+
     if not session.data.get("guest_name"):
         return handle_greeting_flow(phone, session, text, db, company)
 
     # -------------------------
-    # 3️⃣ Global Intent Detection
+    # 🧠 SMART AGENT INTEGRATION
     # -------------------------
-    intent = detect_global_intent(text)
-    print(intent,"intent")
+    
+    # Optional: Format location as text if provided
+    if location and not text:
+        text = f"[User sent a location: lat={location.get('latitude')}, lng={location.get('longitude')}]"
 
-    if intent == "gratitude":
-        return generate_reply(text, {}, GRATITUDE_REPLY_PROMPT)
+    response_text, updated_data, new_state = run_smart_agent(
+        user_message=text,
+        current_data=session.data,
+        db=db,
+        company=company
+    )
 
-    if intent == "book_tour":
-        return handle_booking_flow(phone, session, text, db, company,location)
+    # Automatically save any context updates extracted by the AI tools
+    session.data = updated_data
+    
+    # Update the session state if the AI decided to transition (e.g., to MANUAL)
+    if new_state:
+        session.state = new_state
+    
+    db.commit()
 
-    # 🔥 FAQ intent
-    if intent == "ask_question":
-        return handle_faq_flow(text, db, company)
-
-    # 🔥 Continue existing booking flow
-    if session.state.startswith("BOOKING_"):
-        return handle_booking_flow(phone, session, text, db, company,location)
-
-    # 🔥 Continue FAQ flow
-    if session.state == "FAQ":
-        return handle_faq_flow(text, db, company)
-
-    # -------------------------
-    # 4️⃣ Default reply
-    # -------------------------
     return {
-        "text": f"How can I help you today?"
+        "text": response_text
     }
