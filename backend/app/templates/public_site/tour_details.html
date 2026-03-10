@@ -1,0 +1,102 @@
+{% extends "public_site/layout.html" %}
+
+{% block content %}
+<!-- Tour Detail Hero -->
+{% set cover_url = url_for('static', path=tour.cover_image) if tour.cover_image else "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" %}
+<section class="page-hero" style="height: 400px; background-image: linear-gradient(rgba(0, 0, 0, 0.31), rgba(0,0,0,0.5)), url('{{ cover_url }}');">
+    <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); padding: 5px 20px; border-radius: 50px; font-weight: 600; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 2px; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.2);">
+        {{ tour.city }}, {{ tour.country }}
+    </div>
+    <h1>{{ tour.title }}</h1>
+    <div style="margin-top: 2rem; display: flex; gap: 2rem; font-weight: 600; font-size: 1.1rem;">
+        <span><i class="fas fa-money-bill-wave mr-2"></i> {{ tour.currency }} {{ "{:,.0f}".format(tour.price) }}</span>
+        <span><i class="fas fa-check-circle mr-2"></i> Instant Confirmation</span>
+    </div>
+</section>
+
+<section class="container">
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 4rem;">
+        
+        <!-- Main Content -->
+        <div>
+            <!-- Gallery Teaser -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 3rem;">
+                {% for image in tour.gallery_images[:3] %}
+                <div style="height: 200px; border-radius: 15px; overflow: hidden;">
+                    <img src="/static/{{ image.image_path }}" alt="{{ tour.title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s;">
+                </div>
+                {% endfor %}
+            </div>
+
+            <div style="background: rgba(255,255,255,0.6); backdrop-filter: blur(10px); padding: 2.5rem; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid rgba(255,255,255,0.4);">
+                <h2 style="font-size: 2rem; margin-bottom: 1.5rem; color: var(--text-main);">Tour Description</h2>
+                <div style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.8; margin-bottom: 3rem;">
+                    {{ tour.description | safe }}
+                </div>
+
+                {% if tour.itinerary %}
+                <h2 style="font-size: 1.8rem; margin-bottom: 2rem; color: var(--text-main);">Itinerary</h2>
+                <div style="border-left: 2px dashed var(--primary); margin-left: 10px; padding-left: 30px;">
+                    {% for line in tour.itinerary.split('\n') %}
+                    {% if line.strip() %}
+                    <div style="margin-bottom: 2rem; position: relative;">
+                        <div style="position: absolute; left: -41px; top: 0; width: 20px; height: 20px; background: var(--primary); border: 4px solid white; border-radius: 50%; box-shadow: 0 0 0 2px var(--primary);"></div>
+                        <p style="color: var(--text-main); font-weight: 500; font-size: 1.1rem;">{{ line | safe }}</p>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if tour.excludes %}
+                <div style="background: #fff7ed; padding: 2rem; border-radius: 20px; margin-top: 3rem; border: 1px solid #ffedd5;">
+                    <h4 style="color: #9a3412; margin-bottom: 1rem;"><i class="fas fa-info-circle mr-2"></i> Things to Note (Exclusions)</h4>
+                    <p style="color: #c2410c; font-size: 1rem;">{{ tour.excludes | safe}}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div style="position: sticky; top: 120px; height: fit-content;">
+            <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border-radius: 30px; padding: 2rem; box-shadow: 0 20px 40px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.5); text-align: center;">
+                <div style="margin-bottom: 2rem;">
+                    <span style="display: block; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px;">Price Starts at</span>
+                    <span style="font-size: 2.5rem; font-weight: 800; color: var(--text-main);">{{ tour.currency }} {{ "{:,.0f}".format(tour.price) }}</span>
+                </div>
+                
+                <p style="color: var(--text-muted); margin-bottom: 2.5rem;">Ready for an adventure? Connect with us on WhatsApp to book your slot instantly.</p>
+                
+                <a href="https://wa.me/{{ company.country_code.replace('+', '') }}{{ company.phone }}?text=Hello! I'm interested in the *{{ tour.title }}* tour. Please provide more details." target="_blank" class="btn-luxury" style="width: 100%; text-align: center; background: #25d366;">
+                    <i class="fab fa-whatsapp mr-2"></i> Book via WhatsApp
+                </a>
+                
+                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 1rem; text-align: left;">
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                        <span style="font-size: 0.9rem; color: var(--text-main);">Best Price Guarantee</span>
+                    </div>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                        <span style="font-size: 0.9rem; color: var(--text-main);">Free Cancellation</span>
+                    </div>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                        <span style="font-size: 0.9rem; color: var(--text-main);">Verified Guides</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 2rem; text-align: center;">
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Need help? <a href="/{{ company.slug }}/contact" style="color: var(--primary); font-weight: 600;">Contact our team</a></p>
+            </div>
+        </div>
+        
+    </div>
+</section>
+
+<style>
+    div[style*="height: 200px"] img:hover {
+        transform: scale(1.1);
+    }
+</style>
+{% endblock %}

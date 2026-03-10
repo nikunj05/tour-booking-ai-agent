@@ -1,0 +1,101 @@
+{% extends "public_site/layout.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');">
+    <h1>Our Tour Packages</h1>
+    <p>Discover the magic of travel with our carefully curated tours.</p>
+</section>
+
+<!-- Filter Section -->
+<section style="background: transparent; padding: 1.5rem 0; border-bottom: 1px solid rgba(0,0,0,0.05);">
+    <div class="container" style="padding: 0 8%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+            <div>
+                <span style="color: var(--text-main); font-weight: 700; font-size: 1.2rem;">Showing {{ tours|length }} Experiences</span>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">Explore our widest range of destinations.</p>
+            </div>
+            <div style="display: flex; gap: 1.2rem;">
+                <div style="position: relative;">
+                    <select style="appearance: none; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 45px 12px 20px; border-radius: 12px; font-weight: 500; font-family: inherit; color: var(--text-main); cursor: pointer; outline: none; transition: border 0.3s;">
+                        <option>Sort by: Newest</option>
+                        <option>Price: Low to High</option>
+                        <option>Price: High to Low</option>
+                    </select>
+                    <i class="fas fa-chevron-down" style="position: absolute; right: 18px; top: 16px; font-size: 0.8rem; pointer-events: none; color: var(--secondary);"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tours Grid -->
+<section class="container">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 3rem;">
+        {% for tour in tours %}
+        <a href="/{{ company.slug }}/tour/{{ tour.id }}" style="text-decoration: none; color: inherit;">
+            <div class="tour-card-listing" style="background: white; border-radius: 28px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.03); transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); height: 100%; display: flex; flex-direction: column; border: 1px solid #f1f5f9;">
+                <div style="height: 280px; overflow: hidden; position: relative;">
+                    {% if tour.cover_image %}
+                        <img src="{{ url_for('static', path=tour.cover_image) }}" alt="{{ tour.title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease;">
+                    {% else %}
+                        <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="{{ tour.title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease;">
+                    {% endif %}
+                    
+                    <div style="position: absolute; top: 20px; left: 20px; background: var(--primary); color: white; padding: 6px 16px; border-radius: 50px; font-weight: 700; font-size: 0.8rem; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);">
+                        <i class="fas fa-star mr-1"></i> Best Seller
+                    </div>
+                </div>
+                
+                <div style="padding: 2.5rem; flex-grow: 1; display: flex; flex-direction: column;">
+                    <div style="display: flex; align-items: center; gap: 8px; color: var(--primary); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 1rem;">
+                        <i class="fas fa-map-marker-alt"></i> {{ tour.city }}, {{ tour.country }}
+                    </div>
+                    
+                    <h3 style="font-size: 1.6rem; margin-bottom: 1rem; color: var(--text-main); font-family: 'Outfit', sans-serif;">{{ tour.title }}</h3>
+                    
+                    <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.7; margin-bottom: 2rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                        {{ tour.description | safe | truncate(180) }}
+                    </p>
+                    
+                    <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 1.8rem;">
+                        <div>
+                            <span style="display: block; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Starting From</span>
+                            <span style="font-size: 1.6rem; font-weight: 800; color: var(--text-main);">{{ tour.currency }} {{ "{:,.0f}".format(tour.price) }}</span>
+                        </div>
+                        <div class="card-arrow" style="width: 50px; height: 50px; background: #f8fafc; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); transition: all 0.3s ease; border: 1px solid #e2e8f0;">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% else %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 5rem 2rem; background: rgba(255,255,255,0.4); backdrop-filter: blur(10px); border-radius: 30px;">
+            <div style="width: 100px; height: 100px; background: #f8fafc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem;">
+                <i class="fas fa-binoculars" style="font-size: 2.5rem; color: #cbd5e1;"></i>
+            </div>
+            <h3 style="font-size: 2rem; color: var(--text-main); margin-bottom: 1rem;">No Tours Available</h3>
+            <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 500px; margin: 0 auto;">We're currently updating our itineraries. Please check back later or contact us directly for custom packages.</p>
+            <a href="/{{ company.slug }}/contact" class="btn-luxury" style="margin-top: 2.5rem;">Contact Support</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<style>
+    .tour-card-listing:hover {
+        transform: translateY(-15px);
+        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.15);
+        border-color: var(--primary);
+    }
+    .tour-card-listing:hover img {
+        transform: scale(1.1);
+    }
+    .tour-card-listing:hover .card-arrow {
+        background: var(--primary) !important;
+        color: white !important;
+        transform: translateX(5px);
+    }
+</style>
+{% endblock %}

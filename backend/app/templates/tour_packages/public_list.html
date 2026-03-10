@@ -120,45 +120,9 @@
             {% for tour in tours %}
             <div class="col-lg-4 col-md-6 tour-card-wrapper">
                 <div class="tour-card">
-
-                    {% set cover_img = tour.gallery_images | selectattr("image_type", "equalto", "cover") | list %}
                     <div class="tour-cover">
-                        {% if cover_img %}
-                        <img src="{{ url_for('static', path=cover_img[0].image_path) }}">
-                        {% else %}
-                        <div class="no-image">No Image</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="tour-body">
-                        <h5 class="tour-title">{{ tour.title }}</h5>
-                        <div class="tour-meta">
-                            <span>📍 {{ tour.city }}, {{ tour.country }}</span>
-                            <span class="price">₹{{ tour.price }}</span>
-                        </div>
-
-                        {% set gallery_imgs = tour.gallery_images | selectattr("image_type", "equalto", "gallery") |
-                        list %}
-                        {% if gallery_imgs %}
-                        <div class="tour-gallery">
-                            {% for img in gallery_imgs[:5] %}
-                            <img src="{{ url_for('static', path=img.image_path) }}" class="gallery-thumb"
-                                data-img="{{ url_for('static', path=img.image_path) }}">
-                            {% endfor %}
-                            {% if gallery_imgs|length > 5 %}
-                            <span class="more-count">+{{ gallery_imgs|length - 5 }}</span>
-                            {% endif %}
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <a href="{{ url_for('tour_detail', slug=tour.id) }}" class="stretched-link"></a>
-
-
-                    {% set cover_img = tour.gallery_images | selectattr("image_type", "equalto", "cover") | list %}
-                    <div class="tour-cover">
-                        {% if cover_img %}
-                        <img src="{{ url_for('static', path=cover_img[0].image_path) }}">
+                        {% if tour.cover_image %}
+                        <img src="{{ url_for('static', path=tour.cover_image) }}">
                         {% else %}
                         <div class="no-image">No Image</div>
                         {% endif %}
@@ -169,11 +133,10 @@
                         <h5 class="tour-title">{{ tour.title }}</h5>
                         <div class="tour-meta">
                             <span>📍 {{ tour.city }}, {{ tour.country }}</span>
-                            <span class="price">₹{{ tour.price }}</span>
+                            <span class="price">{{ tour.currency }} {{ tour.price }}</span>
                         </div>
 
-                        {% set gallery_imgs = tour.gallery_images | selectattr("image_type", "equalto", "gallery") |
-                        list %}
+                        {% set gallery_imgs = tour.gallery_images | selectattr("image_type", "equalto", "gallery") | list %}
                         {% if gallery_imgs %}
                         <div class="tour-gallery">
                             {% for img in gallery_imgs[:5] %}
@@ -188,8 +151,6 @@
                     </div>
 
                     <a href="{{ url_for('tour_detail', slug=tour.id) }}" class="stretched-link"></a>
-
-
                 </div>
             </div>
             {% endfor %}

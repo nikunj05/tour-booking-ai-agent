@@ -224,9 +224,8 @@ body {
 {% block content %}
 <!-- HERO -->
 <div class="hero">
-    {% set cover = tour.gallery_images | selectattr("image_type", "equalto", "cover") | first %}
-    {% if cover %}
-        <img src="{{ url_for('static', path=cover.image_path) }}">
+    {% if tour.cover_image %}
+        <img src="{{ url_for('static', path=tour.cover_image) }}">
     {% else %}
         <img src="https://via.placeholder.com/1400x500?text=Tour+Image">
     {% endif %}
