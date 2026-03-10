@@ -296,8 +296,8 @@
             Unforgettable journeys curated with local expertise and premium comfort.
         </p>
         <div style="display: flex; gap: 1.5rem;">
-            <a href="/{{ company.slug }}/tours" class="btn-luxury">Explore Destinations</a>
-            <a href="/{{ company.slug }}/contact" class="btn-luxury" style="background: white; color: var(--text-main);">Personalize Trip</a>
+            <a href="/{{ lang }}/{{ company.slug }}/tours" class="btn-luxury">Explore Destinations</a>
+            <a href="/{{ lang }}/{{ company.slug }}/contact" class="btn-luxury" style="background: white; color: var(--text-main);">Personalize Trip</a>
         </div>
     </div>
 </section>
@@ -334,7 +334,7 @@
                         <p class="card-desc">{{ tour.description | striptags | truncate(120) }}</p>
                         <div class="card-footer">
                             <span style="font-size: 1.3rem; font-weight: 800; color: var(--text-main);">{{ tour.currency }} {{ "{:,.0f}".format(tour.price) }}</span>
-                            <a href="/{{ company.slug }}/tour/{{ tour.id }}" class="btn-card">View Details</a>
+                            <a href="/{{ lang }}/{{ company.slug }}/tour/{{ tour.id }}" class="btn-card">View Details</a>
                         </div>
                     </div>
                 </div>
@@ -353,7 +353,7 @@
                 <span style="color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; font-size: 0.85rem;">Luxury On Wheels</span>
                 <h2 style="font-size: 2.8rem; margin-top: 5px; font-family: 'Outfit', sans-serif;">Our Premium Fleet</h2>
             </div>
-            <a href="/{{ company.slug }}/vehicles" class="view-all-link" style="color: var(--accent);">View Entire Fleet <i class="fas fa-arrow-right"></i></a>
+            <a href="/{{ lang }}/{{ company.slug }}/vehicles" class="view-all-link" style="color: var(--accent);">View Entire Fleet <i class="fas fa-arrow-right"></i></a>
         </div>
     </div>
 
@@ -387,7 +387,7 @@
                         </div>
                         <div class="card-footer" style="margin-top: 1.25rem;">
                             <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);"><i class="fas fa-shield-check text-success mr-1"></i> Insured</span>
-                            <a href="/{{ company.slug }}/contact" class="btn-card" style="background: var(--text-main);">Enquire</a>
+                            <a href="/{{ lang }}/{{ company.slug }}/contact" class="btn-card" style="background: var(--text-main);">Enquire</a>
                         </div>
                     </div>
                 </div>

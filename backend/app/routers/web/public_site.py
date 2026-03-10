@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from typing import Optional
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -12,8 +12,23 @@ from app.models.vehicle import Vehicle
 router = APIRouter(tags=["Public Website"])
 templates = Jinja2Templates(directory="app/templates")
 
+SUPPORTED_LANGUAGES = ['en', 'hi', 'ar']
+DEFAULT_LANGUAGE = 'en'
+
+def get_language_from_request(request: Request) -> str:
+    # Try cookie first
+    lang = request.cookies.get('lang')
+    if lang and lang in SUPPORTED_LANGUAGES:
+        return lang
+    # Try Accept-Language header
+    accept_lang = request.headers.get('accept-language', '').split(',')[0].split('-')[0]
+    if accept_lang in SUPPORTED_LANGUAGES:
+        return accept_lang
+    return DEFAULT_LANGUAGE
+
 @router.get("/{company_slug}", response_class=HTMLResponse)
 async def public_home(request: Request, company_slug: str, db: Session = Depends(get_db)):
+    lang = get_language_from_request(request)
     company = db.query(Company).filter(Company.slug == company_slug, Company.is_deleted == False).first()
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
@@ -36,11 +51,14 @@ async def public_home(request: Request, company_slug: str, db: Session = Depends
         "company": company,
         "tours": tours,
         "vehicles": vehicles,
+        "lang": lang,
+        "supported_languages": SUPPORTED_LANGUAGES,
         "title": f"Home | {company.company_name}"
     })
 
 @router.get("/{company_slug}/about", response_class=HTMLResponse)
 async def public_about(request: Request, company_slug: str, db: Session = Depends(get_db)):
+    lang = get_language_from_request(request)
     company = db.query(Company).filter(Company.slug == company_slug, Company.is_deleted == False).first()
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
@@ -48,6 +66,8 @@ async def public_about(request: Request, company_slug: str, db: Session = Depend
     return templates.TemplateResponse("public_site/about.html", {
         "request": request,
         "company": company,
+        "lang": lang,
+        "supported_languages": SUPPORTED_LANGUAGES,
         "title": f"About Us | {company.company_name}"
     })
 
@@ -60,6 +80,7 @@ async def public_tours(
     sort: str = "newest",
     db: Session = Depends(get_db)
 ):
+    lang = get_language_from_request(request)
     company = db.query(Company).filter(Company.slug == company_slug, Company.is_deleted == False).first()
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
@@ -103,11 +124,14 @@ async def public_tours(
         "current_search": search or "",
         "current_city": city or "all",
         "current_sort": sort,
+        "lang": lang,
+        "supported_languages": SUPPORTED_LANGUAGES,
         "title": f"Our Tours | {company.company_name}"
     })
 
 @router.get("/{company_slug}/tour/{tour_id}", response_class=HTMLResponse)
 async def public_tour_detail(request: Request, company_slug: str, tour_id: int, db: Session = Depends(get_db)):
+    lang = get_language_from_request(request)
     company = db.query(Company).filter(Company.slug == company_slug, Company.is_deleted == False).first()
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
@@ -125,11 +149,14 @@ async def public_tour_detail(request: Request, company_slug: str, tour_id: int, 
         "request": request,
         "company": company,
         "tour": tour,
+        "lang": lang,
+        "supported_languages": SUPPORTED_LANGUAGES,
         "title": f"{tour.title} | {company.company_name}"
     })
 
 @router.get("/{company_slug}/vehicles", response_class=HTMLResponse)
 async def public_vehicles(request: Request, company_slug: str, db: Session = Depends(get_db)):
+    lang = get_language_from_request(request)
     company = db.query(Company).filter(Company.slug == company_slug, Company.is_deleted == False).first()
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
@@ -144,11 +171,14 @@ async def public_vehicles(request: Request, company_slug: str, db: Session = Dep
         "request": request,
         "company": company,
         "vehicles": vehicles,
+        "lang": lang,
+        "supported_languages": SUPPORTED_LANGUAGES,
         "title": f"Our Fleet | {company.company_name}"
     })
 
 @router.get("/{company_slug}/contact", response_class=HTMLResponse)
 async def public_contact(request: Request, company_slug: str, db: Session = Depends(get_db)):
+    lang = get_language_from_request(request)
     company = db.query(Company).filter(Company.slug == company_slug, Company.is_deleted == False).first()
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
@@ -156,5 +186,7 @@ async def public_contact(request: Request, company_slug: str, db: Session = Depe
     return templates.TemplateResponse("public_site/contact.html", {
         "request": request,
         "company": company,
+        "lang": lang,
+        "supported_languages": SUPPORTED_LANGUAGES,
         "title": f"Contact Us | {company.company_name}"
     })
