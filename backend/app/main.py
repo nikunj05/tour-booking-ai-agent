@@ -5,7 +5,6 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from app.routers.web import auth, admin_dashboard, tour_package, company, manual_booking, driver, company_dashboard, customer, vehicle , revenue, faq_document, chat_messages, chat_ws, public_site
 from app.routers.api.webhooks import whatsapp,strip
-from app.routers.api.translation import router as translation_router
 from sqlalchemy.orm import Session
 from app.utils.flash import flash_redirect
 
@@ -39,7 +38,6 @@ app.include_router(faq_document.router)
 app.include_router(chat_messages.router)
 app.include_router(chat_ws.router)
 app.include_router(public_site.router)
-app.include_router(translation_router, prefix="/translate")
 
 @app.exception_handler(FastAPIHTTPException)
 async def auth_exception_handler(request: Request, exc: FastAPIHTTPException):

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ lang }}" dir="{% if lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -112,69 +112,6 @@
             background-color: var(--primary-dark);
             transform: translateY(-3px);
             box-shadow: 0 15px 25px rgba(37, 99, 235, 0.3);
-        }
-
-        /* Language Selector */
-        .language-selector {
-            position: relative;
-            margin-left: 2rem;
-        }
-
-        .language-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: var(--text-main);
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-
-        .language-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .language-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            min-width: 120px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.3s;
-            z-index: 1001;
-        }
-
-        .language-dropdown.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .language-option {
-            display: block;
-            padding: 0.75rem 1rem;
-            color: var(--text-main);
-            text-decoration: none;
-            transition: background 0.3s;
-            border-radius: 8px;
-        }
-
-        .language-option:hover {
-            background: rgba(37, 99, 235, 0.1);
-        }
-
-        .language-option.active {
-            background: var(--primary);
-            color: white;
         }
 
         /* Hero Common */
@@ -333,33 +270,6 @@
         }
         .btn-luxury:hover { background: var(--primary-dark); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2); }
 
-        /* RTL Support for Arabic */
-        [dir="rtl"] .navbar {
-            direction: rtl;
-        }
-
-        [dir="rtl"] .nav-links {
-            direction: rtl;
-        }
-
-        [dir="rtl"] .language-selector {
-            margin-right: 2rem;
-            margin-left: 0;
-        }
-
-        [dir="rtl"] .footer-content {
-            direction: rtl;
-            text-align: right;
-        }
-
-        [dir="rtl"] .page-hero {
-            text-align: right;
-        }
-
-        [dir="rtl"] .section-header {
-            text-align: right;
-        }
-
         @media (max-width: 1024px) {
             .footer-content { grid-template-columns: repeat(2, 1fr); gap: 3rem; }
         }
@@ -371,8 +281,6 @@
             .footer-content { grid-template-columns: 1fr; gap: 2.5rem; }
             .whatsapp-float { bottom: 25px; right: 25px; width: 55px; height: 55px; font-size: 28px; }
             .section-header h2 { font-size: 2.2rem; }
-            .language-selector { margin-left: 1rem; }
-            .language-btn { padding: 0.4rem 0.8rem; font-size: 0.9rem; }
         }
     </style>
     {% block extra_css %}{% endblock %}
@@ -380,7 +288,7 @@
 <body>
 
     <nav class="navbar">
-        <a href="/{{ lang }}/{{ company.slug }}" class="nav-logo">
+        <a href="/{{ company.slug }}" class="nav-logo">
             {% if company.logo %}
                 <img src="/static/{{ company.logo }}" alt="{{ company.company_name }}">
             {% else %}
@@ -388,30 +296,13 @@
             {% endif %}
             <span>{{ company.company_name }}</span>
         </a>
-        <div style="display: flex; align-items: center;">
-            <ul class="nav-links">
-                <li><a href="/{{ company.slug }}">Home</a></li>
-                <li><a href="/{{ company.slug }}/about">About</a></li>
-                <li><a href="/{{ company.slug }}/tours">Tours</a></li>
-                <li><a href="/{{ company.slug }}/vehicles">Fleet</a></li>
-                <li><a href="/{{ company.slug }}/contact" class="nav-btn">Contact Us</a></li>
-            </ul>
-            <div class="language-selector">
-                <button class="language-btn" onclick="toggleLanguageDropdown()">
-                    <i class="fas fa-globe"></i>
-                    <span>{{ lang.upper() }}</span>
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <div class="language-dropdown" id="languageDropdown">
-                    {% for supported_lang in supported_languages %}
-                    <a href="#" onclick="changeLanguage('{{ supported_lang }}')" 
-                       class="language-option no-translate {% if supported_lang == lang %}active{% endif %}">
-                        {% if supported_lang == 'en' %}English{% elif supported_lang == 'hi' %}हिंदी{% elif supported_lang == 'ar' %}العربية{% endif %}
-                    </a>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
+        <ul class="nav-links">
+            <li><a href="/{{ company.slug }}">Home</a></li>
+            <li><a href="/{{ company.slug }}/about">About</a></li>
+            <li><a href="/{{ company.slug }}/tours">Tours</a></li>
+            <li><a href="/{{ company.slug }}/vehicles">Fleet</a></li>
+            <li><a href="/{{ company.slug }}/contact" class="nav-btn">Contact Us</a></li>
+        </ul>
     </nav>
 
     <main style="padding-top: 85px;">
@@ -464,158 +355,6 @@
         <span class="whatsapp-tooltip">Chat with us!</span>
         <i class="fab fa-whatsapp"></i>
     </a>
-
-    <script>
-        function toggleLanguageDropdown() {
-            const dropdown = document.getElementById('languageDropdown');
-            dropdown.classList.toggle('show');
-        }
-
-        function changeLanguage(lang) {
-            document.cookie = `lang=${lang}; path=/; max-age=31536000`; // 1 year
-            location.reload();
-        }
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('languageDropdown');
-            const btn = event.target.closest('.language-btn');
-            if (!btn && dropdown.classList.contains('show')) {
-                dropdown.classList.remove('show');
-            }
-        });
-
-        // Translation functionality
-        async function translatePage(lang) {
-            console.log('Starting translation for language:', lang);
-            if (lang === 'en') return; // No translation needed for English
-
-            // Show loading indicator
-            const loadingIndicator = document.createElement('div');
-            loadingIndicator.id = 'translation-loading';
-            loadingIndicator.innerHTML = '<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 1rem 2rem; border-radius: 8px; z-index: 9999;">Translating page...</div>';
-            document.body.appendChild(loadingIndicator);
-
-            try {
-                // Collect all text content that needs translation
-                const elements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span:not(.whatsapp-tooltip), a:not([href^="#"]):not([href^="http"]):not(.no-translate), button, td, th, label, strong, em');
-                const textsToTranslate = [];
-
-                elements.forEach(el => {
-                    const text = el.textContent?.trim();
-                    if (text && text.length > 2 && text.length < 200 && !/\d{4,}/.test(text) && /[a-zA-Z]/.test(text) && el.children.length === 0) {
-                        textsToTranslate.push(text);
-                    }
-                });
-
-                console.log('Found', textsToTranslate.length, 'texts to translate:', textsToTranslate.slice(0, 5));
-
-                // Remove duplicates
-                const uniqueTexts = [...new Set(textsToTranslate)];
-
-                if (uniqueTexts.length === 0) {
-                    console.log('No texts to translate');
-                    document.body.removeChild(loadingIndicator);
-                    return;
-                }
-
-                // Check cache first
-                const cacheKey = `translation_${lang}`;
-                let cached = localStorage.getItem(cacheKey);
-                let translations = {};
-
-                if (cached) {
-                    try {
-                        translations = JSON.parse(cached);
-                        // Check if cache is still valid (24 hours)
-                        const timestamp = localStorage.getItem(`${cacheKey}_timestamp`);
-                        if (timestamp && (Date.now() - parseInt(timestamp)) > 24 * 60 * 60 * 1000) {
-                            translations = {}; // Cache expired
-                            localStorage.removeItem(cacheKey);
-                            localStorage.removeItem(`${cacheKey}_timestamp`);
-                        }
-                    } catch (e) {
-                        translations = {}; // Invalid cache
-                    }
-                }
-
-                // Get texts that need translation
-                const textsToFetch = uniqueTexts.filter(text => !translations[text]);
-
-                if (textsToFetch.length > 0) {
-                    console.log('Fetching translations for', textsToFetch.length, 'texts');
-                    // Call translation API
-                    const response = await fetch('/translate/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            texts: textsToFetch,
-                            target_lang: lang
-                        })
-                    });
-
-                    console.log('API response status:', response.status);
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        console.log('API response data:', data);
-                        translations = { ...translations, ...data.translations };
-                        // Cache for 24 hours
-                        localStorage.setItem(cacheKey, JSON.stringify(translations));
-                        localStorage.setItem(`${cacheKey}_timestamp`, Date.now().toString());
-                    } else if (response.status === 429) {
-                        console.warn('Translation rate limit exceeded');
-                        // Use cached translations if available
-                    } else {
-                        const errorText = await response.text();
-                        console.error('Translation failed:', response.status, errorText);
-                        document.body.removeChild(loadingIndicator);
-                        return;
-                    }
-                }
-
-                // Apply translations
-                console.log('Applying translations to', elements.length, 'elements');
-                let translatedCount = 0;
-                elements.forEach(el => {
-                    const originalText = el.textContent?.trim();
-                    if (originalText && translations[originalText]) {
-                        el.textContent = translations[originalText];
-                        translatedCount++;
-                    }
-                });
-                console.log('Translated', translatedCount, 'elements');
-
-                // Handle RTL for Arabic
-                if (lang === 'ar') {
-                    document.documentElement.setAttribute('dir', 'rtl');
-                } else {
-                    document.documentElement.setAttribute('dir', 'ltr');
-                }
-
-                console.log('Translation completed successfully');
-
-            } catch (error) {
-                console.error('Translation error:', error);
-            } finally {
-                // Remove loading indicator
-                const indicator = document.getElementById('translation-loading');
-                if (indicator) {
-                    document.body.removeChild(indicator);
-                }
-            }
-        }
-
-        // Initialize translation on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const lang = '{{ lang }}';
-            if (lang !== 'en') {
-                translatePage(lang);
-            }
-        });
-    </script>
 
     {% block extra_js %}{% endblock %}
 </body>
