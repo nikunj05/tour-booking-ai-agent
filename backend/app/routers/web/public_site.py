@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
+from typing import Optional
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from app.database.session import get_db
 from app.models.company import Company
 from app.models.tour_package import TourPackage
@@ -50,21 +52,57 @@ async def public_about(request: Request, company_slug: str, db: Session = Depend
     })
 
 @router.get("/{company_slug}/tours", response_class=HTMLResponse)
-async def public_tours(request: Request, company_slug: str, db: Session = Depends(get_db)):
+async def public_tours(
+    request: Request, 
+    company_slug: str, 
+    search: Optional[str] = None,
+    city: Optional[str] = None,
+    sort: str = "newest",
+    db: Session = Depends(get_db)
+):
     company = db.query(Company).filter(Company.slug == company_slug, Company.is_deleted == False).first()
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
     
-    tours = db.query(TourPackage).filter(
+    # Base query
+    query = db.query(TourPackage).filter(
         TourPackage.company_id == company.id, 
         TourPackage.is_deleted == False, 
         TourPackage.status == 'active'
-    ).all()
+    )
+
+    # Apply filters
+    if search:
+        query = query.filter(TourPackage.title.ilike(f"%{search}%"))
+    if city and city != "all":
+        query = query.filter(TourPackage.city == city)
+
+    # Apply sorting
+    if sort == "price_low":
+        query = query.order_by(TourPackage.price.asc())
+    elif sort == "price_high":
+        query = query.order_by(TourPackage.price.desc())
+    else:
+        query = query.order_by(TourPackage.id.desc())
+
+    tours = query.all()
+
+    # Fetch unique cities for the filter dropdown
+    cities = db.query(TourPackage.city).filter(
+        TourPackage.company_id == company.id, 
+        TourPackage.is_deleted == False, 
+        TourPackage.status == 'active'
+    ).distinct().all()
+    cities = [c[0] for c in cities if c[0]]
     
     return templates.TemplateResponse("public_site/tours.html", {
         "request": request,
         "company": company,
         "tours": tours,
+        "cities": sorted(cities),
+        "current_search": search or "",
+        "current_city": city or "all",
+        "current_sort": sort,
         "title": f"Our Tours | {company.company_name}"
     })
 
