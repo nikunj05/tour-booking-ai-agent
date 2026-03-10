@@ -13,7 +13,7 @@ from app.chatbot.prompts.reply import (
 from app.services.openai_service import detect_intent_and_extract, generate_reply
 from app.chatbot.prompts.reply import build_transport_type_buttons, build_payment_type_buttons, build_location_request
 
-def handle_booking_transport_flow(
+async def handle_booking_transport_flow(
     session,
     text,
     db,
@@ -31,21 +31,21 @@ def handle_booking_transport_flow(
 
         if not text.startswith("VEH_OPT_"):
             reply = "Please select a vehicle option from the list."
-            save_message(db, session, company, "bot", reply)
+            await save_message(db, session, company, "bot", reply)
             return reply
 
         try:
             index = int(text.replace("VEH_OPT_", "")) - 1
         except ValueError:
             reply = "Invalid vehicle option selected."
-            save_message(db, session, company, "bot", reply)
+            await save_message(db, session, company, "bot", reply)
             return reply
 
         options = session.data.get("options", [])
 
         if index < 0 or index >= len(options):
             reply = "Invalid vehicle option selected."
-            save_message(db, session, company, "bot", reply)
+            await save_message(db, session, company, "bot", reply)
             return reply
 
         session.data["selected_vehicles"] = options[index]["vehicles"]
@@ -53,7 +53,7 @@ def handle_booking_transport_flow(
         change_state(session, BOOKING_ASK_PICKUP_LOCATION, db)
 
         reply = build_location_request()
-        save_message(db, session, company, "bot", "Asking for pickup location")
+        await save_message(db, session, company, "bot", "Asking for pickup location")
 
         return reply
 
@@ -75,7 +75,7 @@ def handle_booking_transport_flow(
             change_state(session, BOOKING_ASK_TRANSPORT_TYPE, db)
 
             reply = build_transport_type_buttons()
-            save_message(db, session, company, "bot", reply["text"])
+            await save_message(db, session, company, "bot", reply["text"])
 
             return reply
 
@@ -90,12 +90,12 @@ def handle_booking_transport_flow(
             change_state(session, BOOKING_ASK_TRANSPORT_TYPE, db)
 
             reply = build_transport_type_buttons()
-            save_message(db, session, company, "bot", reply["text"])
+            await save_message(db, session, company, "bot", reply["text"])
 
             return reply
 
         reply = "📍 Please share your location using the button or type your hotel name/address."
-        save_message(db, session, company, "bot", reply)
+        await save_message(db, session, company, "bot", reply)
         return reply
 
 
@@ -106,7 +106,7 @@ def handle_booking_transport_flow(
 
         if text not in ["ONE_WAY", "ROUND_TRIP"]:
             reply = "Please select a valid transport type."
-            save_message(db, session, company, "bot", reply)
+            await save_message(db, session, company, "bot", reply)
             return reply
 
         session.data["transport_type"] = text
@@ -121,5 +121,5 @@ def handle_booking_transport_flow(
 
         reply = build_payment_type_buttons(summary_text)
 
-        save_message(db, session, company, "bot", reply["text"])
+        await save_message(db, session, company, "bot", reply["text"])
         return reply

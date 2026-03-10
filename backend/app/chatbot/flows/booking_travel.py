@@ -20,7 +20,7 @@ from app.chatbot.prompts.reply import (
     build_travel_datetime_confirmation_message
 )
 
-def handle_booking_travel_flow(
+async def handle_booking_travel_flow(
     session,
     text,
     db,
@@ -49,19 +49,19 @@ def handle_booking_travel_flow(
                 f"🗓️ Please type your travel date in DD-MM-YYYY format.\n"
                 f"Example: *{today_example}*"
             )
-            save_message(db, session, company, "bot", reply)
+            await save_message(db, session, company, "bot", reply)
             return reply
 
         else:
             reply = "Please choose a valid option."
-            save_message(db, session, company, "bot", reply)
+            await save_message(db, session, company, "bot", reply)
             return reply
 
         session.data["travel_date"] = travel_date
         change_state(session, BOOKING_ASK_TIME, db)
 
         reply = generate_reply(text, {}, ASK_TIME_REPLY_PROMPT)
-        save_message(db, session, company, "bot", reply)
+        await save_message(db, session, company, "bot", reply)
         return reply
 
 
@@ -79,7 +79,7 @@ def handle_booking_travel_flow(
                 f"Please enter DD-MM-YYYY.\n"
                 f"Example: *{today_example}*"
             )
-            save_message(db, session, company, "bot", reply)
+            await save_message(db, session, company, "bot", reply)
             return reply
 
         try:
@@ -87,7 +87,7 @@ def handle_booking_travel_flow(
 
             if travel_date_obj.date() < datetime.now().date():
                 reply = "It looks like you've entered a past date. Please select a future date."
-                save_message(db, session, company, "bot", reply)
+                await save_message(db, session, company, "bot", reply)
                 return reply
 
             session.data["travel_date"] = travel_date_obj.strftime("%Y-%m-%d")
@@ -98,13 +98,13 @@ def handle_booking_travel_flow(
                 f"Please enter DD-MM-YYYY.\n"
                 f"Example: *{today_example}*"
             )
-            save_message(db, session, company, "bot", reply)
+            await save_message(db, session, company, "bot", reply)
             return reply
 
         change_state(session, BOOKING_ASK_TIME, db)
 
         reply = generate_reply(text, {}, ASK_TIME_REPLY_PROMPT)
-        save_message(db, session, company, "bot", reply)
+        await save_message(db, session, company, "bot", reply)
         return reply
 
 
@@ -118,7 +118,7 @@ def handle_booking_travel_flow(
 
         if not extracted_time:
             reply = generate_reply(text, {}, INVALID_TIME_REPLY_PROMPT)
-            save_message(db, session, company, "bot", reply)
+            await save_message(db, session, company, "bot", reply)
             return reply
 
         # Validate time if date is today
@@ -133,7 +133,7 @@ def handle_booking_travel_flow(
 
             if user_time_obj <= current_time_obj:
                 reply = "The selected time has already passed. Please choose a future time."
-                save_message(db, session, company, "bot", reply)
+                await save_message(db, session, company, "bot", reply)
                 return reply
 
         session.data["travel_time"] = extracted_time
@@ -151,7 +151,7 @@ def handle_booking_travel_flow(
             formatted_time,
         )
 
-        save_message(db, session, company, "bot", reply)
+        await save_message(db, session, company, "bot", reply)
         return reply
 
 
@@ -164,7 +164,7 @@ def handle_booking_travel_flow(
             change_state(session, BOOKING_ASK_PAX, db)
 
             reply = generate_reply(text, {}, ASK_PAX_REPLY_PROMPT)
-            save_message(db, session, company, "bot", reply)
+            await save_message(db, session, company, "bot", reply)
             return reply
 
         elif text == "CONFIRM_NO":
@@ -175,7 +175,7 @@ def handle_booking_travel_flow(
             change_state(session, BOOKING_ASK_CUSTOM_TRAVEL_DATE, db)
 
             reply = "No worries. Kindly enter your preferred travel date again."
-            save_message(db, session, company, "bot", reply)
+            await save_message(db, session, company, "bot", reply)
             return reply
 
         else:
@@ -189,5 +189,5 @@ def handle_booking_travel_flow(
                 formatted_date,
                 formatted_time,
             )
-            save_message(db, session, company, "bot", reply)
+            await save_message(db, session, company, "bot", reply)
             return reply

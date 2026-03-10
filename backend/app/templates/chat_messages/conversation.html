@@ -261,6 +261,23 @@ body, html {
     margin: 0 14px 6px;
     flex-shrink: 0;
 }
+
+.unread-badge {
+    background: #25d366;
+    color: #fff;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    margin-top: 5px;
+    float: right;
+}
+.unread-badge:empty { display: none; }
 </style>
 {% endblock %}
 
@@ -300,6 +317,7 @@ body, html {
 
                 <a href="{{ url_for('chat_conversation', session_id=s.id) }}"
                    class="session-item {% if selected_session and selected_session.id == s.id %}active-session{% endif %}"
+                   data-session-id="{{ s.id }}"
                    data-search="{{ item.customer.guest_name if item.customer else s.phone }} {{ s.phone }} {{ s.state }}">
 
                     <div class="session-avatar">{{ (item.customer.guest_name[0] if item.customer and item.customer.guest_name else s.phone[-2:]) | upper }}</div>
@@ -315,7 +333,9 @@ body, html {
                             {% endif %}
                         </div>
                         <div class="session-badges">
-                            {% if s.state != "MANUAL" %}
+                            {% if s.data.get("mode") == "manual" %}
+                                <span class="mode-badge mode-manual"> Manual Mode</span>
+                            {% else %}
                                 <span class="mode-badge mode-bot">🤖 Bot Mode</span>
                             {% endif %}
                             <span class="state-badge {{ state_css }}">{{ s.state | replace("_", " ") | lower }}</span>
@@ -327,6 +347,7 @@ body, html {
                             {{ s.last_message_at.strftime('%d %b') }}<br>
                             <small>{{ s.last_message_at.strftime('%H:%M') }}</small>
                         {% endif %}
+                        <div class="unread-badge">{% if s.unread_count > 0 %}{{ s.unread_count }}{% endif %}</div>
                     </div>
                 </a>
                 {% endfor %}
@@ -353,8 +374,13 @@ body, html {
                 </div>
             </div>
             <div class="chat-header-badges">
-                {% if selected_session.state == "MANUAL" %}
+                {% if selected_session.data.get("mode") == "manual" %}
                     <span class="header-badge badge-manual-mode">🔴 Manual Mode</span>
+                    <form method="POST" action="{{ url_for('resume_chatbot', session_id=selected_session.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-light" style="font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #6f42c1;">
+                            ▶ Resume Bot
+                        </button>
+                    </form>
                 {% else %}
                     <span class="header-badge badge-bot-mode">🤖 Bot Mode</span>
                 {% endif %}
@@ -420,7 +446,7 @@ body, html {
 
                 {% if not selected_session.is_active %}
                     <div class="end-marker">🔒 Conversation ended — Session is no longer active</div>
-                {% elif selected_session.state == "MANUAL" %}
+                {% elif selected_session.data.get("mode") == "manual" %}
                     <div class="end-marker">🏢 Manual mode active — AI bot is paused</div>
                 {% else %}
                     <div class="end-marker">⏳ Waiting for customer reply…</div>
@@ -466,42 +492,84 @@ body, html {
 
 {% block extra_js %}
 <script>
-/* Auto-scroll to bottom */
-const chatBody = document.getElementById('chatBody');
-if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
+    /* Listen to Global WebSocket Events */
+    const selectedSessionId = {{ selected_session.id if selected_session else 'null' }};
+    
+    window.addEventListener('new-chat-message', function(e) {
+        const data = e.detail;
+        console.log("[CONV_DEBUG] Received new-chat-message event:", data);
+        
+        if (!selectedSessionId) {
+            console.warn("[CONV_DEBUG] No session currently selected in view.");
+            return;
+        }
 
-/* Live search */
-document.getElementById('sessionSearch').addEventListener('input', function () {
-    const q = this.value.toLowerCase();
-    document.querySelectorAll('.session-item').forEach(el => {
-        el.style.display = el.getAttribute('data-search').toLowerCase().includes(q) ? 'flex' : 'none';
-    });
-});
+        // Resilient ID comparison
+        const receivedId = parseInt(data.conversation_id);
+        const currentId = parseInt(selectedSessionId);
+        
+        console.log(`[CONV_DEBUG] Matching ID: Received(${receivedId}) vs Current(${currentId})`);
 
-/* Auto-grow textarea */
-const replyInput = document.getElementById('replyInput');
-if (replyInput) {
-    replyInput.addEventListener('input', function () {
-        this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 100) + 'px';
-    });
-
-    /* Ctrl+Enter or Cmd+Enter to send */
-    replyInput.addEventListener('keydown', function (e) {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-            e.preventDefault();
-            document.getElementById('replyForm')?.submit();
+        if (receivedId === currentId) {
+            console.log("[CONV_DEBUG] ID Match Found! Appending message...");
+            appendMessage(data);
+        } else {
+            console.log("[CONV_DEBUG] ID Mismatch. Event ignored for this window.");
         }
     });
-}
 
-/* Disable send button while submitting */
-const replyForm = document.getElementById('replyForm');
-if (replyForm) {
-    replyForm.addEventListener('submit', function () {
-        const btn = document.getElementById('sendBtn');
-        if (btn) { btn.disabled = true; btn.innerHTML = '…'; }
-    });
-}
+    function appendMessage(data) {
+        const chatBody = document.getElementById('chatBody');
+        if (!chatBody) return;
+
+        // Remove "waiting" or "manual" markers if they exist at the bottom
+        const markers = chatBody.querySelectorAll('.end-marker');
+        markers.forEach(m => m.remove());
+
+        const msgDiv = document.createElement('div');
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+        
+        let senderHtml = "";
+        let rowClass = "";
+        let bubbleClass = "";
+
+        if (data.sender_type === "user") {
+            senderHtml = "👤 Customer";
+            rowClass = "user-row";
+            bubbleClass = "user-bubble";
+        } else if (data.sender_type === "bot") {
+            senderHtml = "🤖 AI Chatbot";
+            rowClass = "bot-row";
+            bubbleClass = "bot-bubble";
+        } else if (data.sender_type === "agent") {
+            senderHtml = "🏢 Admin Reply";
+            rowClass = "admin-row";
+            bubbleClass = "admin-bubble";
+        }
+
+        msgDiv.innerHTML = `
+            <div class="msg-info" style="${data.sender_type === 'user' ? 'padding-left:8px;text-align:left;' : 'padding-right:8px;text-align:right;'}">${senderHtml}</div>
+            <div class="msg-row ${rowClass}">
+                <div class="msg-bubble ${bubbleClass}">
+                    ${data.message_text.replace(/\n/g, '<br>')}
+                    <div class="msg-time">${timeStr}</div>
+                </div>
+            </div>
+        `;
+
+        chatBody.appendChild(msgDiv);
+        
+        // Smooth scroll to bottom
+        chatBody.scrollTop = chatBody.scrollHeight;
+
+        // Re-add marker if in manual mode
+        if (document.querySelector('.badge-manual-mode')) {
+            const marker = document.createElement('div');
+            marker.className = 'end-marker';
+            marker.innerText = '🏢 Manual mode active — AI bot is paused';
+            chatBody.appendChild(marker);
+        }
+    }
+
 </script>
 {% endblock %}

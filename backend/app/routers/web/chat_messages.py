@@ -11,7 +11,9 @@ from app.models.user import User
 from app.models.customer import Customer
 from app.auth.dependencies import get_current_user
 from app.routers.api.webhooks.whatsapp import send_whatsapp_message
-from app.chatbot.states import MANUAL
+from app.chatbot.states import MANUAL, BOOKING_CITY_LIST
+from app.services.websocket_manager import manager
+import asyncio
 
 templates = Jinja2Templates(directory="app/templates")
 
@@ -126,6 +128,11 @@ def chat_conversation(
     session_data = _build_session_list(db, company.id)
 
 
+    # Reset unread count when admin opens the conversation
+    if selected_session.unread_count > 0:
+        selected_session.unread_count = 0
+        db.commit()
+
     return templates.TemplateResponse(
         "chat_messages/conversation.html",
         {
@@ -143,7 +150,7 @@ def chat_conversation(
 # MANUAL REPLY – send admin message to WhatsApp
 # =================================================
 @router.post("/{session_id}/reply", name="chat_reply")
-def chat_reply(
+async def chat_reply(
     session_id: int,
     request: Request,
     message: str = Form(...),
@@ -184,10 +191,25 @@ def chat_reply(
     ))
 
     # 2️⃣  Switch session to MANUAL mode so AI stays silent
-    selected_session.state = MANUAL
+    session_data = dict(selected_session.data or {})
+    session_data["mode"] = "manual"
+    selected_session.data = session_data
+    
     selected_session.last_message_at = datetime.utcnow()
     selected_session.updated_at = datetime.utcnow()
+    selected_session.unread_count = 0 # Reset on reply too
     db.commit()
+
+    # Broadcast Admin Reply (mapped to "agent" as per spec)
+    await manager.broadcast(company.id, {
+        "event": "new_message",
+        "conversation_id": selected_session.id,
+        "phone": selected_session.phone,
+        "sender_type": "agent",
+        "message_text": message.strip(),
+        "message_type": "text",
+        "timestamp": datetime.utcnow().isoformat()
+    })
 
     # 3️⃣  Send via WhatsApp API
     try:
@@ -200,6 +222,38 @@ def chat_reply(
         print(f"[chat_reply] WhatsApp send failed: {e}")
 
     # 4️⃣  PRG – redirect back to conversation view
+    return RedirectResponse(
+        url=request.url_for("chat_conversation", session_id=session_id),
+        status_code=303,
+    )
+
+@router.post("/{session_id}/resume", name="resume_chatbot")
+async def resume_chatbot(
+    session_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Switches the session back to chatbot mode (e.g., BOOKING_CITY_LIST).
+    """
+    company = current_user.company
+    session = (
+        db.query(ChatSession)
+        .filter(ChatSession.id == session_id, ChatSession.company_id == company.id)
+        .first()
+    )
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Resume the chatbot (set mode to bot, preserve internal state)
+    session_data = dict(session.data or {})
+    session_data["mode"] = "bot"
+    session.data = session_data
+        
+    session.updated_at = datetime.utcnow()
+    db.commit()
+
     return RedirectResponse(
         url=request.url_for("chat_conversation", session_id=session_id),
         status_code=303,

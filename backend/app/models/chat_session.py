@@ -11,6 +11,7 @@ class ChatSession(Base):
     company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)  
     phone = Column(String(20), index=True, nullable=False)
     state = Column(String(50), default="greeting")  
+    unread_count = Column(Integer, default=0)
 
     data = Column(MutableDict.as_mutable(JSON), default=dict)
     context = Column(MutableDict.as_mutable(JSON), default=dict)

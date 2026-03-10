@@ -7,6 +7,8 @@ from app.database.session import get_db
 from sqlalchemy.orm import Session
 from app.models.company import Company
 from app.models.chat_session import ChatSession, ChatMessage
+from app.services.websocket_manager import manager
+from app.chatbot.session_manager import get_or_create_session
 
 router = APIRouter()
 
@@ -91,18 +93,11 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
                     continue
 
                 # -------------------------------------------------------
-                # Always save the incoming user message BEFORE running the
-                # chatbot handler. This ensures it appears in the dashboard
-                # even in MANUAL mode (where the handler skips flow logic).
+                # Ensure Session Exists & Save incoming message
                 # -------------------------------------------------------
-                session = (
-                    db.query(ChatSession)
-                    .filter_by(phone=phone, company_id=company.id)
-                    .order_by(ChatSession.updated_at.desc())
-                    .first()
-                )
+                session = get_or_create_session(phone, db, company)
 
-                if session and (text or location):
+                if text or location:
                     save_text = text if text else f"[Location: lat={location.get('latitude')}, lng={location.get('longitude')}]"
                     db.add(ChatMessage(
                         session_id=session.id,
@@ -112,10 +107,24 @@ async def receive_message(request: Request, db: Session = Depends(get_db)):
                         whatsapp_message_id=msg.get("id")
                     ))
                     session.last_message_at = datetime.utcnow()
+                    session.unread_count += 1
                     db.commit()
 
-                result = route_message(phone, text, db, company, location)
-                print(result)
+                    # Broadcast the new User message
+                    print(f"[WS_DEBUG] Broadcasting incoming message for session {session.id}, company {company.id}")
+                    await manager.broadcast(company.id, {
+                        "event": "new_message",
+                        "conversation_id": session.id,
+                        "phone": phone,
+                        "sender_type": "user",
+                        "message_text": save_text,
+                        "message_type": msg_type,
+                        "timestamp": datetime.utcnow().isoformat()
+                    })
+
+                print(f"[WS_DEBUG] Routing message for phone {phone}")
+                result = await route_message(phone, text, db, company, location)
+                print(f"[WS_DEBUG] Route result: {result}")
 
                 # result is None when session is in MANUAL mode — do not send any AI reply
                 if result is None:

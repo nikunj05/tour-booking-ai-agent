@@ -83,6 +83,23 @@ body, html {
 
 .no-sessions { padding: 40px 20px; text-align: center; color: #adb5bd; font-size: 14px; }
 
+.unread-badge {
+    background: #25d366;
+    color: #fff;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    margin-top: 5px;
+    float: right;
+}
+.unread-badge:empty { display: none; }
+
 /* Right panel */
 .chat-area-panel {
     flex: 1; display: flex; flex-direction: column;
@@ -136,6 +153,7 @@ body, html {
 
                 <a href="{{ url_for('chat_conversation', session_id=s.id) }}"
                    class="session-item {% if selected_session and selected_session.id == s.id %}active-session{% endif %}"
+                   data-session-id="{{ s.id }}"
                    data-search="{{ item.customer.guest_name if item.customer else s.phone }} {{ s.phone }} {{ s.state }}">
 
                     <div class="session-avatar">{{ (item.customer.guest_name[0] if item.customer and item.customer.guest_name else s.phone[-2:]) | upper }}</div>
@@ -151,7 +169,7 @@ body, html {
                             {% endif %}
                         </div>
                         <div class="session-badges">
-                            {% if s.state == "MANUAL" %}
+                            {% if s.data.get("mode") == "manual" %}
                                 <span class="mode-badge mode-manual"> Manual Mode</span>
                             {% else %}
                                 <span class="mode-badge mode-bot">🤖 Bot Mode</span>
@@ -169,6 +187,7 @@ body, html {
                             {{ s.last_message_at.strftime('%d %b') }}<br>
                             <small>{{ s.last_message_at.strftime('%H:%M') }}</small>
                         {% endif %}
+                        <div class="unread-badge">{% if s.unread_count > 0 %}{{ s.unread_count }}{% endif %}</div>
                     </div>
                 </a>
                 {% endfor %}

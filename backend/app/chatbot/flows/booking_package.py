@@ -14,7 +14,7 @@ import os
 
 BASE_URL = os.getenv("BASE_URL")
 
-def handle_booking_package_flow(
+async def handle_booking_package_flow(
     phone,
     session,
     text,
@@ -44,7 +44,7 @@ def handle_booking_package_flow(
 
             if not selected_package:
                 city = session.data.get("city")
-                return fetch_and_send_packages(
+                return await fetch_and_send_packages(
                     session=session,
                     db=db,
                     company=company,
@@ -62,7 +62,7 @@ def handle_booking_package_flow(
             message1 = build_package_detail_message(selected_package)
             message2 = build_package_detail_button(selected_package, BASE_URL)
 
-            send_and_save_messages(
+            await send_and_save_messages(
                 phone,
                 company,
                 session,
@@ -75,7 +75,7 @@ def handle_booking_package_flow(
             return None
 
         city = session.data.get("city")
-        return fetch_and_send_packages(
+        return await fetch_and_send_packages(
             session=session,
             db=db,
             company=company,
@@ -105,7 +105,7 @@ def handle_booking_package_flow(
 
             if not selected_package:
                 reply = "Please select a valid package from the list."
-                save_message(db, session, company, "bot", reply)
+                await save_message(db, session, company, "bot", reply)
                 return reply
 
             session.data["selected_package"] = selected_package
@@ -113,7 +113,7 @@ def handle_booking_package_flow(
             message1 = build_package_detail_message(selected_package)
             message2 = build_package_detail_button(selected_package, BASE_URL)
 
-            send_and_save_messages(
+            await send_and_save_messages(
                 phone,
                 company,
                 session,
@@ -133,7 +133,7 @@ def handle_booking_package_flow(
 
             if not p:
                 reply = "Something went wrong. Please select the package again."
-                save_message(db, session, company, "bot", reply)
+                await save_message(db, session, company, "bot", reply)
                 return reply
 
             session.data.update({
@@ -150,12 +150,12 @@ def handle_booking_package_flow(
             change_state(session, BOOKING_ASK_TRAVEL_DATE, db)
 
             replies = build_travel_date_buttons()
-            save_message(db, session, company, "bot", replies)
+            await save_message(db, session, company, "bot", replies)
 
             return replies
 
         city = session.data.get("city")
-        return fetch_and_send_packages(
+        return await fetch_and_send_packages(
             session=session,
             db=db,
             company=company,
@@ -166,7 +166,7 @@ def handle_booking_package_flow(
             heading="You can select another package or tap *Book Now* to continue."
         )
 
-def send_and_save_messages(phone, company, session, db, save_message_func, *messages):
+async def send_and_save_messages(phone, company, session, db, save_message_func, *messages):
     """
     Send one or multiple messages via WhatsApp and save them to DB.
     Accepts dicts like:
@@ -180,7 +180,7 @@ def send_and_save_messages(phone, company, session, db, save_message_func, *mess
 
     for msg in messages:
         # Save message in DB
-        save_message_func(db, session, company, "bot", msg)
+        await save_message_func(db, session, company, "bot", msg)
         
         # Send message via WhatsApp
         send_whatsapp_message(

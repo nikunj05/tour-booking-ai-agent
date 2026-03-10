@@ -17,7 +17,7 @@ def parse_whatsapp_phone(raw_phone: str):
     except:
         return None, None
 
-def handle_booking_payment(phone, session, text, db, company,save_message,change_state):
+async def handle_booking_payment(phone, session, text, db, company,save_message,change_state):
     state = session.state
 
     # =====================================================
@@ -27,7 +27,7 @@ def handle_booking_payment(phone, session, text, db, company,save_message,change
 
         if text not in ["PAY_FULL", "PAY_40"]:
             reply = "Please select a valid payment option."
-            save_message(db, session, company, "bot", reply)
+            await save_message(db, session, company, "bot", reply)
             return reply
 
         # ---- Calculate Payable Amount ----
@@ -96,7 +96,7 @@ def handle_booking_payment(phone, session, text, db, company,save_message,change
 
         reply = build_payment_summary_button(booking, session)
 
-        save_message(db, session, company, "bot", reply["text"])
+        await save_message(db, session, company, "bot", reply["text"])
 
         return reply
 
@@ -113,7 +113,7 @@ def handle_booking_payment(phone, session, text, db, company,save_message,change
 
             if not booking:
                 reply = "Booking not found. Please contact support."
-                save_message(db, session, company, "bot", reply)
+                await save_message(db, session, company, "bot", reply)
                 return reply
 
             # ---- Create New Stripe Payment Link ----
@@ -140,7 +140,7 @@ def handle_booking_payment(phone, session, text, db, company,save_message,change
                 "Once payment is done, we’ll confirm your booking ✅"
             )
 
-            save_message(db, session, company, "bot", reply)
+            await save_message(db, session, company, "bot", reply)
             return reply
 
     return None

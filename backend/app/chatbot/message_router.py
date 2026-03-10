@@ -8,8 +8,10 @@ from app.chatbot.ai_responder import generate_ai_response
 from app.chatbot.fallback_handler import handle_fallback
 from app.chatbot.booking_controller import start_or_continue_booking, reprompt_current_booking_step
 from app.chatbot.flows.greeting_flow import handle_greeting_flow
+from app.services.websocket_manager import manager
+import asyncio
 
-def route_message(phone: str, text: str, db, company, location=None):
+async def route_message(phone: str, text: str, db, company, location=None):
     """
     Central Message Router.
     Decouples intent detection, AI answering, and guided flow state machines.
@@ -18,7 +20,7 @@ def route_message(phone: str, text: str, db, company, location=None):
     session = get_or_create_session(phone, db, company)
     
     # 🛑 1. MANUAL GUARD
-    if session.state == MANUAL:
+    if session.data.get("mode") == "manual":
         return None
 
     # 🛑 2. GREETING GUARD (Force profile creation)
@@ -42,7 +44,7 @@ def route_message(phone: str, text: str, db, company, location=None):
         ai_reply = generate_ai_response(text, db, company)
         
         if session.state.startswith("BOOKING_"):
-            reprompt = reprompt_current_booking_step(phone, session, db, company)
+            reprompt = await reprompt_current_booking_step(phone, session, db, company)
             merged_text = f"{ai_reply}\n\n---\n{reprompt.get('text', '')}"
             
             response_payload = {
@@ -59,9 +61,8 @@ def route_message(phone: str, text: str, db, company, location=None):
     elif intent == "greeting":
         response_payload = handle_greeting_flow(phone, session, text, db, company)
 
-    # C. BOOK TOUR (or presently in the middle of structured flow)
     elif intent == "book_tour" or session.state.startswith("BOOKING_"):
-        response_payload = start_or_continue_booking(phone, session, text, db, company, location)
+        response_payload = await start_or_continue_booking(phone, session, text, db, company, location)
         flow_already_saved = True
 
     # D. UNKNOWN / FALLBACK
@@ -82,5 +83,17 @@ def route_message(phone: str, text: str, db, company, location=None):
             ))
             session.last_message_at = datetime.utcnow()
             db.commit()
+
+            # Broadcast the Bot message
+            print(f"[CHATBOT_DEBUG] Broadcasting bot reply for session {session.id}, company {company.id}")
+            await manager.broadcast(company.id, {
+                "event": "new_message",
+                "conversation_id": session.id,
+                "phone": session.phone,
+                "sender_type": "bot",
+                "message_text": text_to_save,
+                "message_type": "text",
+                "timestamp": datetime.utcnow().isoformat()
+            })
 
     return response_payload
