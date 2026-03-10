@@ -8,68 +8,94 @@
 </section>
 
 <!-- Filter Section -->
-<section style="background: transparent; padding: 1.5rem 0; border-bottom: 1px solid rgba(0,0,0,0.05);">
-    <div class="container" style="padding: 0 8%;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
-            <div>
-                <span style="color: var(--text-main); font-weight: 700; font-size: 1.2rem;">Showing {{ tours|length }} Experiences</span>
-                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">Explore our widest range of destinations.</p>
-            </div>
-            <div style="display: flex; gap: 1.2rem;">
-                <div style="position: relative;">
-                    <select style="appearance: none; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 45px 12px 20px; border-radius: 12px; font-weight: 500; font-family: inherit; color: var(--text-main); cursor: pointer; outline: none; transition: border 0.3s;">
-                        <option>Sort by: Newest</option>
-                        <option>Price: Low to High</option>
-                        <option>Price: High to Low</option>
-                    </select>
-                    <i class="fas fa-chevron-down" style="position: absolute; right: 18px; top: 16px; font-size: 0.8rem; pointer-events: none; color: var(--secondary);"></i>
+<section style="background: transparent; padding: 2rem 0; border-bottom: 1px solid rgba(0,0,0,0.05);">
+    <div class="container" style="padding: 0 5%;">
+        <form id="filter-form" method="get" action="/{{ company.slug }}/tours">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
+                <!-- Left: Stats & Search -->
+                <div style="flex: 1; min-width: 300px;">
+                    <span style="color: var(--text-main); font-weight: 700; font-size: 1.2rem;">Showing <span id="tour-count">{{ tours|length }}</span> Experiences</span>
+                    
+                    <div style="margin-top: 1.5rem; position: relative; max-width: 500px;">
+                        <i class="fas fa-search" style="position: absolute; left: 15px; top: 15px; color: var(--secondary); opacity: 0.6;"></i>
+                        <input type="text" id="search-input" name="search" placeholder="Search by tour name..." value="{{ current_search }}"
+                               style="width: 100%; background: white; border: 1px solid #e2e8f0; padding: 12px 15px 12px 45px; border-radius: 12px; font-family: inherit; outline: none; transition: all 0.3s; box-shadow: 0 2px 10px rgba(0,0,0,0.02);">
+                    </div>
+                </div>
+
+                <!-- Right: Dropdown Filters -->
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <!-- City Filter -->
+                    <div style="position: relative; min-width: 180px;">
+                        <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--secondary); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Destinations</label>
+                        <select id="city-filter" name="city" style="width: 100%; appearance: none; background: white; border: 1px solid #e2e8f0; padding: 12px 40px 12px 15px; border-radius: 12px; font-weight: 500; font-family: inherit; color: var(--text-main); cursor: pointer; outline: none; transition: all 0.3s; box-shadow: 0 2px 10px rgba(0,0,0,0.02);">
+                            <option value="all" {% if current_city == 'all' %}selected{% endif %}>All Cities</option>
+                            {% for c in cities %}
+                            <option value="{{ c }}" {% if current_city == c %}selected{% endif %}>{{ c }}</option>
+                            {% endfor %}
+                        </select>
+                        <i class="fas fa-chevron-down" style="position: absolute; right: 15px; bottom: 16px; font-size: 0.7rem; pointer-events: none; color: var(--secondary);"></i>
+                    </div>
+
+                    <!-- Sort -->
+                    <div style="position: relative; min-width: 180px;">
+                        <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--secondary); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Sort By</label>
+                        <select id="sort-filter" name="sort" style="width: 100%; appearance: none; background: white; border: 1px solid #e2e8f0; padding: 12px 40px 12px 15px; border-radius: 12px; font-weight: 500; font-family: inherit; color: var(--text-main); cursor: pointer; outline: none; transition: all 0.3s; box-shadow: 0 2px 10px rgba(0,0,0,0.02);">
+                            <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Newest first</option>
+                            <option value="price_low" {% if current_sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="price_high" {% if current_sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                        </select>
+                        <i class="fas fa-sort-amount-down" style="position: absolute; right: 15px; bottom: 16px; font-size: 0.7rem; pointer-events: none; color: var(--secondary);"></i>
+                    </div>
                 </div>
             </div>
-        </div>
+        </form>
     </div>
 </section>
 
 <!-- Tours Grid -->
-<section class="container">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 3rem;">
+<section class="container" style="padding: 3rem 0;">
+    <div id="tours-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 3rem;">
         {% for tour in tours %}
-        <a href="/{{ company.slug }}/tour/{{ tour.id }}" style="text-decoration: none; color: inherit;">
-            <div class="tour-card-listing" style="background: white; border-radius: 28px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.03); transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); height: 100%; display: flex; flex-direction: column; border: 1px solid #f1f5f9;">
-                <div style="height: 280px; overflow: hidden; position: relative;">
-                    {% if tour.cover_image %}
-                        <img src="{{ url_for('static', path=tour.cover_image) }}" alt="{{ tour.title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease;">
-                    {% else %}
-                        <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="{{ tour.title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease;">
-                    {% endif %}
-                    
-                    <div style="position: absolute; top: 20px; left: 20px; background: var(--primary); color: white; padding: 6px 16px; border-radius: 50px; font-weight: 700; font-size: 0.8rem; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);">
-                        <i class="fas fa-star mr-1"></i> Best Seller
-                    </div>
-                </div>
-                
-                <div style="padding: 2.5rem; flex-grow: 1; display: flex; flex-direction: column;">
-                    <div style="display: flex; align-items: center; gap: 8px; color: var(--primary); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 1rem;">
-                        <i class="fas fa-map-marker-alt"></i> {{ tour.city }}, {{ tour.country }}
-                    </div>
-                    
-                    <h3 style="font-size: 1.6rem; margin-bottom: 1rem; color: var(--text-main); font-family: 'Outfit', sans-serif;">{{ tour.title }}</h3>
-                    
-                    <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.7; margin-bottom: 2rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-                        {{ tour.description | safe | truncate(180) }}
-                    </p>
-                    
-                    <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 1.8rem;">
-                        <div>
-                            <span style="display: block; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Starting From</span>
-                            <span style="font-size: 1.6rem; font-weight: 800; color: var(--text-main);">{{ tour.currency }} {{ "{:,.0f}".format(tour.price) }}</span>
-                        </div>
-                        <div class="card-arrow" style="width: 50px; height: 50px; background: #f8fafc; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); transition: all 0.3s ease; border: 1px solid #e2e8f0;">
-                            <i class="fas fa-arrow-right"></i>
+        <div class="tour-item" data-name="{{ tour.title | lower }}" data-city="{{ tour.city | lower }}">
+            <a href="/{{ company.slug }}/tour/{{ tour.id }}" style="text-decoration: none; color: inherit;">
+                <div class="tour-card-listing" style="background: white; border-radius: 28px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.03); transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); height: 100%; display: flex; flex-direction: column; border: 1px solid #f1f5f9;">
+                    <div style="height: 280px; overflow: hidden; position: relative;">
+                        {% if tour.cover_image %}
+                            <img src="{{ url_for('static', path=tour.cover_image) }}" alt="{{ tour.title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease;">
+                        {% else %}
+                            <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="{{ tour.title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease;">
+                        {% endif %}
+                        
+                        <div style="position: absolute; top: 20px; left: 20px; background: var(--primary); color: white; padding: 6px 16px; border-radius: 50px; font-weight: 700; font-size: 0.8rem; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);">
+                            <i class="fas fa-star mr-1"></i> Best Seller
                         </div>
                     </div>
+                    
+                    <div style="padding: 2.5rem; flex-grow: 1; display: flex; flex-direction: column;">
+                        <div style="display: flex; align-items: center; gap: 8px; color: var(--primary); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 1rem;">
+                            <i class="fas fa-map-marker-alt"></i> {{ tour.city }}, {{ tour.country }}
+                        </div>
+                        
+                        <h3 style="font-size: 1.6rem; margin-bottom: 1rem; color: var(--text-main); font-family: 'Outfit', sans-serif;">{{ tour.title }}</h3>
+                        
+                        <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.7; margin-bottom: 2rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                            {{ tour.description | safe | truncate(180) }}
+                        </p>
+                        
+                        <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 1.8rem;">
+                            <div>
+                                <span style="display: block; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Starting From</span>
+                                <span style="font-size: 1.6rem; font-weight: 800; color: var(--text-main);">{{ tour.currency }} {{ "{:,.0f}".format(tour.price) }}</span>
+                            </div>
+                            <div class="card-arrow" style="width: 50px; height: 50px; background: #f8fafc; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); transition: all 0.3s ease; border: 1px solid #e2e8f0;">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </a>
+            </a>
+        </div>
         {% else %}
         <div style="grid-column: 1 / -1; text-align: center; padding: 5rem 2rem; background: rgba(255,255,255,0.4); backdrop-filter: blur(10px); border-radius: 30px;">
             <div style="width: 100px; height: 100px; background: #f8fafc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem;">
@@ -80,6 +106,15 @@
             <a href="/{{ company.slug }}/contact" class="btn-luxury" style="margin-top: 2.5rem;">Contact Support</a>
         </div>
         {% endfor %}
+    </div>
+
+    <!-- No results message for frontend filtering -->
+    <div id="no-results" style="display: none; grid-column: 1 / -1; text-align: center; padding: 5rem 2rem; background: rgba(255,255,255,0.4); backdrop-filter: blur(10px); border-radius: 30px;">
+        <div style="width: 100px; height: 100px; background: #f8fafc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem;">
+            <i class="fas fa-search-minus" style="font-size: 2.5rem; color: #cbd5e1;"></i>
+        </div>
+        <h3 style="font-size: 2rem; color: var(--text-main); margin-bottom: 1rem;">No Matches Found</h3>
+        <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 500px; margin: 0 auto;">Try adjusting your search filters to find what you're looking for.</p>
     </div>
 </section>
 
@@ -97,5 +132,61 @@
         color: white !important;
         transform: translateX(5px);
     }
+    #search-input:focus, #city-filter:focus, #sort-filter:focus {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important;
+    }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-input');
+    const cityFilter = document.getElementById('city-filter');
+    const sortFilter = document.getElementById('sort-filter');
+    const filterForm = document.getElementById('filter-form');
+    const tourItems = document.querySelectorAll('.tour-item');
+    const tourCountSpan = document.getElementById('tour-count');
+    const noResultsDiv = document.getElementById('no-results');
+
+    function performFiltering() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedCity = cityFilter.value.toLowerCase();
+        let visibleCount = 0;
+
+        tourItems.forEach(item => {
+            const name = item.getAttribute('data-name');
+            const city = item.getAttribute('data-city');
+            
+            const matchesSearch = name.includes(searchTerm);
+            const matchesCity = selectedCity === 'all' || city === selectedCity;
+
+            if (matchesSearch && matchesCity) {
+                item.style.display = 'block';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        tourCountSpan.textContent = visibleCount;
+        noResultsDiv.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
+    // Live search - input event
+    searchInput.addEventListener('input', performFiltering);
+    
+    // City filter - change event
+    cityFilter.addEventListener('change', function() {
+        performFiltering();
+        // Delay submission to allow user to see live results but still update URL/DB state
+        clearTimeout(window.cityTimer);
+        window.cityTimer = setTimeout(() => filterForm.submit(), 1500);
+    });
+
+    // Sort filter - triggers immediate form submission since sorting is best handled by DB
+    sortFilter.addEventListener('change', function() {
+        filterForm.submit();
+    });
+});
+</script>
 {% endblock %}
