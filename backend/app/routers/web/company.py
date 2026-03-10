@@ -20,6 +20,7 @@ from app.schemas.company import CompanyCreate, CompanyUpdate
 from app.core.constants import COUNTRIES, CURRENCIES, COUNTRY_CODES
 from app.utils.flash import flash_redirect
 from app.services.email_service import send_company_created_email
+from app.utils.text_formate import slugify
 
 # -------------------------------------------------
 # Router config
@@ -168,6 +169,8 @@ async def create_company(
             status_code=400,
         )
 
+    print("test")
+
     if db.query(User).filter(User.email == email).first():
         return render_form(
             request,
@@ -194,6 +197,7 @@ async def create_company(
     company = Company(
         user_id=user.id,
         company_name=company_name,
+        slug=slugify(company_name),
         country=country,    
         country_code=country_code,
         phone=phone,
@@ -285,6 +289,7 @@ def update_company(
     # ================= COMPANY INFO UPDATE =================
     if active_tab == "company":
         company.company_name = company_name
+        company.slug = slugify(company_name)
         company.country_code = country_code
         company.phone = phone
         company.status = status
@@ -438,6 +443,7 @@ def update_my_profile(
             company.logo = f"uploads/companies/{filename}"
 
         company.company_name = form.company_name
+        company.slug = slugify(form.company_name)
         company.country_code = form.country_code
         company.phone = form.phone
         company.currency = form.currency
