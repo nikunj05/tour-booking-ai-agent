@@ -1,4 +1,8 @@
-{% extends "layout.html" %}
+{% if request.cookies.get("user_role") %}
+    {% extends "layout.html" %}
+{% else %}
+    {% extends "layout-blank.html" %}
+{% endif %}
 {% block title %}Booking Detail{% endblock %}
 
 {% block content %}
@@ -14,11 +18,7 @@
 
     <!-- ================= PRIMARY INFO ================= -->
     <div class="row g-4">
-
-      <!-- LEFT: GUEST + TRAVEL + PAYMENT -->
       <div class="col-lg-7">
-
-      <!-- Guest, Travel & Payment Info -->
       <div class="card shadow-sm rounded-3 mb-3">
         <div class="card-body">
           <h6 class="text-uppercase text-muted mb-3">Guest & Travel Info</h6>
@@ -213,14 +213,14 @@
       </div>
     </div>
 
-    <!-- BACK -->
-    <div class="mt-4">
+{% if request.cookies.get("user_role") %}
+    <div class="mt-4 role">
       <a href="{{ url_for('tour_package_availability_page', package_id=booking.tour_package_id) }}"
          class="btn btn-submit">
         Back to Calendar
       </a>
     </div>
-
+{% endif %}
   </div>
 </section>
 {% endblock %}

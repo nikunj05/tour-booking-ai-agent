@@ -32,11 +32,22 @@ from app.chatbot.flows.booking_payment import handle_booking_payment
 BASE_URL = os.getenv("BASE_URL")
 
 # ------------------- Helpers -------------------
-def save_message(db, session, company, sender, message):
+async def save_message(db, session, company, sender, message):
+    from app.services.websocket_manager import manager
     text = message.get("text") if isinstance(message, dict) else message
     db.add(ChatMessage(session_id=session.id, company_id=company.id, sender=sender, message=text))
     session.updated_at = datetime.utcnow()
     db.commit()
+    
+    await manager.broadcast(company.id, {
+        "event": "new_message",
+        "conversation_id": session.id,
+        "phone": session.phone,
+        "sender_type": sender,
+        "message_text": text,
+        "message_type": "text", # Booking flow currently mostly text-based
+        "timestamp": datetime.utcnow().isoformat()
+    })
 
 def parse_whatsapp_phone(raw_phone: str):
     try:
@@ -57,11 +68,15 @@ def build_public_image_url(image_path: str) -> str | None:
     return f"{BASE_URL.rstrip('/')}/static/{image_path.lstrip('/')}"
 
 # ------------------- Booking Flow -------------------
-def handle_booking_flow(phone,session, text: str, db, company):
+async def handle_booking_flow(phone,session, text: str, db, company,location=None, save_message_fn=None):
+    if save_message_fn is None:
+        save_message_fn = save_message
+        
     text = text.strip()
     today_example = datetime.now().strftime("%d-%m-%Y")
     state = session.state
-
+    print("state",state)
+    print("Enter in the booking flow")
     # -------------------------
     # 3️⃣ If guest_name exists & state is GREETING → send greeting directly
     # -------------------------
@@ -74,71 +89,73 @@ def handle_booking_flow(phone,session, text: str, db, company):
         )
 
     if state in [BOOKING_CITY_LIST, BOOKING_CITY]:
-        return handle_booking_city_flow(
+        return await handle_booking_city_flow(
             session=session,
             text=text,
             db=db,
             company=company,
-            save_message=save_message,
+            save_message=save_message_fn,
             change_state=change_state,
             build_public_image_url=build_public_image_url,
         )
 
     # ---------- PACKAGE LIST ----------
     if state in [BOOKING_SHOW_PACKAGE, BOOKING_PACKAGE_DETAIL_ACTION]:
-        return handle_booking_package_flow(
+        return await handle_booking_package_flow(
+            phone=phone,
             session=session,
             text=text,
             db=db,
             company=company,
-            save_message=save_message,
+            save_message=save_message_fn,
             change_state=change_state,
             build_public_image_url=build_public_image_url,
         )
 
     # ---------- TRAVEL DATE ----------
     if state in [BOOKING_ASK_TRAVEL_DATE, BOOKING_ASK_CUSTOM_TRAVEL_DATE, BOOKING_ASK_TIME,BOOKING_CONFIRM_DATETIME]:
-        return handle_booking_travel_flow(
+        return await handle_booking_travel_flow(
             session=session,
             text=text,
             db=db,
             company=company,
-            save_message=save_message,
+            save_message=save_message_fn,
             change_state=change_state,
         )
 
     if state == BOOKING_ASK_PAX:
-        return handle_booking_pax_flow(
+        return await handle_booking_pax_flow(
             session=session,
             text=text,
             db=db,
             company=company,
-            save_message=save_message,
+            save_message=save_message_fn,
             change_state=change_state,
         )
     # ---------- VEHICLE ----------
     if state in [BOOKING_ASK_VEHICLE, BOOKING_ASK_PICKUP_LOCATION, BOOKING_ASK_TRANSPORT_TYPE]:
-        return handle_booking_transport_flow(
+        return await handle_booking_transport_flow(
             session=session,
             text=text,
             db=db,
             company=company,
-            save_message=save_message,
+            save_message=save_message_fn,
             change_state=change_state,
+            location=location,
         )
 
     # ---------- PAYMENT ----------
     if state in [BOOKING_ASK_PAYMENT, BOOKING_WAITING_FOR_PAYMENT]:
-        return handle_booking_payment(
+        return await handle_booking_payment(
             phone=phone,
             session=session,
             text=text,
             db=db,
             company=company,
-            save_message=save_message,
+            save_message=save_message_fn,
             change_state=change_state,
         )
 
     reply = fallback()
-    save_message(db, session, company, "bot", reply)
+    await save_message_fn(db, session, company, "bot", reply)
     return reply

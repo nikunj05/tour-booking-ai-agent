@@ -1,0 +1,575 @@
+{% extends "layout.html" %}
+
+{% block extra_css %}
+<style>
+/* Prevent full page scroll */
+body, html {
+    overflow: hidden !important;
+    height: 100%;
+}
+.content-wrapper {
+    overflow: hidden !important;
+}
+
+/* ── Layout ─────────────────────────────────────── */
+.chat-wrapper {
+    display: flex;
+    height: calc(100vh - 112px);
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: 0 2px 16px rgba(0,0,0,.12);
+    background: #fff;
+}
+
+/* ── Session List ────────────────────────────────── */
+.session-list-panel {
+    width: 340px;
+    min-width: 280px;
+    border-right: 1px solid #e9ecef;
+    display: flex;
+    flex-direction: column;
+    background: #f8f9fa;
+}
+
+.session-list-header {
+    padding: 18px 16px;
+    background: #075e54;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.session-list-header .total-badge {
+    background: rgba(255,255,255,.22);
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-size: 12px;
+}
+
+.session-search {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e9ecef;
+    flex-shrink: 0;
+}
+
+.session-search input {
+    width: 100%;
+    border-radius: 20px;
+    border: 1px solid #ced4da;
+    padding: 6px 14px;
+    font-size: 13px;
+    outline: none;
+}
+
+.session-scroll { flex: 1; overflow-y: auto; }
+
+.session-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #e9ecef;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    transition: background .15s;
+}
+
+.session-item:hover { background: #e9f5f3; text-decoration: none; color: inherit; }
+.session-item.active-session { background: #d9f2ee; border-left: 4px solid #075e54; }
+
+.session-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: #075e54; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; flex-shrink: 0;
+}
+
+.session-meta { flex: 1; min-width: 0; }
+.session-phone { font-weight: 600; font-size: 14px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.session-preview { font-size: 12px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+.session-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+.session-time { font-size: 11px; color: #adb5bd; white-space: nowrap; flex-shrink: 0; text-align: right; }
+
+/* State + mode badges */
+.state-badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 500; text-transform: capitalize; }
+.state-manual       { background: #e8d5fb; color: #6f42c1; }
+.state-greeting     { background: #e3f2fd; color: #0288d1; }
+.state-collecting   { background: #fff8e1; color: #f57c00; }
+.state-confirming   { background: #f3e5f5; color: #7b1fa2; }
+.state-booking      { background: #e8f5e9; color: #2e7d32; }
+.state-complete     { background: #e8f5e9; color: #1b5e20; }
+.state-cancelled    { background: #ffebee; color: #c62828; }
+.state-default      { background: #f5f5f5; color: #555; }
+
+.mode-badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
+.mode-manual { background: #6f42c1; color: #fff; }
+.mode-bot    { background: #25d366; color: #fff; }
+
+.active-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 3px; }
+.active-dot.on  { background: #25d366; }
+.active-dot.off { background: #adb5bd; }
+
+.no-sessions { padding: 40px 20px; text-align: center; color: #adb5bd; font-size: 14px; }
+
+/* ── Chat Area ───────────────────────────────────── */
+.chat-area-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #ece5dd;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c1bdb6' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    min-width: 0;
+}
+
+/* Header */
+.chat-header {
+    background: #075e54; color: #fff;
+    padding: 12px 20px;
+    display: flex; align-items: center; gap: 14px;
+    flex-shrink: 0; min-height: 64px;
+}
+
+.chat-header-avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: rgba(255,255,255,.22);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; flex-shrink: 0;
+}
+
+.chat-header-info { flex: 1; min-width: 0; }
+.chat-header-phone { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-header-meta { font-size: 12px; opacity: .82; margin-top: 2px; display: flex; flex-wrap: wrap; gap: 10px; }
+.chat-header-badges { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+
+.header-badge { font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+.badge-active   { background: #25d366; color: #fff; }
+.badge-inactive { background: #adb5bd; color: #fff; }
+.badge-state    { background: rgba(255,255,255,.22); color: #fff; text-transform: capitalize; }
+.badge-manual-mode { background: #6f42c1; color: #fff; }
+.badge-bot-mode    { background: #25d366; color: #fff; }
+
+/* Messages body */
+.chat-body { flex: 1; overflow-y: auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 6px; }
+
+.msg-row { display: flex; align-items: flex-end; gap: 8px; max-width: 78%; }
+.msg-row.user-row  { align-self: flex-start; }
+.msg-row.bot-row   { align-self: flex-end; flex-direction: row-reverse; }
+.msg-row.admin-row { align-self: flex-end; flex-direction: row-reverse; }
+
+.msg-bubble { padding: 9px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; word-break: break-word; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,.1); max-width: 100%; }
+
+.user-bubble  { background: #fff;     color: #212529; border-bottom-left-radius: 3px; }
+.bot-bubble   { background: #dcf8c6; color: #212529; border-bottom-right-radius: 3px; }
+.admin-bubble { background: #cce5ff; color: #004085; border-bottom-right-radius: 3px; border-left: 3px solid #004085; }
+
+.msg-info { font-size: 10px; color: #adb5bd; margin-bottom: 2px; font-weight: 600; letter-spacing: .3px; }
+.user-row  .msg-info { text-align: left; }
+.bot-row   .msg-info { text-align: right; }
+.admin-row .msg-info { text-align: right; color: #004085; }
+
+.msg-time { font-size: 10px; color: #95a5a6; margin-top: 3px; text-align: right; white-space: nowrap; }
+.admin-bubble .msg-time { color: #6c757d; }
+
+.date-divider { display: flex; align-items: center; gap: 10px; margin: 10px 0; color: #adb5bd; font-size: 11px; }
+.date-divider::before, .date-divider::after { content: ''; flex: 1; height: 1px; background: #d5d5d5; }
+
+.end-marker { text-align: center; margin: 16px 0 4px; color: #adb5bd; font-size: 12px; font-style: italic; }
+
+/* Info bar */
+.chat-info-bar {
+    background: #fff; border-top: 1px solid #dee2e6;
+    padding: 10px 20px; display: flex; flex-wrap: wrap; gap: 16px;
+    font-size: 12px; color: #495057; flex-shrink: 0;
+}
+
+.info-item { display: flex; flex-direction: column; }
+.info-label { font-weight: 600; color: #075e54; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; }
+.info-value { margin-top: 2px; }
+
+/* ── Reply Input Bar ─────────────────────────────── */
+.chat-reply-bar {
+    background: #f0f0f0;
+    border-top: 1px solid #ddd;
+    padding: 10px 14px;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.chat-reply-input {
+    flex: 1;
+    border: 1px solid #ced4da;
+    border-radius: 22px;
+    padding: 10px 16px;
+    font-size: 14px;
+    resize: none;
+    max-height: 100px;
+    overflow-y: auto;
+    outline: none;
+    background: #fff;
+    transition: border-color .2s;
+    line-height: 1.4;
+}
+
+.chat-reply-input:focus { border-color: #075e54; }
+
+.chat-reply-input:disabled {
+    background: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.chat-send-btn {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: #075e54; color: #fff;
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background .2s, transform .1s;
+}
+
+.chat-send-btn:hover:not(:disabled) { background: #064d46; transform: scale(1.05); }
+.chat-send-btn:disabled { background: #adb5bd; cursor: not-allowed; }
+
+.reply-bar-disabled-note {
+    text-align: center;
+    font-size: 12px;
+    color: #adb5bd;
+    padding: 8px;
+    font-style: italic;
+    flex-shrink: 0;
+    background: #f0f0f0;
+    border-top: 1px solid #ddd;
+}
+
+.manual-alert {
+    background: #e8d5fb;
+    border: 1px solid #b089e8;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: #4a0e8f;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 14px 6px;
+    flex-shrink: 0;
+}
+
+.unread-badge {
+    background: #25d366;
+    color: #fff;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    margin-top: 5px;
+    float: right;
+}
+.unread-badge:empty { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+<div class="chat-wrapper">
+
+    <!-- ── LEFT: Session List ── -->
+    <div class="session-list-panel">
+        <div class="session-list-header">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white">
+                <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z"/>
+            </svg>
+            Messages
+            <span class="total-badge">{{ session_data | length }}</span>
+        </div>
+
+        <div class="session-search">
+            <input type="text" id="sessionSearch" placeholder="Search by phone or state…">
+        </div>
+
+        <div class="session-scroll">
+            {% if session_data %}
+                {% for item in session_data %}
+                {% set s = item.session %}
+                {% set lm = item.last_message %}
+
+                {% set state_css = "state-default" %}
+                {% if s.state == "MANUAL" %}{% set state_css = "state-manual" %}
+                {% elif s.state == "greeting" %}{% set state_css = "state-greeting" %}
+                {% elif "collecting" in s.state %}{% set state_css = "state-collecting" %}
+                {% elif "confirm" in s.state %}{% set state_css = "state-confirming" %}
+                {% elif "booking" in s.state.lower() %}{% set state_css = "state-booking" %}
+                {% elif s.state in ["complete","completed","BOOKING_DONE"] %}{% set state_css = "state-complete" %}
+                {% elif s.state in ["cancelled","canceled"] %}{% set state_css = "state-cancelled" %}
+                {% endif %}
+
+                <a href="{{ url_for('chat_conversation', session_id=s.id) }}"
+                   class="session-item {% if selected_session and selected_session.id == s.id %}active-session{% endif %}"
+                   data-session-id="{{ s.id }}"
+                   data-search="{{ item.customer.guest_name if item.customer else s.phone }} {{ s.phone }} {{ s.state }}">
+
+                    <div class="session-avatar">{{ (item.customer.guest_name[0] if item.customer and item.customer.guest_name else s.phone[-2:]) | upper }}</div>
+
+                    <div class="session-meta">
+                        <div class="session-phone">{{ item.customer.guest_name if item.customer else s.phone }}</div>
+                        <div class="session-preview">
+                            {% if lm %}
+                                {% if lm.sender == "bot" %}🤖 {% elif lm.sender == "admin" %}🏢 {% endif %}
+                                {{ lm.message[:52] }}{% if lm.message|length > 52 %}…{% endif %}
+                            {% else %}
+                                <em>No messages yet</em>
+                            {% endif %}
+                        </div>
+                        <div class="session-badges">
+                            {% if s.data.get("mode") == "manual" %}
+                                <span class="mode-badge mode-manual"> Manual Mode</span>
+                            {% else %}
+                                <span class="mode-badge mode-bot">🤖 Bot Mode</span>
+                            {% endif %}
+                            <span class="state-badge {{ state_css }}">{{ s.state | replace("_", " ") | lower }}</span>
+                        </div>
+                    </div>
+
+                    <div class="session-time">
+                        {% if s.last_message_at %}
+                            {{ s.last_message_at.strftime('%d %b') }}<br>
+                            <small>{{ s.last_message_at.strftime('%H:%M') }}</small>
+                        {% endif %}
+                        <div class="unread-badge">{% if s.unread_count > 0 %}{{ s.unread_count }}{% endif %}</div>
+                    </div>
+                </a>
+                {% endfor %}
+            {% else %}
+                <div class="no-sessions"><p>No conversations yet</p></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ── RIGHT: Chat Window ── -->
+    <div class="chat-area-panel">
+
+        <!-- Header -->
+        <div class="chat-header">
+            {% set active_customer = None %}
+            {% for item in session_data %}{% if item.session.id == selected_session.id %}{% set active_customer = item.customer %}{% endif %}{% endfor %}
+            <div class="chat-header-avatar">{{ (active_customer.guest_name[0] if active_customer and active_customer.guest_name else selected_session.phone[-2:]) | upper }}</div>
+            <div class="chat-header-info">
+                <div class="chat-header-phone">{{ active_customer.guest_name if active_customer else selected_session.phone }}</div>
+                <div class="chat-header-meta">
+                    <span>Session #{{ selected_session.id }}</span>
+                    <span>Started: {{ selected_session.created_at.strftime('%d %b %Y, %H:%M') if selected_session.created_at else 'N/A' }}</span>
+                    <span>Last: {{ selected_session.last_message_at.strftime('%d %b %Y, %H:%M') if selected_session.last_message_at else 'N/A' }}</span>
+                </div>
+            </div>
+            <div class="chat-header-badges">
+                {% if selected_session.data.get("mode") == "manual" %}
+                    <span class="header-badge badge-manual-mode">🔴 Manual Mode</span>
+                    <form method="POST" action="{{ url_for('resume_chatbot', session_id=selected_session.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-light" style="font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #6f42c1;">
+                            ▶ Resume Bot
+                        </button>
+                    </form>
+                {% else %}
+                    <span class="header-badge badge-bot-mode">🤖 Bot Mode</span>
+                {% endif %}
+                <span class="header-badge badge-state">{{ selected_session.state | replace("_"," ") }}</span>
+                {% if selected_session.is_active %}
+                    <span class="header-badge badge-active">● Active</span>
+                {% else %}
+                    <span class="header-badge badge-inactive">● Inactive</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Messages Body -->
+        <div class="chat-body" id="chatBody">
+            {% if messages %}
+                {% set ns = namespace(prev_date=None) %}
+                {% for msg in messages %}
+
+                    {% set msg_date = msg.created_at.strftime('%d %B %Y') if msg.created_at else '' %}
+                    {% if msg_date != ns.prev_date %}
+                        <div class="date-divider">{{ msg_date }}</div>
+                        {% set ns.prev_date = msg_date %}
+                    {% endif %}
+
+                    {% if msg.sender == "user" %}
+                    <!-- 👤 Customer – LEFT -->
+                    <div>
+                        <div class="msg-info" style="padding-left:8px;">👤 Customer</div>
+                        <div class="msg-row user-row">
+                            <div class="msg-bubble user-bubble">
+                                {{ msg.message }}
+                                <div class="msg-time">{{ msg.created_at.strftime('%H:%M') if msg.created_at else '' }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% elif msg.sender == "bot" %}
+                    <!-- 🤖 AI Bot – RIGHT -->
+                    <div>
+                        <div class="msg-info" style="padding-right:8px;text-align:right;">🤖 AI Chatbot</div>
+                        <div class="msg-row bot-row">
+                            <div class="msg-bubble bot-bubble">
+                                {{ msg.message }}
+                                <div class="msg-time">{{ msg.created_at.strftime('%H:%M') if msg.created_at else '' }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% else %}
+                    <!-- 🏢 Admin Reply – RIGHT BLUE -->
+                    <div>
+                        <div class="msg-info" style="padding-right:8px;text-align:right;">🏢 Admin Reply</div>
+                        <div class="msg-row admin-row">
+                            <div class="msg-bubble admin-bubble">
+                                {{ msg.message }}
+                                <div class="msg-time">{{ msg.created_at.strftime('%H:%M') if msg.created_at else '' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                {% endfor %}
+
+                {% if not selected_session.is_active %}
+                    <div class="end-marker">🔒 Conversation ended — Session is no longer active</div>
+                {% elif selected_session.data.get("mode") == "manual" %}
+                    <div class="end-marker">🏢 Manual mode active — AI bot is paused</div>
+                {% else %}
+                    <div class="end-marker">⏳ Waiting for customer reply…</div>
+                {% endif %}
+
+            {% else %}
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#adb5bd;font-size:14px;">
+                    No messages in this conversation yet.
+                </div>
+            {% endif %}
+        </div><!-- .chat-body -->
+
+        <!-- Reply Input Bar -->
+        {% if selected_session.is_active %}
+        <form method="POST" action="{{ url_for('chat_reply', session_id=selected_session.id) }}" id="replyForm">
+            <div class="chat-reply-bar">
+                <textarea
+                    name="message"
+                    id="replyInput"
+                    class="chat-reply-input"
+                    rows="1"
+                    placeholder="Type a message to send via WhatsApp…"
+                    required
+                ></textarea>
+                <button type="submit" class="chat-send-btn" id="sendBtn" title="Send">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+            </div>
+        </form>
+        {% else %}
+        <div class="reply-bar-disabled-note">
+            🔒 This session is inactive. You cannot send messages to this conversation.
+        </div>
+        {% endif %}
+
+    </div><!-- .chat-area-panel -->
+
+</div><!-- .chat-wrapper -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    /* Listen to Global WebSocket Events */
+    const selectedSessionId = {{ selected_session.id if selected_session else 'null' }};
+    
+    window.addEventListener('new-chat-message', function(e) {
+        const data = e.detail;
+        console.log("[CONV_DEBUG] Received new-chat-message event:", data);
+        
+        if (!selectedSessionId) {
+            console.warn("[CONV_DEBUG] No session currently selected in view.");
+            return;
+        }
+
+        // Resilient ID comparison
+        const receivedId = parseInt(data.conversation_id);
+        const currentId = parseInt(selectedSessionId);
+        
+        console.log(`[CONV_DEBUG] Matching ID: Received(${receivedId}) vs Current(${currentId})`);
+
+        if (receivedId === currentId) {
+            console.log("[CONV_DEBUG] ID Match Found! Appending message...");
+            appendMessage(data);
+        } else {
+            console.log("[CONV_DEBUG] ID Mismatch. Event ignored for this window.");
+        }
+    });
+
+    function appendMessage(data) {
+        const chatBody = document.getElementById('chatBody');
+        if (!chatBody) return;
+
+        // Remove "waiting" or "manual" markers if they exist at the bottom
+        const markers = chatBody.querySelectorAll('.end-marker');
+        markers.forEach(m => m.remove());
+
+        const msgDiv = document.createElement('div');
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+        
+        let senderHtml = "";
+        let rowClass = "";
+        let bubbleClass = "";
+
+        if (data.sender_type === "user") {
+            senderHtml = "👤 Customer";
+            rowClass = "user-row";
+            bubbleClass = "user-bubble";
+        } else if (data.sender_type === "bot") {
+            senderHtml = "🤖 AI Chatbot";
+            rowClass = "bot-row";
+            bubbleClass = "bot-bubble";
+        } else if (data.sender_type === "agent") {
+            senderHtml = "🏢 Admin Reply";
+            rowClass = "admin-row";
+            bubbleClass = "admin-bubble";
+        }
+
+        msgDiv.innerHTML = `
+            <div class="msg-info" style="${data.sender_type === 'user' ? 'padding-left:8px;text-align:left;' : 'padding-right:8px;text-align:right;'}">${senderHtml}</div>
+            <div class="msg-row ${rowClass}">
+                <div class="msg-bubble ${bubbleClass}">
+                    ${data.message_text.replace(/\n/g, '<br>')}
+                    <div class="msg-time">${timeStr}</div>
+                </div>
+            </div>
+        `;
+
+        chatBody.appendChild(msgDiv);
+        
+        // Smooth scroll to bottom
+        chatBody.scrollTop = chatBody.scrollHeight;
+
+        // Re-add marker if in manual mode
+        if (document.querySelector('.badge-manual-mode')) {
+            const marker = document.createElement('div');
+            marker.className = 'end-marker';
+            marker.innerText = '🏢 Manual mode active — AI bot is paused';
+            chatBody.appendChild(marker);
+        }
+    }
+
+</script>
+{% endblock %}

@@ -1,0 +1,259 @@
+{% extends "public_site/layout.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');">
+    <h1>Our Luxury Fleet</h1>
+    <p>Travel in style and comfort with our premium range of vehicles.</p>
+</section>
+
+<!-- Values / Fleet Intro -->
+<section class="container">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;">
+        <div>
+            <h2 style="font-size: 2.5rem; margin-bottom: 1.5rem; color: var(--text-main);">Travel with Confidence</h2>
+            <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2rem;">
+                At <strong>{{ company.company_name }}</strong>, we understand that the quality of your transportation is as important as the destination itself. That's why we maintain a high-end fleet of vehicles, from spacious mini-buses to luxury sedans, all regularly serviced and sanitised for your peace of mind.
+            </p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2.5rem;">
+                <div style="display: flex; gap: 12px; align-items: center; font-weight: 600;">
+                    <div style="width: 35px; height: 35px; background: #ecfdf5; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #10b981;">
+                        <i class="fas fa-snowflake"></i>
+                    </div>
+                    Full A/C
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center; font-weight: 600;">
+                    <div style="width: 35px; height: 35px; background: #ecfdf5; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #10b981;">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    Safety Checked
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center; font-weight: 600;">
+                    <div style="width: 35px; height: 35px; background: #ecfdf5; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #10b981;">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    Licensed Drivers
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center; font-weight: 600;">
+                    <div style="width: 35px; height: 35px; background: #ecfdf5; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #10b981;">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    Real-time GPS
+                </div>
+            </div>
+            <a href="/{{ company.slug }}/contact" class="btn-luxury">Enquire About Fleet</a>
+        </div>
+        <div style="position: relative;">
+            <div style="background-color: white; padding: 1.5rem; border-radius: 35px; border: 1px solid #f1f5f9; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.08);">
+                <img src="https://images.unsplash.com/photo-1494905998402-395d579af36f?ixid=M3w1MjM3NDF8MHwxfHNlYXJjaHwyfHxsdXh1cnklMjBjYXJ8ZW58MHx8fHwxNzE1MDE1NTQyfDA&ixlib=rb-4.0.3&w=800&q=80" alt="Fleet" style="width: 100%; border-radius: 25px; display: block;">
+            </div>
+            <!-- Decorative circle -->
+            <div style="position: absolute; -top: 20px; -right: 20px; width: 100px; height: 100px; background: var(--primary); border-radius: 50%; opacity: 0.1; z-index: -1;"></div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .vehicle-slider-container {
+        position: relative;
+        height: 280px;
+        overflow: hidden;
+        border-radius: 30px 30px 0 0;
+    }
+
+    .vehicle-slider-track {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    .vehicle-slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 1.2s ease-in-out;
+        z-index: 1;
+    }
+
+    .vehicle-slide.active {
+        opacity: 1;
+        z-index: 2;
+    }
+
+    .vehicle-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Slider Controls */
+    .slider-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-main);
+        cursor: pointer;
+        opacity: 0;
+        transition: all 0.3s ease;
+        z-index: 10;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .slider-btn:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    .vehicle-slider-container:hover .slider-btn {
+        opacity: 1;
+    }
+
+    .btn-prev { left: 15px; }
+    .btn-next { right: 15px; }
+
+    .vehicle-card:hover {
+        transform: translateY(-15px);
+        box-shadow: 0 40px 80px -15px rgba(0, 0, 0, 0.1);
+        border-color: var(--primary);
+    }
+
+    .badge-float-vehicle {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        background: white;
+        padding: 10px 20px;
+        border-radius: 15px;
+        font-weight: 800;
+        color: var(--text-main);
+        font-size: 0.85rem;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        border: 1px solid #f1f5f9;
+        z-index: 5;
+    }
+</style>
+
+<!-- Vehicle Listing -->
+<section style="background: transparent; padding: 4rem 0;">
+    <div class="container">
+        <div class="section-header">
+            <h2>Explore our Fleet</h2>
+            <p>From luxury sedans to spacious buses, we have the perfect ride for every group size.</p>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 3.5rem;">
+            {% for vehicle in vehicles %}
+            <div class="vehicle-card" style="background: white; border-radius: 30px; overflow: hidden; border: 1px solid #f1f5f9; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); height: 100%; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
+                <div class="vehicle-slider-container" data-vehicle-id="{{ vehicle.id }}">
+                    <div class="vehicle-slider-track">
+                        {% if vehicle.photos %}
+                            {% for photo in vehicle.photos %}
+                                <div class="vehicle-slide {% if loop.first %}active{% endif %}">
+                                    <img src="/static/{{ photo.file_path }}" alt="{{ vehicle.name }}">
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="vehicle-slide active">
+                                <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; color: #cbd5e1;">
+                                    <i class="fas fa-car" style="font-size: 4rem; margin-bottom: 1rem;"></i>
+                                    <span style="font-weight: 600; font-size: 0.9rem;">Photo Coming Soon</span>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if vehicle.photos|length > 1 %}
+                    <button class="slider-btn btn-prev" onclick="moveSlider('{{ vehicle.id }}', -1)"><i class="fas fa-chevron-left"></i></button>
+                    <button class="slider-btn btn-next" onclick="moveSlider('{{ vehicle.id }}', 1)"><i class="fas fa-chevron-right"></i></button>
+                    {% endif %}
+
+                    <div class="badge-float-vehicle">
+                        <i class="fas fa-tag mr-1" style="color: var(--primary);"></i> {{ vehicle.vehicle_type }}
+                    </div>
+                </div>
+                
+                <div style="padding: 2.5rem; flex-grow: 1; display: flex; flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <h3 style="font-size: 1.8rem; color: var(--text-main); font-family: 'Outfit', sans-serif;">{{ vehicle.name }}</h3>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: auto; padding-top: 2rem; border-top: 1px solid #f1f5f9;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 45px; height: 45px; background: #f0f9ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                                <i class="fas fa-users" style="font-size: 1.1rem;"></i>
+                            </div>
+                            <div>
+                                <span style="display: block; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Capacity</span>
+                                <span style="font-size: 1rem; font-weight: 700;">{{ vehicle.seats }} Passengers</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 45px; height: 45px; background: #f0fdf4; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #10b981;">
+                                <i class="fas fa-check-double" style="font-size: 1.1rem;"></i>
+                            </div>
+                            <div>
+                                <span style="display: block; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Status</span>
+                                <span style="font-size: 1rem; font-weight: 700; color: #10b981;">Available</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div style="grid-column: 1 / -1; text-align: center; padding: 5rem 2rem; background: rgba(255,255,255,0.4); backdrop-filter: blur(10px); border-radius: 30px;">
+                <div style="width: 100px; height: 100px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
+                    <i class="fas fa-car-side" style="font-size: 2.5rem; color: #cbd5e1;"></i>
+                </div>
+                <h3 style="font-size: 2rem; color: var(--text-main); margin-bottom: 1rem;">Fleet Information coming soon</h3>
+                <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 500px; margin: 0 auto;">We're currently refreshing our vehicle lineup. Contact us for custom transport requirements.</p>
+                <a href="/{{ company.slug }}/contact" class="btn-luxury" style="margin-top: 2.5rem;">Contact Us</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<script>
+    const vehicleSliders = {};
+
+    function moveSlider(vehicleId, direction) {
+        const container = document.querySelector(`.vehicle-slider-container[data-vehicle-id="${vehicleId}"]`);
+        const slides = container.querySelectorAll('.vehicle-slide');
+        const count = slides.length;
+
+        if (!vehicleSliders[vehicleId]) {
+            vehicleSliders[vehicleId] = 0;
+        }
+
+        slides[vehicleSliders[vehicleId]].classList.remove('active');
+        vehicleSliders[vehicleId] = (vehicleSliders[vehicleId] + direction + count) % count;
+        slides[vehicleSliders[vehicleId]].classList.add('active');
+    }
+
+    // Auto-slide every 2 seconds
+    document.querySelectorAll('.vehicle-slider-container').forEach(container => {
+        const vehicleId = container.dataset.vehicleId;
+        const slides = container.querySelectorAll('.vehicle-slide');
+        
+        if (slides.length > 1) {
+            setInterval(() => {
+                moveSlider(vehicleId, 1);
+            }, 2000);
+        }
+    });
+</script>
+{% endblock %}

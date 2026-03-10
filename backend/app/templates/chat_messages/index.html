@@ -1,0 +1,226 @@
+{% extends "layout.html" %}
+
+{% block extra_css %}
+<style>
+/* Prevent full page scroll */
+body, html {
+    overflow: hidden !important;
+    height: 100%;
+}
+.content-wrapper {
+    overflow: hidden !important;
+}
+
+.chat-wrapper {
+    display: flex;
+    height: calc(100vh - 112px);
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: 0 2px 16px rgba(0,0,0,.12);
+    background: #fff;
+}
+
+.session-list-panel {
+    width: 340px; min-width: 280px;
+    border-right: 1px solid #e9ecef;
+    display: flex; flex-direction: column;
+    background: #f8f9fa;
+}
+
+.session-list-header {
+    padding: 18px 16px; background: #075e54; color: #fff;
+    font-size: 18px; font-weight: 600;
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+
+.session-list-header .total-badge {
+    background: rgba(255,255,255,.22); border-radius: 12px;
+    padding: 2px 10px; font-size: 12px;
+}
+
+.session-search { padding: 10px 12px; border-bottom: 1px solid #e9ecef; flex-shrink: 0; }
+.session-search input { width: 100%; border-radius: 20px; border: 1px solid #ced4da; padding: 6px 14px; font-size: 13px; outline: none; }
+.session-scroll { flex: 1; overflow-y: auto; }
+
+.session-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 14px; border-bottom: 1px solid #e9ecef;
+    cursor: pointer; text-decoration: none; color: inherit; transition: background .15s;
+}
+.session-item:hover { background: #e9f5f3; text-decoration: none; color: inherit; }
+.session-item.active-session { background: #d9f2ee; border-left: 4px solid #075e54; }
+
+.session-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: #075e54; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; flex-shrink: 0;
+}
+
+.session-meta { flex: 1; min-width: 0; }
+.session-phone { font-weight: 600; font-size: 14px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.session-preview { font-size: 12px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+.session-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+.session-time { font-size: 11px; color: #adb5bd; white-space: nowrap; flex-shrink: 0; text-align: right; }
+
+.mode-badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
+.mode-manual { background: #6f42c1; color: #fff; }
+.mode-bot    { background: #25d366; color: #fff; }
+
+.state-badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 500; text-transform: capitalize; }
+.state-manual     { background: #e8d5fb; color: #6f42c1; }
+.state-greeting   { background: #e3f2fd; color: #0288d1; }
+.state-collecting { background: #fff8e1; color: #f57c00; }
+.state-confirming { background: #f3e5f5; color: #7b1fa2; }
+.state-booking    { background: #e8f5e9; color: #2e7d32; }
+.state-complete   { background: #e8f5e9; color: #1b5e20; }
+.state-cancelled  { background: #ffebee; color: #c62828; }
+.state-default    { background: #f5f5f5; color: #555; }
+
+.active-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 3px; }
+.active-dot.on  { background: #25d366; }
+.active-dot.off { background: #adb5bd; }
+
+.no-sessions { padding: 40px 20px; text-align: center; color: #adb5bd; font-size: 14px; }
+
+.unread-badge {
+    background: #25d366;
+    color: #fff;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    margin-top: 5px;
+    float: right;
+}
+.unread-badge:empty { display: none; }
+
+/* Right panel */
+.chat-area-panel {
+    flex: 1; display: flex; flex-direction: column;
+    background: #ece5dd;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c1bdb6' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    min-width: 0;
+}
+
+.chat-empty-state {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #6c757d; gap: 12px;
+}
+.chat-empty-state h5 { font-weight: 600; color: #495057; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+<div class="chat-wrapper">
+
+    <!-- LEFT: Session List -->
+    <div class="session-list-panel">
+        <div class="session-list-header">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white">
+                <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z"/>
+            </svg>
+            Messages
+            <span class="total-badge">{{ session_data | length }}</span>
+        </div>
+
+        <div class="session-search">
+            <input type="text" id="sessionSearch" placeholder="Search by phone or state…">
+        </div>
+
+        <div class="session-scroll">
+            {% if session_data %}
+                {% for item in session_data %}
+                {% set s = item.session %}
+                {% set lm = item.last_message %}
+
+                {% set state_css = "state-default" %}
+                {% if s.state == "MANUAL" %}{% set state_css = "state-manual" %}
+                {% elif s.state == "greeting" %}{% set state_css = "state-greeting" %}
+                {% elif "collecting" in s.state %}{% set state_css = "state-collecting" %}
+                {% elif "confirm" in s.state %}{% set state_css = "state-confirming" %}
+                {% elif "booking" in s.state.lower() %}{% set state_css = "state-booking" %}
+                {% elif s.state in ["complete","completed","BOOKING_DONE"] %}{% set state_css = "state-complete" %}
+                {% elif s.state in ["cancelled","canceled"] %}{% set state_css = "state-cancelled" %}
+                {% endif %}
+
+                <a href="{{ url_for('chat_conversation', session_id=s.id) }}"
+                   class="session-item {% if selected_session and selected_session.id == s.id %}active-session{% endif %}"
+                   data-session-id="{{ s.id }}"
+                   data-search="{{ item.customer.guest_name if item.customer else s.phone }} {{ s.phone }} {{ s.state }}">
+
+                    <div class="session-avatar">{{ (item.customer.guest_name[0] if item.customer and item.customer.guest_name else s.phone[-2:]) | upper }}</div>
+
+                    <div class="session-meta">
+                        <div class="session-phone">{{ item.customer.guest_name if item.customer else s.phone }}</div>
+                        <div class="session-preview">
+                            {% if lm %}
+                                {% if lm.sender == "bot" %}🤖 {% elif lm.sender == "admin" %}🏢 {% endif %}
+                                {{ lm.message[:52] }}{% if lm.message|length > 52 %}…{% endif %}
+                            {% else %}
+                                <em>No messages yet</em>
+                            {% endif %}
+                        </div>
+                        <div class="session-badges">
+                            {% if s.data.get("mode") == "manual" %}
+                                <span class="mode-badge mode-manual"> Manual Mode</span>
+                            {% else %}
+                                <span class="mode-badge mode-bot">🤖 Bot Mode</span>
+                            {% endif %}
+                            <span class="state-badge {{ state_css }}">{{ s.state | replace("_"," ") | lower }}</span>
+                            <span>
+                                <span class="active-dot {{ 'on' if s.is_active else 'off' }}"></span>
+                                <small style="font-size:10px;color:#6c757d;">{{ 'Active' if s.is_active else 'Inactive' }}</small>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="session-time">
+                        {% if s.last_message_at %}
+                            {{ s.last_message_at.strftime('%d %b') }}<br>
+                            <small>{{ s.last_message_at.strftime('%H:%M') }}</small>
+                        {% endif %}
+                        <div class="unread-badge">{% if s.unread_count > 0 %}{{ s.unread_count }}{% endif %}</div>
+                    </div>
+                </a>
+                {% endfor %}
+            {% else %}
+                <div class="no-sessions"><p>No conversations yet</p></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- RIGHT: Empty State -->
+    <div class="chat-area-panel">
+        <div class="chat-empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="#075e54" style="opacity:.35;">
+                <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H5.17L4 17.17V4H20V16ZM7 9H9V11H7V9ZM11 9H13V11H11V9ZM15 9H17V11H15V9Z"/>
+            </svg>
+            <h5>Select a Conversation</h5>
+            <p style="font-size:14px;text-align:center;max-width:280px;">
+                Click any session on the left to view the full chat history and reply.
+            </p>
+        </div>
+    </div>
+
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('sessionSearch').addEventListener('input', function () {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('.session-item').forEach(el => {
+        el.style.display = el.getAttribute('data-search').toLowerCase().includes(q) ? 'flex' : 'none';
+    });
+});
+</script>
+{% endblock %}

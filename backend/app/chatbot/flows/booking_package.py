@@ -6,10 +6,16 @@ from app.chatbot.states import (
 from app.chatbot.prompts.reply import (
     build_package_detail_message,
     build_travel_date_buttons,
+    build_package_detail_button
 )
 from app.chatbot.flows.booking_city import fetch_and_send_packages
 
-def handle_booking_package_flow(
+import os
+
+BASE_URL = os.getenv("BASE_URL")
+
+async def handle_booking_package_flow(
+    phone,
     session,
     text,
     db,
@@ -18,15 +24,15 @@ def handle_booking_package_flow(
     change_state,
     build_public_image_url,
 ):
+    from app.routers.api.webhooks.whatsapp import send_whatsapp_message
     state = session.state
 
     # ==========================================
     # 1️⃣ SHOW PACKAGE LIST STATE
     # ==========================================
     if state == BOOKING_SHOW_PACKAGE:
-
         packages = session.data.get("packages", [])
-
+        print("packages",packages)
         if text and text.startswith("PKG_"):
             pkg_id = text.replace("PKG_", "")
 
@@ -34,10 +40,11 @@ def handle_booking_package_flow(
                 (p for p in packages if str(p["id"]) == pkg_id),
                 None
             )
+            print("selected_package",selected_package)
 
             if not selected_package:
                 city = session.data.get("city")
-                return fetch_and_send_packages(
+                return await fetch_and_send_packages(
                     session=session,
                     db=db,
                     company=company,
@@ -52,13 +59,23 @@ def handle_booking_package_flow(
 
             change_state(session, BOOKING_PACKAGE_DETAIL_ACTION, db)
 
-            reply = build_package_detail_message(selected_package)
-            save_message(db, session, company, "bot", reply["text"])
+            message1 = build_package_detail_message(selected_package)
+            message2 = build_package_detail_button(selected_package, BASE_URL)
 
-            return reply
+            await send_and_save_messages(
+                phone,
+                company,
+                session,
+                db,
+                save_message,
+                message1,
+                message2
+            )
+
+            return None
 
         city = session.data.get("city")
-        return fetch_and_send_packages(
+        return await fetch_and_send_packages(
             session=session,
             db=db,
             company=company,
@@ -88,15 +105,26 @@ def handle_booking_package_flow(
 
             if not selected_package:
                 reply = "Please select a valid package from the list."
-                save_message(db, session, company, "bot", reply)
+                await save_message(db, session, company, "bot", reply)
                 return reply
 
             session.data["selected_package"] = selected_package
+            
+            message1 = build_package_detail_message(selected_package)
+            message2 = build_package_detail_button(selected_package, BASE_URL)
 
-            reply = build_package_detail_message(selected_package)
-            save_message(db, session, company, "bot", reply["text"])
+            await send_and_save_messages(
+                phone,
+                company,
+                session,
+                db,
+                save_message,
+                message1,
+                message2
+            )
 
-            return reply
+            return None
+
 
         # ✅ Book button
         if text == "BOOK_PKG":
@@ -105,7 +133,7 @@ def handle_booking_package_flow(
 
             if not p:
                 reply = "Something went wrong. Please select the package again."
-                save_message(db, session, company, "bot", reply)
+                await save_message(db, session, company, "bot", reply)
                 return reply
 
             session.data.update({
@@ -121,13 +149,13 @@ def handle_booking_package_flow(
 
             change_state(session, BOOKING_ASK_TRAVEL_DATE, db)
 
-            reply = build_travel_date_buttons()
-            save_message(db, session, company, "bot", reply["text"])
+            replies = build_travel_date_buttons()
+            await save_message(db, session, company, "bot", replies)
 
-            return reply
+            return replies
 
         city = session.data.get("city")
-        return fetch_and_send_packages(
+        return await fetch_and_send_packages(
             session=session,
             db=db,
             company=company,
@@ -136,4 +164,29 @@ def handle_booking_package_flow(
             change_state=change_state,
             build_public_image_url=build_public_image_url,
             heading="You can select another package or tap *Book Now* to continue."
+        )
+
+async def send_and_save_messages(phone, company, session, db, save_message_func, *messages):
+    """
+    Send one or multiple messages via WhatsApp and save them to DB.
+    Accepts dicts like:
+    {
+        "text": "...",
+        "buttons": [...],  # optional
+        "image": "...",    # optional
+    }
+    """
+    from app.routers.api.webhooks.whatsapp import send_whatsapp_message
+
+    for msg in messages:
+        # Save message in DB
+        await save_message_func(db, session, company, "bot", msg)
+        
+        # Send message via WhatsApp
+        send_whatsapp_message(
+            phone=phone,
+            company=company,
+            text=msg.get("text"),
+            buttons=msg.get("buttons"),
+            image=msg.get("image")
         )

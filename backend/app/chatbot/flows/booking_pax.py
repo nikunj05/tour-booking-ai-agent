@@ -7,7 +7,7 @@ from app.chatbot.services.vehicles import (
 )
 from app.chatbot.prompts.reply import build_vehicle_option_list
 
-def handle_booking_pax_flow(
+async def handle_booking_pax_flow(
     session,
     text,
     db,
@@ -32,14 +32,14 @@ def handle_booking_pax_flow(
 
             if adults is None:
                 reply = "How many adults will be traveling?"
-                save_message(db, session, company, "bot", reply)
+                await save_message(db, session, company, "bot", reply)
                 return reply
 
             session.data["adults"] = adults
 
             if kids is None:
                 reply = "How many kids will be traveling?"
-                save_message(db, session, company, "bot", reply)
+                await save_message(db, session, company, "bot", reply)
                 return reply
 
             session.data["kids"] = kids
@@ -49,7 +49,7 @@ def handle_booking_pax_flow(
 
             if kids is None:
                 reply = "How many kids will be traveling?"
-                save_message(db, session, company, "bot", reply)
+                await save_message(db, session, company, "bot", reply)
                 return reply
 
             session.data["kids"] = kids
@@ -69,7 +69,7 @@ def handle_booking_pax_flow(
 # ==========================================
 # VEHICLE LOGIC (Reusable)
 # ==========================================
-    return process_vehicle_selection(
+    return await process_vehicle_selection(
         db=db,
         company=company,
         session=session,
@@ -80,7 +80,7 @@ def handle_booking_pax_flow(
     )
 
 
-def process_vehicle_selection(
+async def process_vehicle_selection(
     db,
     company,
     session,
@@ -108,7 +108,7 @@ def process_vehicle_selection(
         session.data.pop("kids", None)
         session.data.pop("total_pax", None)
         session.data.pop("total_amount", None)
-        save_message(db, session, company, "bot", reply)
+        await save_message(db, session, company, "bot", reply)
         return reply
 
     options = build_vehicle_combinations(drivers, total_pax)
@@ -120,7 +120,7 @@ def process_vehicle_selection(
         session.data.pop("total_pax", None)
         session.data.pop("total_amount", None)
         change_state(session, BOOKING_ASK_PAX, db)
-        save_message(db, session, company, "bot", reply)
+        await save_message(db, session, company, "bot", reply)
         return reply
 
     # Save options in session
@@ -130,6 +130,6 @@ def process_vehicle_selection(
     change_state(session, next_state, db)
 
     reply = build_vehicle_option_list(options, total_pax)
-    save_message(db, session, company, "bot", reply)
+    await save_message(db, session, company, "bot", reply)
 
     return reply

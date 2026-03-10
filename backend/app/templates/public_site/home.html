@@ -1,0 +1,545 @@
+{% extends "public_site/layout.html" %}
+
+{% block extra_css %}
+<style>
+    /* Premium Animations & UI Overrides */
+    :root {
+        --glow-color: rgba(37, 100, 235, 0.982);
+    }
+
+    /* Hero Slider */
+    .hero-slider {
+        position: relative;
+        height: 100vh;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .hero-slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 1.5s ease-in-out;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    .hero-slide.active {
+        opacity: 1;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.5) 100%);
+        z-index: 1;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        color: white;
+        padding: 0 5%;
+    }
+
+    /* Typewriter Effect */
+    .typewriter-container {
+        display: inline-block;
+        color: var(--accent);
+        min-width: 320px;
+        text-align: left;
+    }
+
+    .cursor {
+        display: inline-block;
+        width: 3px;
+        background-color: var(--accent);
+        margin-left: 5px;
+        animation: blink 0.8s infinite;
+    }
+
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+    }
+
+    /* Glow Animation */
+    .glow-text {
+        animation: pulse-glow 2.5s infinite alternate;
+    }
+
+    @keyframes pulse-glow {
+        from {
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
+            transform: scale(1);
+        }
+        to {
+            text-shadow: 0 0 20px var(--glow-color), 0 0 30px var(--glow-color);
+            transform: scale(1.01);
+        }
+    }
+
+    /* Perfect Marquee Engine */
+    .marquee-wrapper {
+        width: 100%;
+        overflow: hidden;
+        padding: 15px 0 40px;
+        position: relative;
+    }
+
+    .marquee-outer {
+        display: flex;
+        width: max-content;
+        animation: marquee-scroll 50s linear infinite;
+    }
+
+    /* Marquee pause removed for continuous motion */
+
+    @keyframes marquee-scroll {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(calc(-50%)); }
+    }
+
+    .card-wrap {
+        width: 380px;
+        padding: 0 12px;
+        flex-shrink: 0;
+    }
+
+    .premium-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    }
+
+    .premium-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        border-color: var(--primary);
+        background: white;
+    }
+
+    .card-img-box {
+        height: 220px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .card-img-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.8s ease;
+    }
+
+    .premium-card:hover .card-img-box img {
+        transform: scale(1.1);
+    }
+
+    .badge-float {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(5px);
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.7rem;
+        color: var(--text-main);
+        z-index: 2;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+
+    .card-body {
+        padding: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.4rem;
+        margin-bottom: 8px;
+        color: var(--text-main);
+    }
+
+    .card-desc {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 1.2rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .card-footer {
+        margin-top: auto;
+        padding-top: 1.2rem;
+        border-top: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .btn-card {
+        padding: 0.5rem 1.2rem;
+        border-radius: 50px;
+        background: var(--primary);
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.8rem;
+        transition: 0.3s;
+    }
+
+    /* Section Header with View All */
+    .header-with-action {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    .view-all-link {
+        color: var(--primary);
+        font-weight: 700;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        transition: 0.3s;
+        padding-bottom: 8px;
+    }
+
+    /* Feature Icon Box */
+    .feature-box {
+        background: rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(5px);
+        padding: 2.5rem 1.5rem;
+        border-radius: 24px;
+        text-align: center;
+        transition: all 0.4s;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    .feature-box:hover {
+        transform: translateY(-5px);
+        background: rgba(255,255,255,0.6);
+        backdrop-filter: blur(10px);
+        padding: 2.5rem;
+        border-radius: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+        border: 1px solid rgba(255,255,255,0.4);
+    }
+    .feature-icon {
+        width: 70px;
+        height: 70px;
+        background: #f8fafc;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 1.8rem;
+        color: var(--primary);
+    }
+
+    /* Sticky Adjustment */
+    section {
+        position: relative;
+        z-index: 10;
+        background: transparent !important;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Slider -->
+<section class="hero-slider">
+    <div class="hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1502791451862-7bd8c1df43a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');"></div>
+    <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');"></div>
+    <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');"></div>
+    <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1533105079780-92b9be482077?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');"></div>
+    
+    <div class="hero-overlay"></div>
+    
+    <div class="hero-content">
+        <h1 style="font-size: 4.5rem; letter-spacing: -2px; line-height: 1.1; font-weight: 900;">
+            Explore the World with<br>
+            <span id="typewriter" class="typewriter-container"></span><span class="cursor"></span>
+        </h1>
+        <p class="glow-text" style="font-size: 1.5rem; margin-top: 2rem; margin-bottom: 3rem; max-width: 800px; font-weight: 500;">
+            Unforgettable journeys curated with local expertise and premium comfort.
+        </p>
+        <div style="display: flex; gap: 1.5rem;">
+            <a href="/{{ company.slug }}/tours" class="btn-luxury">Explore Destinations</a>
+            <a href="/{{ company.slug }}/contact" class="btn-luxury" style="background: white; color: var(--text-main);">Personalize Trip</a>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Destinations Section -->
+<section>
+    <div class="container">
+        <div class="header-with-action">
+            <div style="text-align: left;">
+                <span style="color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem;">Dream Escapes</span>
+                <h2 style="font-size: 2.8rem; margin-top: 5px; font-family: 'Outfit', sans-serif;">Featured Destinations</h2>
+            </div>
+            <a href="/{{ company.slug }}/tours" class="view-all-link">View All Destinations <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </div>
+    
+    <div class="marquee-wrapper">
+        <div class="marquee-outer">
+            {% for i in range(2) %} <!-- Duplicate for smooth scroll -->
+            {% for tour in tours %}
+            <div class="card-wrap">
+                <div class="premium-card">
+                    <div class="card-img-box">
+                        {% if tour.cover_image %}
+                            <img src="{{ url_for('static', path=tour.cover_image) }}" alt="{{ tour.title }}">
+                        {% else %}
+                            <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="{{ tour.title }}">
+                        {% endif %}
+                        <div class="badge-float"><i class="fas fa-star text-warning mr-1"></i> Top Rated</div>
+                    </div>
+                    <div class="card-body">
+                        <span style="color: var(--primary); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 6px; display: block;">{{ tour.city }}, {{ tour.country }}</span>
+                        <h3 class="card-title">{{ tour.title }}</h3>
+                        <p class="card-desc">{{ tour.description | striptags | truncate(120) }}</p>
+                        <div class="card-footer">
+                            <span style="font-size: 1.3rem; font-weight: 800; color: var(--text-main);">{{ tour.currency }} {{ "{:,.0f}".format(tour.price) }}</span>
+                            <a href="/{{ company.slug }}/tour/{{ tour.id }}" class="btn-card">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Filter Section -->
+<section style="background: transparent; border-bottom: 1px solid rgba(0,0,0,0.05);">
+    <div class="container">
+        <div class="header-with-action">
+            <div style="text-align: left;">
+                <span style="color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; font-size: 0.85rem;">Luxury On Wheels</span>
+                <h2 style="font-size: 2.8rem; margin-top: 5px; font-family: 'Outfit', sans-serif;">Our Premium Fleet</h2>
+            </div>
+            <a href="/{{ company.slug }}/vehicles" class="view-all-link" style="color: var(--accent);">View Entire Fleet <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </div>
+
+    <div class="marquee-wrapper">
+        <div class="marquee-outer" style="animation-duration: 60s; animation-direction: reverse;">
+            {% for i in range(2) %} <!-- Duplicate for smooth scroll -->
+            {% for vehicle in vehicles %}
+            <div class="card-wrap">
+                <div class="premium-card">
+                    <div class="card-img-box">
+                        {% if vehicle.photos %}
+                            <img src="/static/{{ vehicle.photos[0].file_path }}" alt="{{ vehicle.name }}">
+                        {% else %}
+                            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #e2e8f0; color: #94a3b8;">
+                                <i class="fas fa-car-side fa-4x"></i>
+                            </div>
+                        {% endif %}
+                        <div class="badge-float" style="color: var(--primary);">{{ vehicle.vehicle_type }}</div>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">{{ vehicle.name }}</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 12px; margin-top: 8px;">
+                            <div style="background: rgba(241, 245, 249, 0.6); padding: 10px; border-radius: 12px; text-align: center;">
+                                <i class="fas fa-users" style="color: var(--primary); display: block; margin-bottom: 4px; font-size: 0.9rem;"></i>
+                                <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-main);">{{ vehicle.seats }} Seats</span>
+                            </div>
+                            <div style="background: rgba(241, 245, 249, 0.6); padding: 10px; border-radius: 12px; text-align: center;">
+                                <i class="fas fa-snowflake" style="color: #10b981; display: block; margin-bottom: 4px; font-size: 0.9rem;"></i>
+                                <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-main);">AC System</span>
+                            </div>
+                        </div>
+                        <div class="card-footer" style="margin-top: 1.25rem;">
+                            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);"><i class="fas fa-shield-check text-success mr-1"></i> Insured</span>
+                            <a href="/{{ company.slug }}/contact" class="btn-card" style="background: var(--text-main);">Enquire</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Values Section -->
+<section style="background: transparent;">
+    <div class="container">
+        <div class="section-header">
+            <span style="color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem;">Simple & Easy</span>
+            <h2 style="font-size: 3rem; margin-top: 5px; font-family: 'Outfit', sans-serif;">How It Works</h2>
+            <p style="margin-top: 5px;">Your journey from dream to reality in three simple steps.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 3rem; position: relative; margin-top: 3rem;">
+            <div style="text-align: center; position: relative;">
+                <div style="font-size: 3.5rem; font-family: 'Outfit', sans-serif; color: rgba(0,0,0,0.03); position: absolute; top: -20px; left: 15%; z-index: 1;">01</div>
+                <div style="position: relative; z-index: 2;">
+                    <div style="width: 80px; height: 80px; background: #fef3c7; color: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 1.8rem;">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h4 style="font-size: 1.4rem; margin-bottom: 0.8rem;">Choose Tour</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Browse our curated selection of global destinations and packages.</p>
+                </div>
+            </div>
+            <div style="text-align: center; position: relative;">
+                <div style="font-size: 3.5rem; font-family: 'Outfit', sans-serif; color: rgba(0,0,0,0.03); position: absolute; top: -20px; left: 15%; z-index: 1;">02</div>
+                <div style="position: relative; z-index: 2;">
+                    <div style="width: 80px; height: 80px; background: #dcfce7; color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 1.8rem;">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h4 style="font-size: 1.4rem; margin-bottom: 0.8rem;">Instant Booking</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Secure your spot instantly via WhatsApp and get direct assistance.</p>
+                </div>
+            </div>
+            <div style="text-align: center; position: relative;">
+                <div style="font-size: 3.5rem; font-family: 'Outfit', sans-serif; color: rgba(0,0,0,0.03); position: absolute; top: -20px; left: 15%; z-index: 1;">03</div>
+                <div style="position: relative; z-index: 2;">
+                    <div style="width: 80px; height: 80px; background: #dbeafe; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 1.8rem;">
+                        <i class="fas fa-plane-departure"></i>
+                    </div>
+                    <h4 style="font-size: 1.4rem; margin-bottom: 0.8rem;">Ready to Fly</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Pack your bags and prepare for a journey curated just for you.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Travel With Us Section (Restored & Upgraded) -->
+<section class="container">
+    <div class="section-header">
+        <span style="color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem;">The Advantage</span>
+        <h2 style="font-size: 3rem; margin-top: 5px; font-family: 'Outfit', sans-serif;">Why Travel With Us?</h2>
+        <p style="margin-top: 5px;">We combine luxury, passion, and expertise to create seamless experiences.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 2rem;">
+        <div class="feature-box">
+            <div class="feature-icon"><i class="fas fa-gem"></i></div>
+            <h3 style="font-size: 1.4rem; margin-bottom: 0.8rem;">Premium Experiences</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">From private jet transfers to boutique stays, we never settle for ordinary.</p>
+        </div>
+        <div class="feature-box">
+            <div class="feature-icon"><i class="fas fa-map-marked-alt"></i></div>
+            <h3 style="font-size: 1.4rem; margin-bottom: 0.8rem;">Expert Curation</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Our itineraries are designed by travelers for travelers, using deep local knowledge.</p>
+        </div>
+        <div class="feature-box">
+            <div class="feature-icon"><i class="fas fa-headset"></i></div>
+            <h3 style="font-size: 1.4rem; margin-bottom: 0.8rem;">Seamless Support</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Travel worry-free with our 24/7 dedicated support team ready to assist you.</p>
+        </div>
+    </div>
+</section>
+
+
+<!-- Final CTA Section -->
+<section class="container">
+    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 32px; padding: 5rem 3rem; text-align: center; color: white; position: relative; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.2);">
+        <div style="position: relative; z-index: 2;">
+            <h2 style="font-size: 3.2rem; color: white; margin-bottom: 1.2rem; font-family: 'Outfit', sans-serif; font-weight: 900;">Journey of a Lifetime Awaits</h2>
+            <p style="font-size: 1.2rem; max-width: 650px; margin: 0 auto 2.5rem; opacity: 0.85;">Join thousands of happy travelers. Your next adventure is just a chat away.</p>
+            <a href="https://wa.me/{{ company.country_code.replace('+', '') }}{{ company.phone }}" class="btn-luxury" style="background: #25d366; color: white; padding: 16px 45px; font-size: 1.1rem; border: none;">
+                <i class="fab fa-whatsapp mr-2"></i> Start Planning Now
+            </a>
+        </div>
+        <!-- Decorative glass blobs -->
+        <div style="position: absolute; top: -100px; left: -100px; width: 350px; height: 350px; background: rgba(37, 99, 235, 0.15); border-radius: 50%; filter: blur(60px);"></div>
+        <div style="position: absolute; bottom: -150px; right: -50px; width: 400px; height: 400px; background: rgba(245, 158, 11, 0.1); border-radius: 50%; filter: blur(80px);"></div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 1. Hero Image Slider (Auto-change every 2s)
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.hero-slide');
+    
+    function nextHeroSlide() {
+        if (slides.length === 0) return;
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add('active');
+    }
+    
+    setInterval(nextHeroSlide, 2000);
+
+    // 2. Typewriter Effect
+    const typewriterElement = document.getElementById('typewriter');
+    const phrases = [
+        "Endless Adventures",
+        "Dream Destinations",
+        "Luxury Tours",
+        "Unforgettable Experiences"
+    ];
+    let phraseIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    let typeSpeed = 150;
+
+    function type() {
+        if (!typewriterElement) return;
+        const currentPhrase = phrases[phraseIndex];
+        
+        if (isDeleting) {
+            typewriterElement.textContent = currentPhrase.substring(0, charIndex - 1);
+            charIndex--;
+            typeSpeed = 40; 
+        } else {
+            typewriterElement.textContent = currentPhrase.substring(0, charIndex + 1);
+            charIndex++;
+            typeSpeed = 120; 
+        }
+
+        if (!isDeleting && charIndex === currentPhrase.length) {
+            isDeleting = true;
+            typeSpeed = 2000; 
+        } else if (isDeleting && charIndex === 0) {
+            isDeleting = false;
+            phraseIndex = (phraseIndex + 1) % phrases.length;
+            typeSpeed = 400; 
+        }
+
+        setTimeout(type, typeSpeed);
+    }
+
+    type();
+</script>
+{% endblock %}

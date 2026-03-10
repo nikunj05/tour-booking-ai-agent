@@ -203,7 +203,11 @@
                         <!-- Submit -->
                         <div class="mt-4">
                             <button type="submit" class="btn btn-submit">{{ "Update" if package else "Create"}}</button>
+                            <a href="{{ url_for('my_tour_list') }}" class="btn btn-cancel ms-2">
+                                Cancel
+                            </a>
                         </div>
+                        
                 </form>
             </div>
         </div>

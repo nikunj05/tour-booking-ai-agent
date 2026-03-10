@@ -1,0 +1,55 @@
+<div class="card card-outline card-secondary shadow-sm border-0 border-top mt-3 mb-4 h-100">
+    <div class="card-header bg-white border-0 pt-3 pb-2 d-flex justify-content-between align-items-center">
+        <h6 class="card-title text-uppercase fw-bold text-secondary m-0 small">
+            <i class="fas fa-comment-dots text-secondary me-2"></i> Recent Conversations
+        </h6>
+        <a href="{{ url_for('chat_messages_list') }}" class="btn btn-sm btn-light">View All</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+            {% if recent_data %}
+                {% for item in recent_data %}
+                    {% set s = item.session %}
+                    {% set lm = item.last_message %}
+                    {% set c = item.customer %}
+                    
+                    {% set display_name = c.guest_name if c else s.phone %}
+                    {% set initial = display_name[0]|upper if display_name else "?" %}
+                    
+                    {% set badge_class = 'text-bg-success' if s.is_active else 'text-bg-secondary' %}
+                    {% if s.state == "MANUAL" %}{% set badge_class = 'text-bg-danger' %}{% endif %}
+
+                    <a href="{{ url_for('chat_conversation', session_id=s.id) }}" class="list-group-item list-group-item-action border-0 border-bottom d-flex align-items-center p-3">
+                        <div class="avatar-circle rounded-circle text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 42px; height: 42px; background-color: #0d6efd;">
+                            {{ initial }}
+                        </div>
+                        <div class="ms-3 flex-grow-1 min-w-0">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0 fw-bold text-truncate" style="font-size: 14px; max-width: 140px;">{{ display_name }}</h6>
+                                <small class="text-muted" style="font-size: 11px;">
+                                    {{ s.last_message_at.strftime('%d %b, %H:%M') if s.last_message_at else '' }}
+                                </small>
+                            </div>
+                            <p class="mb-0 text-muted text-truncate" style="font-size: 12px; max-width: 200px;">
+                                {% if lm %}
+                                    {% if lm.sender == 'bot' %}<i class="fas fa-robot text-success me-1"></i>{% elif lm.sender == 'admin' %}<i class="fas fa-user-shield text-danger me-1"></i>{% endif %}
+                                    {{ lm.message }}
+                                {% else %}
+                                    <em class="text-black-50">No messages</em>
+                                {% endif %}
+                            </p>
+                            <div class="mt-1 d-flex gap-1">
+                                <span class="badge {{ badge_class }} rounded-pill" style="font-size: 9px; padding: 2px 6px;">{{ "Manual" if s.state == "MANUAL" else ("Active" if s.is_active else "Inactive") }}</span>
+                                <span class="badge bg-light text-dark border rounded-pill" style="font-size: 9px; padding: 2px 6px;">{{ s.state | replace("_", " ") | lower }}</span>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            {% else %}
+                <div class="text-center p-4">
+                    <p class="text-muted mb-0 small">No recent conversations found.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

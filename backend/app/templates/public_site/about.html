@@ -1,0 +1,86 @@
+{% extends "public_site/layout.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1533105079780-92b9be482077?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80');">
+    <h1>Our Story</h1>
+    <p>Get to know the team behind your next unforgettable adventure.</p>
+</section>
+
+<!-- Mission & Vision -->
+<section class="container">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;">
+        <div>
+            <h2 style="font-size: 2.5rem; margin-bottom: 1.5rem; color: var(--text-main);">Who We Are</h2>
+            <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2rem;">
+                At <strong>{{ company.company_name }}</strong>, we believe that travel is more than just visiting new places; it's about creating memories that last a lifetime. Founded with a passion for excellence, we have grown to become a leading name in the tourism industry, known for our personalized service and attention to detail.
+            </p>
+            <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2rem;">
+                Whether you're looking for an adrenaline-pumping adventure, a serene getaway, or a cultural immersion, our team of experts is dedicated to crafting the perfect itinerary for you. We take pride in our local roots and our commitment to sustainable and responsible tourism.
+            </p>
+            <div style="display: flex; gap: 2rem;">
+                <div>
+                    <h4 style="font-size: 2rem; color: var(--primary);">100+</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Destinations</p>
+                </div>
+                <div>
+                    <h4 style="font-size: 2rem; color: var(--primary);">5k+</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Happy Travelers</p>
+                </div>
+                <div>
+                    <h4 style="font-size: 2rem; color: var(--primary);">15+</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Years Experience</p>
+                </div>
+            </div>
+        </div>
+        <div style="position: relative;">
+            <div style="width: 100%; height: 500px; border-radius: 30px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
+                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="About Us" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <!-- Decorative element -->
+            <div style="position: absolute; -bottom: 30px; -left: 30px; background: var(--accent); width: 150px; height: 150px; border-radius: 20px; z-index: -1;"></div>
+        </div>
+    </div>
+</section>
+
+<!-- Values Section -->
+<section style="background: transparent; padding: 4rem 0;">
+    <div class="container">
+        <div class="section-header">
+            <h2>Our Core Values</h2>
+            <p>The principles that guide every journey we lead.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2.5rem;">
+            <div style="background: #f8fafc; padding: 3rem 2rem; border-radius: 20px; transition: transform 0.3s;">
+                <div style="width: 60px; height: 60px; background: rgba(37, 99, 235, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                    <i class="fas fa-shield-alt" style="font-size: 1.5rem; color: var(--primary);"></i>
+                </div>
+                <h3 style="margin-bottom: 1rem;">Safety First</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Your safety is our top priority. We maintain the highest standards in all our operations and fleet.</p>
+            </div>
+            <div style="background: #f8fafc; padding: 3rem 2rem; border-radius: 20px; transition: transform 0.3s;">
+                <div style="width: 60px; height: 60px; background: rgba(245, 158, 11, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                    <i class="fas fa-heart" style="font-size: 1.5rem; color: var(--accent);"></i>
+                </div>
+                <h3 style="margin-bottom: 1rem;">Customer Passion</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">We go above and beyond to ensure every traveler has a personalized and delightful experience.</p>
+            </div>
+            <div style="background: #f8fafc; padding: 3rem 2rem; border-radius: 20px; transition: transform 0.3s;">
+                <div style="width: 60px; height: 60px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                    <i class="fas fa-leaf" style="font-size: 1.5rem; color: #10b981;"></i>
+                </div>
+                <h3 style="margin-bottom: 1rem;">Sustainability</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">We are committed to preserving the beauty of the destinations we visit for future generations.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    div[style*="background: #f8fafc"]:hover {
+        transform: translateY(-5px);
+        background: white !important;
+        box-shadow: 0 15px 30px rgba(0,0,0,0.05);
+    }
+</style>
+{% endblock %}

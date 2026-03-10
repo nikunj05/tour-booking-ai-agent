@@ -1,4 +1,7 @@
 from app.utils.text_formate import format_package_text
+import re
+import os
+BASE_URL = os.getenv("BASE_URL")
 
 def fallback():
     return (
@@ -62,6 +65,49 @@ def build_city_selection(cities: list[str], heading: str = "Where would you like
         }
     }
 
+def clean_html(text):
+    return re.sub('<.*?>', '', text or "").strip()
+
+
+def build_package_carousel_message(city, packages):
+    cards = []
+
+    for index, p in enumerate(packages[:10]):
+
+        description = clean_html(p.get("description", ""))
+
+        card = {
+            "card_index": index,
+            "type": "cta_url",   # ✅ CHANGE THIS LINE
+            "header": {
+                "type": "image",
+                "image": {
+                    "link": p["cover_image"]
+                }
+            },
+            "body": {
+                "text": f"*{p['name']}*\n\n₹ {p['price']} {p['currency']}\n\n{description[:100]}..."
+            },
+            "action": {
+                "buttons": [
+                    {
+                        "type": "quick_reply",
+                        "quick_reply": {
+                            "id": f"PKG_{p['id']}",
+                            "title": "View Details"
+                        }
+                    }
+                ]
+            }
+        }
+
+        cards.append(card)
+
+    return {
+        "text": f"Explore the most popular and highly recommended packages in {city}, crafted just for you:",
+        "carousel": cards
+    }
+
 def build_package_list_message(city: str, packages: list[dict], heading: str = "") -> dict:
     rows = [
         {
@@ -113,7 +159,7 @@ def build_vehicle_option_list(options, total_pax):
         })
 
     return {
-        "text": f"Vehicle options for {total_pax} guests",
+        "text": f"We’ve selected the most suitable vehicle options for your group of {total_pax} guests:",
         "list_data": {
             "button": "Select Vehicle",
             "sections": [
@@ -137,6 +183,23 @@ def build_package_detail_message(package: dict) -> dict:
         message["image"] = package["cover_image"]
 
     return message
+
+def build_package_detail_button(package, base_url):
+    detail_url = f"{base_url}/tour-packages/tours/{package['id']}"
+    return {
+        "text": (
+            f"📄 *{package['name']}*\n\n"
+            "Want to explore full itinerary, inclusions & gallery?\n\n"
+            "Tap the button below to view complete details."
+        ),
+        "buttons": [
+            {
+                "type": "url",
+                "title": "View Details",
+                "url": detail_url,
+            }
+        ]
+    }
 
 def build_travel_date_buttons():
     return {
@@ -246,8 +309,17 @@ Thank you for choosing us.
 We wish you a pleasant and memorable trip.
 """.strip()
 
+    booking_url = f"{BASE_URL}/manual-bookings/{booking.id}"
+
     return {
         "text": summary_text,
+        "buttons": [
+            {
+                "type": "url",
+                "title": "View Booking Details",
+                "url": booking_url
+            }
+        ]
     }
 
 def build_payment_failed_message(booking, session):
@@ -305,6 +377,12 @@ def build_change_details_buttons():
         ]
     }
 
+def build_location_request():
+    return {
+        "text": "📍 Please share your pickup location using the button below, or type your hotel name or full address.",
+        "location_request": True
+    }
+
 
 BASE_REPLY_PROMPT = """
     You are a WhatsApp tour booking assistant.
@@ -343,7 +421,7 @@ Examples:
 
 INVALID_TIME_REPLY_PROMPT = "Invalid time format.\n Please enter time as *HH:MM AM/PM* (e.g., 10:00 AM)."
 
-ASK_GUEST_NAME_REPLY_PROMPT = "Please enter your good name"
+ASK_GUEST_NAME_REPLY_PROMPT = "Could you please share your name with me?"
 
 INVALID_PICKUP_LOCATION_REPLY_PROMPT = "Please enter a valid pickup location (hotel or address)."
 

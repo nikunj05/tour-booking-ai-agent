@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title or company.company_name }}</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Modern Styling -->
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --accent: #f59e0b;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --glass: rgba(255, 255, 255, 0.7);
+            --card-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            /* Premium Travel Gradient */
+            background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 40%, #fffcf0 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4, .nav-logo {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 8%;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+
+        .nav-logo {
+            font-size: 1.6rem;
+            color: var(--text-main);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+        }
+
+        .nav-logo img {
+            height: 48px;
+            width: auto;
+            border-radius: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-btn {
+            background-color: var(--primary);
+            color: white !important;
+            padding: 0.8rem 2.2rem;
+            border-radius: 50px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+        }
+
+        .nav-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(37, 99, 235, 0.3);
+        }
+
+        /* Hero Common */
+        .page-hero {
+            background-size: cover;
+            background-position: center;
+            height: 450px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 0 5%;
+            position: relative;
+        }
+
+        .page-hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1;
+        }
+
+        .page-hero > * { position: relative; z-index: 2; }
+
+        .page-hero h1 { font-size: 4rem; margin-bottom: 1.2rem; font-weight: 800; }
+        .page-hero p { font-size: 1.3rem; max-width: 800px; opacity: 0.95; }
+
+        /* Footer */
+        footer {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            padding: 6rem 8% 3rem;
+            margin-top: 5rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 4rem;
+            margin-bottom: 4rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1.8rem;
+            color: white;
+            font-size: 1.4rem;
+        }
+
+        .footer-section p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            max-width: 300px;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 1rem;
+        }
+
+        .footer-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+            padding-left: 5px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        /* WhatsApp Floating Button */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            background-color: #25d366;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50px;
+            text-align: center;
+            font-size: 30px;
+            box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .whatsapp-float:hover {
+            background-color: #128c7e;
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        .whatsapp-tooltip {
+            position: absolute;
+            right: 80px;
+            background: #0f172a;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(10px);
+            transition: all 0.3s ease;
+        }
+
+        .whatsapp-float:hover .whatsapp-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+
+        /* Utility Classes */
+        .container { padding: 5rem 8%; max-width: 1400px; margin: 0 auto; }
+        .section-header { text-align: center; margin-bottom: 4rem; max-width: 700px; margin-left: auto; margin-right: auto; }
+        .section-header h2 { font-size: 2.8rem; margin-bottom: 1.2rem; color: var(--text-main); }
+        .section-header p { color: var(--text-muted); font-size: 1.15rem; }
+        
+        .btn-luxury {
+            background: var(--primary);
+            color: white;
+            padding: 14px 35px;
+            border-radius: 12px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+        .btn-luxury:hover { background: var(--primary-dark); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2); }
+
+        @media (max-width: 1024px) {
+            .footer-content { grid-template-columns: repeat(2, 1fr); gap: 3rem; }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .navbar { padding: 1rem 5%; }
+            .page-hero h1 { font-size: 2.5rem; }
+            .footer-content { grid-template-columns: 1fr; gap: 2.5rem; }
+            .whatsapp-float { bottom: 25px; right: 25px; width: 55px; height: 55px; font-size: 28px; }
+            .section-header h2 { font-size: 2.2rem; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/{{ company.slug }}" class="nav-logo">
+            {% if company.logo %}
+                <img src="/static/{{ company.logo }}" alt="{{ company.company_name }}">
+            {% else %}
+                <i class="fas fa-compass"></i>
+            {% endif %}
+            <span>{{ company.company_name }}</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="/{{ company.slug }}">Home</a></li>
+            <li><a href="/{{ company.slug }}/about">About</a></li>
+            <li><a href="/{{ company.slug }}/tours">Tours</a></li>
+            <li><a href="/{{ company.slug }}/vehicles">Fleet</a></li>
+            <li><a href="/{{ company.slug }}/contact" class="nav-btn">Contact Us</a></li>
+        </ul>
+    </nav>
+
+    <main style="padding-top: 85px;">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>{{ company.company_name }}</h3>
+                <p>We are dedicated to providing world-class travel experiences, blending comfort, adventure, and local expertise for a journey you'll never forget.</p>
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                    <a href="#" style="color: white; font-size: 1.2rem;"><i class="fab fa-instagram"></i></a>
+                    <a href="#" style="color: white; font-size: 1.2rem;"><i class="fab fa-facebook"></i></a>
+                    <a href="#" style="color: white; font-size: 1.2rem;"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h3>Company</h3>
+                <ul class="footer-links">
+                    <li><a href="/{{ company.slug }}/about">Our Story</a></li>
+                    <li><a href="/{{ company.slug }}/contact">Contact Us</a></li>
+                    <li><a href="/{{ company.slug }}/vehicles">Our Fleet</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Explore</h3>
+                <ul class="footer-links">
+                    <li><a href="/{{ company.slug }}/tours">Top Destinations</a></li>
+                    <li><a href="/{{ company.slug }}/tours">Upcoming Tours</a></li>
+                    <li><a href="/{{ company.slug }}/tours">Hot Deals</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Support</h3>
+                <ul class="footer-links">
+                    <li><a href="/{{ company.slug }}/contact">Help Center</a></li>
+                    <li><a href="/{{ company.slug }}/contact">Terms of Service</a></li>
+                    <li><a href="/{{ company.slug }}/contact">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 {{ company.company_name }}. Crafted with passion for modern travelers.</p>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Floating Button -->
+    <a href="https://wa.me/{{ company.country_code.replace('+', '') }}{{ company.phone }}" class="whatsapp-float" target="_blank">
+        <span class="whatsapp-tooltip">Chat with us!</span>
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

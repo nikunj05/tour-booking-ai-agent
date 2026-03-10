@@ -16,7 +16,7 @@
                         </g>
                     </svg>
                 </div>
-                <div class="info brand-name ">
+                <div class="info brand-name">
                     <span id="sidebar-role"></span>
                 </div>
             </a>
@@ -31,15 +31,12 @@
                     <a href="{{ url_for('dashboard_index') }}" class="nav-link d-flex align-items-center
                         {% if request.url.path.startswith(url_for('dashboard_index').path) %}active{% endif %}">
                         <div class="sidebar-nav-icon">
-                            <!-- Dashboard SVG -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                                 fill="none">
                                 <path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z"
                                     fill="currentColor" />
                             </svg>
-
                         </div>
-
                         <p class="mb-0">Dashboard</p>
                     </a>
                 </li>
@@ -48,7 +45,6 @@
                     <a href="{{ url_for('dashboard') }}" class="nav-link d-flex align-items-center
                         {% if request.url.path.startswith(url_for('dashboard').path) %}active{% endif %}">
                         <div class="sidebar-nav-icon">
-                            <!-- Dashboard SVG -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                                 fill="none">
                                 <path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z"
@@ -68,7 +64,6 @@
                     {% if request.url.path.startswith(url_for('company_list').path) %}active{% endif %}">
 
                         <div class="sidebar-nav-icon">
-                            <!-- Company / User SVG -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                                 fill="none">
                                 <path
@@ -194,6 +189,25 @@
                     </a>
                 </li>
 
+                <!-- Messages (Chat Monitoring) -->
+                <li class="nav-item role-company" style="display:none;">
+                    <a href="{{ url_for('chat_messages_list') }}" class="nav-link d-flex align-items-center
+                    {% if request.url.path.startswith(url_for('chat_messages_list').path) %}active{% endif %}">
+
+                        <div class="sidebar-nav-icon">
+                            <!-- Chat bubble SVG -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none">
+                                <path
+                                    d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H5.17L4 17.17V4H20V16ZM7 9H9V11H7V9ZM11 9H13V11H11V9ZM15 9H17V11H15V9Z"
+                                    fill="currentColor" />
+                            </svg>
+                        </div>
+
+                        <p class="mb-0">Messages</p>
+                    </a>
+                </li>
+
                 <li class="nav-item role-company" style="display:none;">
                     <a href="{{ url_for('my_profile') }}" class="nav-link d-flex align-items-center">
 
@@ -208,7 +222,7 @@
                     </a>
                 </li>
 
-                <li class="nav-item logout-btn d-flex align-items-center">
+                <li class="nav-item logout-btn d-flex align-items-center role-admin role-company">
                     <a href="javascript:void(0)" class="nav-link logout-user" data-route="{{ url_for('logout') }}"
                         data-login-url="{{ url_for('login_page') }}" data-message="Are you sure you want to logout?">
                         <div class="sidebar-nav-icon">

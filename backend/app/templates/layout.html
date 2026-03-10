@@ -14,28 +14,115 @@
 
     <div class="wrapper">
 
-        <!-- Header -->
         {% include 'partials/header.html' %}
 
-        <!-- Sidebar -->
         {% include 'partials/sidebar.html' %}
 
         {% include 'partials/pop-up.html' %}
 
-        <!-- Content Wrapper -->
         <div class="content-wrapper">
             {% block content %}
             {% endblock %}
         </div>
 
-        <!-- Footer -->
         {% include 'partials/footer.html' %}
         {% include 'partials/js.html' %}
     </div>
 
     {% block extra_js %}
-
     {% endblock %}
+    
+    {% if current_user %}
+    <script>
+        /* Global WebSocket for Real-time Updates */
+        const companyId = {{ current_user.company.id if current_user.company else 'null' }};
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${wsProtocol}//${window.location.host}/ws/chat/${companyId}`;
+        
+        let globalSocket = null;
+
+        function connectWS() {
+            console.log("[WS_FRONTEND] Attempting to connect to:", wsUrl);
+            globalSocket = new WebSocket(wsUrl);
+
+            globalSocket.onopen = function() {
+                console.log("[WS_FRONTEND] WebSocket connection established successfully.");
+            };
+
+            globalSocket.onmessage = function(event) {
+                console.log("[WS_FRONTEND] Raw event received:", event.data);
+                const data = JSON.parse(event.data);
+                
+                if (data.event !== "new_message") {
+                    console.warn("[WS_FRONTEND] Ignored event (not new_message):", data.event);
+                    return;
+                }
+
+                console.log("[WS_FRONTEND] Processing new_message event:", data);
+
+                const conversationId = data.conversation_id;
+                const senderType = data.sender_type; 
+                const messageText = data.message_text;
+
+                // 1. Update Session List Preview
+                const sessionItem = document.querySelector(`.session-item[data-session-id="${conversationId}"]`);
+                if (sessionItem) {
+                    console.log("[WS_FRONTEND] Found session item in sidebar. Updating...");
+                    const preview = sessionItem.querySelector('.session-preview');
+                    if (preview) {
+                        let prefix = "";
+                        if (senderType === "bot") prefix = "🤖 ";
+                        else if (senderType === "agent") prefix = "🏢 ";
+                        preview.innerText = `${prefix}${messageText.substring(0, 52)}${messageText.length > 52 ? '…' : ''}`;
+                    }
+
+                    const time = sessionItem.querySelector('.session-time small');
+                    if (time) {
+                        const now = new Date();
+                        time.innerText = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                    }
+
+                    const unreadBadge = sessionItem.querySelector('.unread-badge');
+                    if (unreadBadge) {
+                        const isViewing = window.location.pathname.includes(`/conversation/${conversationId}`) || window.location.pathname.endsWith(`/${conversationId}`);
+                        console.log("[WS_FRONTEND] isViewing check:", isViewing);
+                        if (!isViewing && senderType === "user") {
+                            let count = parseInt(unreadBadge.innerText || "0");
+                            unreadBadge.innerText = count + 1;
+                        } else if (isViewing || senderType !== "user") {
+                            if (isViewing) unreadBadge.innerText = "";
+                        }
+                    }
+
+                    const scrollContainer = document.querySelector('.session-scroll');
+                    if (scrollContainer && sessionItem !== scrollContainer.firstElementChild) {
+                        scrollContainer.prepend(sessionItem);
+                        console.log("[WS_FRONTEND] Moved session to top.");
+                    }
+                } else {
+                    console.warn("[WS_FRONTEND] Session item NOT found in sidebar for ID:", conversationId);
+                }
+
+                // 2. Dispatch event for specific pages
+                console.log("[WS_FRONTEND] Dispatching custom-event: new-chat-message");
+                window.dispatchEvent(new CustomEvent('new-chat-message', { detail: data }));
+            };
+
+            globalSocket.onclose = function(e) {
+                console.error('[WS_FRONTEND] WebSocket closed. Code:', e.code, 'Reason:', e.reason);
+                setTimeout(connectWS, 3000);
+            };
+
+            globalSocket.onerror = function(err) {
+                console.error('[WS_FRONTEND] WebSocket error detected:', err);
+                globalSocket.close();
+            };
+        }
+
+        // Initial connection
+        connectWS();
+    </script>
+    {% endif %}
 
 </body>
 

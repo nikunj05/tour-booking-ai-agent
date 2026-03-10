@@ -10,9 +10,10 @@ from app.chatbot.prompts.intent import CITY_EXTRACT_PROMPT
 from app.chatbot.prompts.reply import (
     build_city_selection,
     build_package_list_message,
+    build_package_carousel_message
 )
 
-def handle_booking_city_flow(
+async def handle_booking_city_flow(
     session,
     text,
     db,
@@ -32,13 +33,13 @@ def handle_booking_city_flow(
 
         if not cities:
             reply_text = "Sorry, no cities are available right now."
-            save_message(db, session, company, "bot", reply_text)
+            await save_message(db, session, company, "bot", reply_text)
             return reply_text
 
         response = build_city_selection(cities, heading="📍 *Where would you like to go?*\n\nSelect a city from the list below:")
 
         change_state(session, BOOKING_CITY, db)
-        save_message(db, session, company, "bot", response["text"])
+        await save_message(db, session, company, "bot", response["text"])
 
         return response
 
@@ -58,11 +59,14 @@ def handle_booking_city_flow(
 
         if not city:
             cities = get_active_cities(db, company.id)
-            response = build_city_selection(cities, heading="Please select a valid city from the list.")
-            save_message(db, session, company, "bot", response["text"])
+            response = build_city_selection(
+                cities,
+                heading="Could you please select a city from the list below?"
+            )
+            await save_message(db, session, company, "bot", response["text"])
             return response
 
-        return fetch_and_send_packages(
+        return await fetch_and_send_packages(
             session=session,
             db=db,
             company=company,
@@ -75,7 +79,7 @@ def handle_booking_city_flow(
 # ======================================================
 # 🔹 Helper: Fetch Packages & Send List
 # ======================================================
-def fetch_and_send_packages(
+async def fetch_and_send_packages(
     session,
     db,
     company,
@@ -94,7 +98,7 @@ def fetch_and_send_packages(
         )
         cities = get_active_cities(db, company.id)
         response = build_city_selection(cities, heading=reply)
-        save_message(db, session, company, "bot", response["text"])
+        await save_message(db, session, company, "bot", response["text"])
         return response
 
     session.data["city"] = city
@@ -114,7 +118,8 @@ def fetch_and_send_packages(
 
     change_state(session, BOOKING_SHOW_PACKAGE, db)
 
-    response = build_package_list_message(city, session.data["packages"], heading)
-    save_message(db, session, company, "bot", response["text"])
+    # response = build_package_list_message(city, session.data["packages"], heading)
+    response = build_package_carousel_message(city, session.data["packages"])
+    await save_message(db, session, company, "bot", response["text"])
 
     return response

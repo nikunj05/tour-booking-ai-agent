@@ -1015,7 +1015,7 @@ def booking_detail(
 
     if not booking:
         return RedirectResponse("/manual-bookings", status_code=303)
-
+    
     return templates.TemplateResponse(
         "manual_booking/detail.html",
         {

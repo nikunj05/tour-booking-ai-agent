@@ -10,6 +10,7 @@ class Company(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True)
     company_name = Column(String(150), nullable=False)
+    slug = Column(String(150), unique=True, index=True, nullable=True)
     logo = Column(String(255), nullable=True)  
     country_code = Column(String(10), nullable=False, server_default='+91')
     phone = Column(String(20))
