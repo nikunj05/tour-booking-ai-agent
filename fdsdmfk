@@ -1,0 +1,85 @@
+[33mdcd75e2[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m Merge pull request #23 from nikunj05/chatbot
+[33m2a2bb82[m[33m ([m[1;31morigin/chatbot[m[33m, [m[1;32mchatbot[m[33m)[m added multiple lang
+[33m1ff1f24[m Merge pull request #22 from nikunj05/chatbot
+[33me5f78ea[m add filter in public tours page
+[33m846057b[m Merge pull request #21 from nikunj05/chatbot
+[33m8a15d95[m change small design
+[33mfa3cf2e[m Merge pull request #20 from nikunj05/chatbot
+[33m47f1661[m change validation in company
+[33mebafa2c[m Merge pull request #19 from nikunj05/chatbot
+[33m9de4f69[m added slug migration
+[33m7cc99d3[m Merge pull request #18 from nikunj05/chatbot
+[33mee392df[m added slug migration
+[33mf8300de[m Merge pull request #17 from nikunj05/chatbot
+[33m25fa005[m added requirement.txt file
+[33m6b1c4e5[m Merge pull request #16 from nikunj05/chatbot
+[33m417552b[m added website for each company
+[33m1765414[m added websocket for messages
+[33m7163b78[m changes in chatbot flow handle multiple flow
+[33m318c842[m change tour detail and added commit scrolling card
+[33m8d2dfef[m added new chatbot
+[33m9448a40[m added new anti chatbot flow
+[33m2a654e2[m added detail page btn
+[33mb56fedc[m card detail page
+[33m681a342[m added detail page
+[33mcadc40a[m added img in detail message
+[33mdfe4791[m added location field for pickup location
+[33mccd59c4[m header changes
+[33m8d15d02[m Merge pull request #15 from nikunj05/chatbot
+[33me99864a[m improve chatbot flow
+[33m3937eed[m select city and tour fallback handle
+[33ma05caaa[m added requirements file
+[33m651bd51[m Merge pull request #14 from nikunj05/chatbot
+[33mda5a232[m Merge pull request #13 from nikunj05/chatbot-flow-changes
+[33m32528e8[m[33m ([m[1;31morigin/chatbot-flow-changes[m[33m, [m[1;32mchatbot-flow-changes[m[33m)[m changes in status field design
+[33m17983c6[m prompt changes
+[33m6d00220[m Merge pull request #12 from nikunj05/chatbot-flow-changes
+[33ma473822[m chatbot-flow-changes
+[33m420fb0d[m chatbot flow changes
+[33md9ecdf6[m chatbot flow changes
+[33ma26e9db[m changes in booking flow
+[33m995a38c[m small changes
+[33mb5b5835[m Merge pull request #11 from nikunj05/chatbot
+[33m768bf59[m added popup changes when assign driver
+[33m464ff92[m Merge pull request #10 from nikunj05/chatbot
+[33m22329e7[m added popup changes when assign driver
+[33m4c23f12[m assign driver pop-up
+[33mf8d2e36[m chatbot flow changes
+[33m47875c7[m Merge pull request #9 from nikunj05/chatbot
+[33m0d1e229[m added revenue tab
+[33m1f74870[m Merge pull request #8 from nikunj05/chatbot
+[33m3f4f00c[m form design changes
+[33mfd2ffd4[m add driver img
+[33m7915d19[m Merge pull request #7 from nikunj05/chatbot
+[33me8bf1ba[m add driver and vehicle changes
+[33m4e833f9[m added vehicle tabel and form changes"
+[33m2f821b6[m added vehicle tabel
+[33m86cf39c[m Merge pull request #6 from nikunj05/chatbot
+[33m0a7d468[m authmaster file changes
+[33m857985d[m Merge pull request #5 from nikunj05/chatbot
+[33m3fab17c[m authmaster file changes
+[33m953b212[m Merge pull request #4 from nikunj05/chatbot
+[33mc27da4c[m strip done
+[33m0f90f46[m added secret key in db
+[33m2d5ed35[m Merge pull request #3 from nikunj05/chatbot
+[33m8ddb93f[m change database url changes
+[33m973d1f0[m Merge pull request #2 from nikunj05/chatbot
+[33m8c19362[m Add CSS/dist files after removing from gitignore
+[33m8fd2cc5[m Merge pull request #1 from nikunj05/chatbot
+[33ma3de077[m add pip freeze > requirements.txt
+[33m9570fbb[m add transport_type state
+[33me1830a2[m added cover img in session chat
+[33m91af8c0[m added strip payment
+[33m7a03035[m added strip payment
+[33mebba3fa[m added strip integration
+[33mbd539ae[m change date
+[33mb7b4d63[m added new state chnage detail
+[33m6e813f0[m booking detail page and tour chatbot data store changes
+[33meea1418[m show multiple combo vehicle
+[33m72ba5d9[m changes in display vehicles 1
+[33m8195fed[m flow Improved
+[33mc2ffb25[m added tourchatbot code 1
+[33me745827[m added tourchatbot code
+[33m72d3559[m basic chatbot flow
+[33m65c991c[m Initial commit
+[33mccd51c6[m Initial commit

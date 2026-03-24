@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TourBot AI – WhatsApp Tour Booking for Travel Agencies</title>
+  <meta name="description" content="Automate your travel agency's WhatsApp bookings 24/7. TourBot AI turns every inquiry into a confirmed booking without missing a single lead."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css"/>
+  <style>
+    :root {
+      --teal: #00C6AE;
+      --teal-dark: #00a896;
+      --teal-light: #e0f7f5;
+      --navy: #0a1628;
+      --navy-mid: #0f2240;
+      --navy-light: #1a3355;
+      --white: #ffffff;
+      --gray-light: #f4f7fb;
+      --gray: #64748b;
+      --text: #1e293b;
+      --gradient: linear-gradient(135deg, #0a1628 0%, #0f3460 60%, #00C6AE22 100%);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; color: var(--text); background: var(--white); overflow-x: hidden; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 5%; backdrop-filter: blur(12px);
+      background: rgba(10,22,40,0.85); border-bottom: 1px solid rgba(0,198,174,0.15);
+      transition: all 0.3s;
+    }
+    .logo { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; }
+    .logo-icon { width: 36px; height: 36px; background: var(--teal); border-radius: 10px; display:flex; align-items:center; justify-content:center; }
+    .logo-icon i { color: #fff; font-size: 1rem; }
+    .logo-text { font-size: 1.2rem; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+    .logo-text span { color: var(--teal); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--teal); }
+    .nav-cta { background: var(--teal); color: #fff; padding: 0.55rem 1.4rem; border-radius: 50px; font-weight: 600; font-size: 0.9rem; text-decoration: none; transition: all 0.2s; }
+    .nav-cta:hover { background: var(--teal-dark); transform: translateY(-1px); box-shadow: 0 4px 15px rgba(0,198,174,0.4); }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+    .hamburger span { display: block; width: 24px; height: 2px; background: #fff; border-radius: 4px; }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh; display: flex; align-items: center;
+      background: var(--gradient);
+      position: relative; overflow: hidden; padding: 8rem 5% 5rem;
+    }
+    .hero::before {
+      content: ''; position: absolute; top: -50%; left: -50%;
+      width: 100%; height: 200%;
+      background: radial-gradient(ellipse at 70% 50%, rgba(0,198,174,0.12) 0%, transparent 60%);
+      animation: pulse 8s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+    .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; max-width: 1200px; margin: 0 auto; width: 100%; position: relative; z-index: 1; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,198,174,0.15); border: 1px solid rgba(0,198,174,0.4); color: var(--teal); font-size: 0.8rem; font-weight: 600; padding: 0.4rem 1rem; border-radius: 50px; margin-bottom: 1.5rem; letter-spacing: 0.5px; text-transform: uppercase; }
+    .hero h1 { font-size: clamp(2.2rem, 4vw, 3.4rem); font-weight: 900; color: #fff; line-height: 1.15; margin-bottom: 1.2rem; letter-spacing: -1px; }
+    .hero h1 span { color: var(--teal); }
+    .hero p { font-size: 1.1rem; color: rgba(255,255,255,0.75); line-height: 1.7; margin-bottom: 2rem; max-width: 480px; }
+    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-primary { background: var(--teal); color: #fff; padding: 0.85rem 2rem; border-radius: 50px; font-weight: 700; font-size: 1rem; text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .btn-primary:hover { background: var(--teal-dark); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,198,174,0.45); }
+    .btn-outline { border: 2px solid rgba(255,255,255,0.35); color: #fff; padding: 0.85rem 2rem; border-radius: 50px; font-weight: 600; font-size: 1rem; text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+    .hero-stats { display: flex; gap: 2rem; margin-top: 2.5rem; }
+    .stat { }
+    .stat-number { font-size: 1.6rem; font-weight: 900; color: var(--teal); }
+    .stat-label { font-size: 0.78rem; color: rgba(255,255,255,0.55); }
+    .hero-visual { position: relative; }
+    .hero-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 1.5rem; }
+    .chat-bubble { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 0.8rem 1rem; margin-bottom: 0.75rem; }
+    .chat-bubble.bot { background: rgba(0,198,174,0.2); border-left: 3px solid var(--teal); }
+    .chat-label { font-size: 0.72rem; font-weight: 600; color: var(--teal); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .chat-text { font-size: 0.85rem; color: rgba(255,255,255,0.85); line-height: 1.5; }
+    .typing-dot { display: inline-block; width: 6px; height: 6px; background: var(--teal); border-radius: 50%; animation: blink 1.4s infinite; margin-right: 2px; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink { 0%,80%,100%{opacity:0} 40%{opacity:1} }
+    .online-badge { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(0,198,174,0.15); border: 1px solid rgba(0,198,174,0.3); color: var(--teal); font-size: 0.75rem; font-weight: 600; padding: 0.3rem 0.8rem; border-radius: 50px; margin-bottom: 1rem; }
+    .online-dot { width: 8px; height: 8px; background: var(--teal); border-radius: 50%; animation: blink 1.4s infinite; }
+
+    /* SECTION COMMON */
+    section { padding: 5rem 5%; }
+    .section-label { font-size: 0.8rem; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.75rem; }
+    .section-title { font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 900; color: var(--navy); line-height: 1.2; letter-spacing: -0.5px; margin-bottom: 1rem; }
+    .section-sub { font-size: 1rem; color: var(--gray); line-height: 1.7; max-width: 550px; }
+    .center { text-align: center; }
+    .center .section-sub { margin: 0 auto; }
+    .max-w { max-width: 1200px; margin: 0 auto; }
+
+    /* PROBLEM */
+    .problem { background: var(--gray-light); }
+    .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; max-width: 1200px; margin: 0 auto; }
+    .problem-list { list-style: none; display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+    .problem-item { display: flex; align-items: center; gap: 1rem; background: #fff; border-radius: 12px; padding: 1rem 1.2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.05); border-left: 4px solid transparent; transition: all 0.3s; }
+    .problem-item:hover { transform: translateX(6px); border-left-color: var(--teal); }
+    .problem-icon { width: 38px; height: 38px; background: var(--teal-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .problem-icon i { color: var(--teal); }
+    .problem-text { font-size: 0.92rem; font-weight: 500; color: var(--text); }
+    .problem-text .highlight { color: var(--teal); font-weight: 700; }
+    .problem-text .red { color: #ef4444; font-weight: 700; }
+    .problem-img { border-radius: 20px; overflow: hidden; position: relative; }
+    .problem-img img { width: 100%; height: 420px; object-fit: cover; border-radius: 20px; }
+    .img-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(10,22,40,0.6) 0%, transparent 60%); border-radius: 20px; }
+
+    /* OPPORTUNITY */
+    .opportunity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; max-width: 1200px; margin: 0 auto; }
+    .opp-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .opp-card { background: var(--gray-light); border-radius: 14px; padding: 1.4rem; border: 1px solid #e2eaf5; transition: all 0.3s; }
+    .opp-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,198,174,0.12); border-color: rgba(0,198,174,0.3); }
+    .opp-card-icon { width: 42px; height: 42px; background: var(--teal-light); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.8rem; }
+    .opp-card-icon i { color: var(--teal); font-size: 1.1rem; }
+    .opp-card h4 { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin-bottom: 0.3rem; }
+    .opp-card p { font-size: 0.82rem; color: var(--gray); line-height: 1.5; }
+    .opp-img img { width: 100%; border-radius: 20px; object-fit: cover; height: 400px; }
+
+    /* HOW IT WORKS */
+    .how { background: var(--navy); }
+    .how .section-title { color: #fff; }
+    .how .section-sub { color: rgba(255,255,255,0.6); }
+    .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 3rem; max-width: 1200px; margin-left: auto; margin-right: auto; }
+    .step-card { position: relative; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1.8rem 1.4rem; text-align: center; transition: all 0.3s; }
+    .step-card:hover { background: rgba(0,198,174,0.1); border-color: rgba(0,198,174,0.3); transform: translateY(-6px); }
+    .step-num { width: 48px; height: 48px; background: var(--teal); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; color: #fff; margin: 0 auto 1.2rem; }
+    .step-icon { font-size: 1.8rem; color: var(--teal); margin-bottom: 1rem; }
+    .step-card h4 { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; }
+    .step-card p { font-size: 0.82rem; color: rgba(255,255,255,0.6); line-height: 1.5; }
+    .step-connector { position: absolute; top: 40px; right: -20%; width: 40%; height: 2px; background: linear-gradient(to right, var(--teal), transparent); }
+
+    /* BENEFITS */
+    .benefits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; max-width: 1200px; margin: 0 auto; }
+    .benefit-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+    .benefit-item { display: flex; align-items: center; gap: 1.2rem; padding: 1rem 1.2rem; border-radius: 12px; border: 1px solid #e2eaf5; transition: all 0.3s; background: #fff; }
+    .benefit-item:hover { border-color: rgba(0,198,174,0.4); box-shadow: 0 6px 20px rgba(0,198,174,0.1); transform: translateX(4px); }
+    .benefit-badge { min-width: 70px; height: 36px; background: rgba(0,198,174,0.12); border: 1px solid rgba(0,198,174,0.25); color: var(--teal); font-size: 0.8rem; font-weight: 800; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .benefit-text h5 { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin-bottom: 0.2rem; }
+    .benefit-text p { font-size: 0.82rem; color: var(--gray); }
+    .benefits-img img { width: 100%; border-radius: 20px; height: 440px; object-fit: cover; }
+
+    /* ROI */
+    .roi { background: var(--gray-light); }
+    .roi-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; max-width: 1000px; margin: 3rem auto 0; }
+    .roi-card { background: #fff; border-radius: 18px; padding: 2rem; border: 1px solid #e2eaf5; text-align: center; transition: all 0.3s; }
+    .roi-card.featured { background: var(--teal-light); border-color: rgba(0,198,174,0.4); }
+    .roi-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,0.08); }
+    .roi-card-icon { width: 56px; height: 56px; background: var(--teal-light); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+    .roi-card.featured .roi-card-icon { background: rgba(0,198,174,0.25); }
+    .roi-card-icon i { color: var(--teal); font-size: 1.4rem; }
+    .roi-card h3 { font-size: 1.1rem; font-weight: 800; color: var(--navy); margin-bottom: 0.3rem; }
+    .roi-card .sub { font-size: 0.8rem; color: var(--gray); margin-bottom: 1.2rem; }
+    .roi-row { display: flex; align-items: center; gap: 0.8rem; padding: 0.6rem 0.8rem; background: rgba(255,255,255,0.7); border-radius: 8px; margin-bottom: 0.5rem; text-align: left; }
+    .roi-row-icon i { font-size: 0.85rem; }
+    .roi-row-icon .green { color: #22c55e; }
+    .roi-row-icon .red { color: #ef4444; }
+    .roi-row-icon .gray { color: var(--gray); }
+    .roi-row-text { font-size: 0.82rem; }
+    .roi-row-text .val { font-weight: 700; color: var(--navy); }
+    .roi-row-text .desc { color: var(--gray); font-size: 0.75rem; }
+    .roi-payback { font-size: 0.82rem; color: var(--gray); line-height: 1.6; margin-top: 0.5rem; }
+    .roi-payback strong { color: var(--teal); font-size: 1.1rem; display: block; margin-top: 0.5rem; }
+
+    /* TESTIMONIALS */
+    .testimonials { background: var(--navy); }
+    .testimonials .section-title { color: #fff; }
+    .testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; max-width: 1200px; margin: 3rem auto 0; }
+    .testi-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1.8rem; transition: all 0.3s; }
+    .testi-card:hover { background: rgba(0,198,174,0.08); border-color: rgba(0,198,174,0.3); transform: translateY(-4px); }
+    .stars { color: #f59e0b; margin-bottom: 1rem; font-size: 0.9rem; }
+    .testi-text { font-size: 0.9rem; color: rgba(255,255,255,0.8); line-height: 1.7; margin-bottom: 1.5rem; font-style: italic; }
+    .testi-author { display: flex; align-items: center; gap: 0.8rem; }
+    .avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--teal); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; font-size: 0.9rem; }
+    .author-name { font-size: 0.9rem; font-weight: 700; color: #fff; }
+    .author-role { font-size: 0.75rem; color: rgba(255,255,255,0.5); }
+
+    /* PRICING */
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; max-width: 1100px; margin: 3rem auto 0; }
+    .price-card { background: #fff; border-radius: 18px; padding: 2rem; border: 1px solid #e2eaf5; transition: all 0.3s; }
+    .price-card.popular { border: 2px solid var(--teal); position: relative; transform: scale(1.03); box-shadow: 0 16px 48px rgba(0,198,174,0.15); }
+    .price-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,0.08); }
+    .price-card.popular:hover { transform: scale(1.03) translateY(-6px); }
+    .popular-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--teal); color: #fff; font-size: 0.72rem; font-weight: 700; padding: 0.3rem 1rem; border-radius: 50px; white-space: nowrap; text-transform: uppercase; letter-spacing: 1px; }
+    .price-label { font-size: 0.8rem; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.5rem; }
+    .price-name { font-size: 1.3rem; font-weight: 800; color: var(--navy); margin-bottom: 0.3rem; }
+    .price-amount { font-size: 2.5rem; font-weight: 900; color: var(--navy); line-height: 1; margin: 1rem 0 0.3rem; }
+    .price-amount span { font-size: 1rem; font-weight: 500; color: var(--gray); }
+    .price-desc { font-size: 0.82rem; color: var(--gray); margin-bottom: 1.5rem; }
+    .price-features { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; margin-bottom: 1.8rem; }
+    .price-features li { display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: var(--text); }
+    .price-features li i { color: var(--teal); font-size: 0.85rem; }
+    .price-btn { display: block; text-align: center; padding: 0.85rem; border-radius: 50px; font-weight: 700; font-size: 0.92rem; text-decoration: none; transition: all 0.2s; }
+    .price-btn-outline { border: 2px solid var(--teal); color: var(--teal); }
+    .price-btn-outline:hover { background: var(--teal); color: #fff; }
+    .price-btn-filled { background: var(--teal); color: #fff; }
+    .price-btn-filled:hover { background: var(--teal-dark); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,198,174,0.4); }
+
+    /* CTA BANNER */
+    .cta-banner { background: var(--gradient); padding: 5rem 5%; text-align: center; }
+    .cta-banner h2 { font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 900; color: #fff; margin-bottom: 1rem; }
+    .cta-banner p { color: rgba(255,255,255,0.7); font-size: 1.05rem; margin-bottom: 2rem; }
+
+    /* FOOTER */
+    footer { background: #06101e; color: rgba(255,255,255,0.6); padding: 3rem 5% 2rem; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; max-width: 1200px; margin: 0 auto; padding-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .footer-brand p { font-size: 0.85rem; line-height: 1.7; margin-top: 0.8rem; max-width: 280px; }
+    .footer-col h4 { font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px; }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .footer-col ul li a { color: rgba(255,255,255,0.55); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+    .footer-col ul li a:hover { color: var(--teal); }
+    .footer-bottom { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; font-size: 0.8rem; flex-wrap: wrap; gap: 1rem; }
+    .footer-bottom a { color: rgba(255,255,255,0.55); text-decoration: none; transition: color 0.2s; }
+    .footer-bottom a:hover { color: var(--teal); }
+    .social-links { display: flex; gap: 0.8rem; }
+    .social-link { width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.55); font-size: 0.85rem; transition: all 0.2s; text-decoration: none; }
+    .social-link:hover { border-color: var(--teal); color: var(--teal); }
+
+    /* VIDEO MODAL — iPhone 15 floating, no background */
+    .video-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .video-modal-overlay.active { display: flex; pointer-events: all; }
+
+    /* Close button — top-right corner of the phone */
+    .iphone-wrapper {
+      position: relative;
+      display: inline-block;
+      animation: phoneAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      transform-origin: bottom center;
+    }
+    @keyframes phoneAppear {
+      0%   { opacity: 0; transform: scale(0.05) translateY(200px); }
+      60%  { opacity: 1; }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .iphone-close-btn {
+      position: absolute;
+      top: -14px;
+      right: -14px;
+      width: 32px; height: 32px;
+      background: #fff;
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.25);
+      transition: all 0.2s;
+      z-index: 10001;
+    }
+    .iphone-close-btn:hover { background: #fee2e2; transform: scale(1.15); }
+    .iphone-close-btn i { font-size: 0.8rem; color: #e53e3e; line-height: 1; }
+
+    /* iPhone 15 shell */
+    .iphone15 {
+      position: relative;
+      width: 310px;
+      background: linear-gradient(160deg, #d4d4d4 0%, #b0b0b0 40%, #c8c8c8 100%);
+      border-radius: 28px;
+      padding: 8px 6px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.6) inset,
+        0 0 0 1px #999,
+        0 20px 60px rgba(0,0,0,0.35),
+        0 4px 16px rgba(0,0,0,0.2);
+      animation: iPhoneFloat 3.5s ease-in-out infinite 0.5s;
+    }
+    @keyframes iPhoneFloat {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-8px); }
+    }
+    /* Side buttons */
+    .iphone15::before {
+      content: '';
+      position: absolute;
+      right: -3.5px; top: 90px;
+      width: 3px; height: 68px;
+      background: linear-gradient(to right, #999, #bbb);
+      border-radius: 0 3px 3px 0;
+      box-shadow: 0 50px 0 #aaa;
+    }
+    .iphone15::after {
+      content: '';
+      position: absolute;
+      left: -3.5px; top: 100px;
+      width: 3px; height: 38px;
+      background: linear-gradient(to left, #aaa, #bbb);
+      border-radius: 3px 0 0 3px;
+      box-shadow: 0 52px 0 #aaa, 0 -52px 0 #aaa;
+    }
+    /* Screen bezel */
+    .iphone15-bezel {
+      border-radius: 32px;
+      background: #000;
+      padding: 2px;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px #222 inset;
+    }
+    /* Screen area */
+    .iphone15-screen {
+      border-radius: 30px;
+      overflow: hidden;
+      background: #000;
+      position: relative;
+      aspect-ratio: 9 / 19.5;
+    }
+    .iphone15-screen video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    /* Tap to play/pause overlay */
+    .iphone-play-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 5;
+      background: rgba(0,0,0,0.25);
+      transition: opacity 0.3s;
+    }
+    .iphone-play-overlay.playing { background: transparent; }
+    .iphone-play-overlay.playing .play-btn-circle { opacity: 0; }
+    .play-btn-circle {
+      width: 54px; height: 54px;
+      background: rgba(255,255,255,0.18);
+      backdrop-filter: blur(6px);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.3s;
+    }
+    .play-btn-circle i { color: #fff; font-size: 1.3rem; margin-left: 4px; }
+    /* Dynamic Island */
+    /* .dynamic-island {
+      position: absolute;
+      top: 10px; left: 50%;
+      transform: translateX(-50%);
+      width: 88px; height: 26px;
+      background: #000;
+      border-radius: 10px;
+      z-index: 10;
+      box-shadow: 0 0 0 2px #111;
+    } */
+    /* Home indicator */
+    .iphone15-home {
+      width: 90px; height: 4px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 4px;
+      margin: 8px auto 2px;
+    }
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      .steps-grid { grid-template-columns: repeat(2, 1fr); }
+      .testi-grid, .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
+    }
+    @media (max-width: 768px) {
+      .hero-grid, .problem-grid, .opportunity-grid, .benefits-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .opp-img { order: -1; }
+      .hero-visual { display: none; }
+      .steps-grid, .roi-cards, .testi-grid, .pricing-grid { grid-template-columns: 1fr; }
+      .price-card.popular { transform: scale(1); }
+      .footer-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .iphone-frame { width: 240px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav id="navbar">
+  <a href="#" class="logo">
+    <div class="logo-icon"><i class="fab fa-whatsapp"></i></div>
+    <span class="logo-text">Tour<span>Bot</span> AI</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+  <a href="#pricing" class="nav-cta">Get Started <i class="fas fa-arrow-right"></i></a>
+  <div class="hamburger" id="hamburger">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-grid">
+    <div data-aos="fade-right" data-aos-duration="800">
+      <div class="hero-badge"><i class="fab fa-whatsapp"></i> WhatsApp AI Automation</div>
+      <h1>Turn Every Inquiry Into a <span>Confirmed Booking</span>, 24/7</h1>
+      <p>The AI-powered WhatsApp booking assistant built for tour &amp; travel agencies. Never miss a lead — even while you sleep.</p>
+      <div class="hero-btns">
+        <a href="#pricing" class="btn-primary">Start Automation <i class="fas fa-arrow-right"></i></a>
+        <a href="#" class="btn-outline" id="openVideoModal"><i class="fas fa-play"></i> See How It Works</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><div class="stat-number">24/7</div><div class="stat-label">Always Online</div></div>
+        <div class="stat"><div class="stat-number">60–80%</div><div class="stat-label">Query Automation</div></div>
+        <div class="stat"><div class="stat-number">Zero</div><div class="stat-label">Missed Leads</div></div>
+      </div>
+    </div>
+    <div class="hero-visual" data-aos="fade-left" data-aos-duration="800" data-aos-delay="200">
+      <div class="hero-card">
+        <div class="online-badge"><span class="online-dot"></span> TourBot AI is Live</div>
+        <div class="chat-bubble">
+          <div class="chat-label"><i class="fas fa-user"></i> Customer</div>
+          <div class="chat-text">Hi! Do you have a Bali package for 2 adults, 3rd week of May?</div>
+        </div>
+        <div class="chat-bubble bot">
+          <div class="chat-label"><i class="fab fa-whatsapp"></i> TourBot AI</div>
+          <div class="chat-text">Yes! We have 3 Bali packages for May 17–24. 🌴<br/>7N/8D from $899/person (flights + hotel). Would you like to book or see full itinerary?</div>
+        </div>
+        <div class="chat-bubble">
+          <div class="chat-label"><i class="fas fa-user"></i> Customer</div>
+          <div class="chat-text">Let's book! Send payment link.</div>
+        </div>
+        <div class="chat-bubble bot">
+          <div class="chat-label"><i class="fab fa-whatsapp"></i> TourBot AI</div>
+          <div class="chat-text"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="problem" id="problem">
+  <div class="problem-grid">
+    <div data-aos="fade-right">
+      <div class="section-label">The Problem</div>
+      <h2 class="section-title">Travel Agencies Lose Bookings Every Day</h2>
+      <p class="section-sub">In a speed-first world, delays mean lost revenue. Here's what's costing you bookings:</p>
+      <ul class="problem-list">
+        <li class="problem-item">
+          <div class="problem-icon"><i class="fas fa-bolt"></i></div>
+          <div class="problem-text">Customers expect <span class="highlight">instant replies</span></div>
+        </li>
+        <li class="problem-item">
+          <div class="problem-icon"><i class="fas fa-globe"></i></div>
+          <div class="problem-text">Inquiries come <span class="highlight">after hours</span> &amp; across time zones</div>
+        </li>
+        <li class="problem-item">
+          <div class="problem-icon"><i class="fas fa-comment-slash"></i></div>
+          <div class="problem-text">Manual WhatsApp handling = <span class="red">missed leads</span></div>
+        </li>
+        <li class="problem-item">
+          <div class="problem-icon"><i class="fas fa-users"></i></div>
+          <div class="problem-text">Peak season can <span class="highlight">overwhelm your team</span></div>
+        </li>
+        <li class="problem-item">
+          <div class="problem-icon"><i class="fas fa-bell"></i></div>
+          <div class="problem-text">Speed decides who wins the booking</div>
+        </li>
+      </ul>
+    </div>
+    <div class="problem-img" data-aos="fade-left">
+      <img src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&q=80" alt="Stressed travel agent missing bookings"/>
+      <div class="img-overlay"></div>
+    </div>
+  </div>
+</section>
+
+<!-- OPPORTUNITY / FEATURES -->
+<section id="features">
+  <div class="opportunity-grid">
+    <div class="opp-img" data-aos="fade-right">
+      <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80" alt="Modern city high rise - opportunity"/>
+    </div>
+    <div data-aos="fade-left">
+      <div class="section-label">The Opportunity</div>
+      <h2 class="section-title">What If You Replied Instantly, Every Time?</h2>
+      <p class="section-sub">TourBot AI answers every WhatsApp message, recommends tours, and confirms bookings — automatically.</p>
+      <div class="opp-cards" style="margin-top:2rem;">
+        <div class="opp-card">
+          <div class="opp-card-icon"><i class="fas fa-clock"></i></div>
+          <h4>24/7 Availability</h4>
+          <p>Instant responses on WhatsApp any time of the day.</p>
+        </div>
+        <div class="opp-card">
+          <div class="opp-card-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+          <h4>Smart Suggestions</h4>
+          <p>Personalized tour recommendations based on user preferences.</p>
+        </div>
+        <div class="opp-card">
+          <div class="opp-card-icon"><i class="fas fa-calendar-check"></i></div>
+          <h4>Auto Booking</h4>
+          <p>Automated assistance from inquiry to payment confirmation.</p>
+        </div>
+        <div class="opp-card">
+          <div class="opp-card-icon"><i class="fas fa-sack-dollar"></i></div>
+          <h4>Cost Efficient</h4>
+          <p>Handle thousands of queries with no extra staff required.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div style="max-width:1200px;margin:0 auto;" class="center">
+    <div class="section-label" style="color:rgba(0,198,174,0.8)">How It Works</div>
+    <h2 class="section-title" data-aos="fade-up">From Inquiry to Booking in Minutes</h2>
+    <p class="section-sub" data-aos="fade-up" data-aos-delay="100">A seamless, fully automated workflow that handles the entire booking journey.</p>
+  </div>
+  <div class="steps-grid" style="margin-top:3rem;">
+    <div class="step-card" data-aos="fade-up" data-aos-delay="0">
+      <div class="step-num">1</div>
+      <div class="step-icon"><i class="fab fa-whatsapp"></i></div>
+      <h4>Customer Messages</h4>
+      <p>A traveler sends a WhatsApp message inquiring about a tour package.</p>
+    </div>
+    <div class="step-card" data-aos="fade-up" data-aos-delay="100">
+      <div class="step-num">2</div>
+      <div class="step-icon"><i class="fas fa-robot"></i></div>
+      <h4>AI Responds Instantly</h4>
+      <p>TourBot AI replies in seconds, qualifies the lead, and presents matching packages.</p>
+    </div>
+    <div class="step-card" data-aos="fade-up" data-aos-delay="200">
+      <div class="step-num">3</div>
+      <div class="step-icon"><i class="fas fa-calendar-check"></i></div>
+      <h4>Booking Confirmed</h4>
+      <p>Customer selects a package, and the bot collects details and sends a payment link.</p>
+    </div>
+    <div class="step-card" data-aos="fade-up" data-aos-delay="300">
+      <div class="step-num">4</div>
+      <div class="step-icon"><i class="fas fa-chart-line"></i></div>
+      <h4>You Get Notified</h4>
+      <p>Your dashboard updates in real-time. Review bookings, payments, and reports.</p>
+    </div>
+  </div>
+</section>
+
+<!-- BUSINESS BENEFITS -->
+<section id="benefits">
+  <div class="benefits-grid">
+    <div data-aos="fade-right">
+      <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80" alt="Business growth analytics dashboard" style="border-radius:20px;width:100%;height:440px;object-fit:cover;"/>
+    </div>
+    <div data-aos="fade-left">
+      <div class="section-label">Business Benefits</div>
+      <h2 class="section-title">Why Agencies Choose TourBot AI</h2>
+      <p class="section-sub">Real results that impact your bottom line from day one.</p>
+      <div class="benefit-list">
+        <div class="benefit-item">
+          <div class="benefit-badge">20–40%</div>
+          <div class="benefit-text"><h5>Higher Conversion Rates</h5><p>Turn more lookers into bookers instantly.</p></div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-badge">60–80%</div>
+          <div class="benefit-text"><h5>Query Automation</h5><p>Handle repetitive FAQs without human help.</p></div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-badge">Zero</div>
+          <div class="benefit-text"><h5>Missed Leads</h5><p>Capture every inquiry, day or night.</p></div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-badge">Reduced</div>
+          <div class="benefit-text"><h5>Staff Workload</h5><p>Free your team to focus on VIP clients.</p></div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-badge">Instant</div>
+          <div class="benefit-text"><h5>Scaling</h5><p>Handle peak season volume effortlessly.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROI SNAPSHOT -->
+<section class="roi" id="roi">
+  <div class="center" data-aos="fade-up">
+    <div class="section-label">ROI Snapshot</div>
+    <h2 class="section-title">Monthly Cost Comparison</h2>
+  </div>
+  <div class="roi-cards">
+    <div class="roi-card" data-aos="fade-up" data-aos-delay="0">
+      <div class="roi-card-icon"><i class="fas fa-users"></i></div>
+      <h3>Manual Team</h3>
+      <div class="sub">Traditional staffing [2 staff]</div>
+      <div class="roi-row"><div class="roi-row-icon"><i class="fas fa-dollar-sign gray"></i></div><div class="roi-row-text"><div class="val">$2,000 – $2,500/mo</div><div class="desc">Monthly salary cost</div></div></div>
+      <div class="roi-row"><div class="roi-row-icon"><i class="fas fa-clock gray"></i></div><div class="roi-row-text"><div class="val">Limited Hours</div><div class="desc">No overnight coverage</div></div></div>
+      <div class="roi-row"><div class="roi-row-icon"><i class="fas fa-xmark red"></i></div><div class="roi-row-text"><div class="val" style="color:#ef4444">Missed Leads</div><div class="desc">Inquiries unanswered</div></div></div>
+    </div>
+    <div class="roi-card featured" data-aos="fade-up" data-aos-delay="100">
+      <div class="roi-card-icon"><i class="fas fa-robot"></i></div>
+      <h3>TourBot AI</h3>
+      <div class="sub">Automated Solution</div>
+      <div class="roi-row" style="background:rgba(0,198,174,0.1);"><div class="roi-row-icon"><i class="fas fa-circle-check green"></i></div><div class="roi-row-text"><div class="val">From $2,000/mo</div><div class="desc">Flat monthly subscription</div></div></div>
+      <div class="roi-row" style="background:rgba(0,198,174,0.1);"><div class="roi-row-icon"><i class="fas fa-circle-check green"></i></div><div class="roi-row-text"><div class="val">24/7 Availability</div><div class="desc">Always online &amp; responsive</div></div></div>
+      <div class="roi-row" style="background:rgba(0,198,174,0.1);"><div class="roi-row-icon"><i class="fas fa-circle-check green"></i></div><div class="roi-row-text"><div class="val" style="color:#22c55e">Near Zero</div><div class="desc">Capture every single lead</div></div></div>
+    </div>
+    <div class="roi-card" data-aos="fade-up" data-aos-delay="200">
+      <div class="roi-card-icon">💡</div>
+      <h3>The Payback</h3>
+      <div class="sub">Your ROI calculation</div>
+      <p class="roi-payback">"Even 1 extra booking per day covers the entire monthly cost"<strong>Immediate ROI<br/>Efficiency Gain</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials" id="testimonials">
+  <div class="center" data-aos="fade-up">
+    <div class="section-label" style="color:rgba(0,198,174,0.8)">Social Proof</div>
+    <h2 class="section-title">Trusted by Growing Travel Agencies</h2>
+  </div>
+  <div class="testi-grid">
+    <div class="testi-card" data-aos="fade-up" data-aos-delay="0">
+      <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+      <p class="testi-text">"TourBot AI has transformed our operations. We used to miss 30% of inquiries after 6 PM. Now we convert those into confirmed bookings while we sleep."</p>
+      <div class="testi-author">
+        <div class="avatar">RA</div>
+        <div><div class="author-name">Ravi Agarwal</div><div class="author-role">Director, SunRise Travels, India</div></div>
+      </div>
+    </div>
+    <div class="testi-card" data-aos="fade-up" data-aos-delay="100">
+      <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+      <p class="testi-text">"Peak season used to crash our team. With TourBot, we handled 3x the volume with the same staff. The ROI came within the first month."</p>
+      <div class="testi-author">
+        <div class="avatar">SP</div>
+        <div><div class="author-name">Sara Patel</div><div class="author-role">Founder, WanderLux Tours, Dubai</div></div>
+      </div>
+    </div>
+    <div class="testi-card" data-aos="fade-up" data-aos-delay="200">
+      <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+      <p class="testi-text">"The setup was incredibly smooth. Within days, our WhatsApp was fully automated. Inquiries get answered, packages get booked — all without manual intervention."</p>
+      <div class="testi-author">
+        <div class="avatar">MK</div>
+        <div><div class="author-name">Mohammed Khalil</div><div class="author-role">CEO, Elite Holidays, UAE</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="center" data-aos="fade-up">
+    <div class="section-label">Pricing</div>
+    <h2 class="section-title">Simple, Transparent Pricing</h2>
+    <p class="section-sub">One booking more than pays for itself. Pick the plan that fits your agency.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="price-card" data-aos="fade-up" data-aos-delay="0">
+      <div class="price-label">Starter</div>
+      <div class="price-name">Starter</div>
+      <div class="price-amount">$999<span>/mo</span></div>
+      <div class="price-desc">Perfect for small travel agencies just getting started with automation.</div>
+      <ul class="price-features">
+        <li><i class="fas fa-check"></i> 1 WhatsApp Number</li>
+        <li><i class="fas fa-check"></i> Up to 1,000 conversations/mo</li>
+        <li><i class="fas fa-check"></i> AI Booking Assistant</li>
+        <li><i class="fas fa-check"></i> Basic Dashboard</li>
+        <li><i class="fas fa-check"></i> Email Support</li>
+      </ul>
+      <a href="#" class="price-btn price-btn-outline">Get Started</a>
+    </div>
+    <div class="price-card popular" data-aos="fade-up" data-aos-delay="100">
+      <div class="popular-badge">Most Popular</div>
+      <div class="price-label">Growth</div>
+      <div class="price-name">Growth</div>
+      <div class="price-amount">$2,000<span>/mo</span></div>
+      <div class="price-desc">For growing agencies that need unlimited conversations and full automation.</div>
+      <ul class="price-features">
+        <li><i class="fas fa-check"></i> Up to 3 WhatsApp Numbers</li>
+        <li><i class="fas fa-check"></i> Unlimited Conversations</li>
+        <li><i class="fas fa-check"></i> Smart Tour Recommendations</li>
+        <li><i class="fas fa-check"></i> Payment Link Integration</li>
+        <li><i class="fas fa-check"></i> Advanced Analytics</li>
+        <li><i class="fas fa-check"></i> Priority Support</li>
+      </ul>
+      <a href="#" class="price-btn price-btn-filled">Start Automation</a>
+    </div>
+    <div class="price-card" data-aos="fade-up" data-aos-delay="200">
+      <div class="price-label">Enterprise</div>
+      <div class="price-name">Enterprise</div>
+      <div class="price-amount" style="font-size:2rem;">Custom</div>
+      <div class="price-desc">For large agencies and travel groups needing custom deployments.</div>
+      <ul class="price-features">
+        <li><i class="fas fa-check"></i> Unlimited WhatsApp Numbers</li>
+        <li><i class="fas fa-check"></i> Custom AI Training</li>
+        <li><i class="fas fa-check"></i> CRM Integration</li>
+        <li><i class="fas fa-check"></i> White-Label Option</li>
+        <li><i class="fas fa-check"></i> Dedicated Account Manager</li>
+        <li><i class="fas fa-check"></i> SLA Guarantee</li>
+      </ul>
+      <a href="#" class="price-btn price-btn-outline">Contact Sales</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section class="cta-banner">
+  <div data-aos="zoom-in">
+    <h2>Ready to Never Miss a Booking Again?</h2>
+    <p>Join hundreds of travel agencies that trust TourBot AI to automate their WhatsApp bookings.</p>
+    <a href="#" class="btn-primary" style="display:inline-flex;">Start Automation <i class="fas fa-arrow-right"></i></a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="#" class="logo">
+        <div class="logo-icon"><i class="fab fa-whatsapp"></i></div>
+        <span class="logo-text">Tour<span>Bot</span> AI</span>
+      </a>
+      <p>The AI-powered WhatsApp booking assistant for tour &amp; travel agencies. Automate inquiries, confirm bookings, and grow your revenue 24/7.</p>
+      <div class="social-links" style="margin-top:1rem;">
+        <a class="social-link" href="#"><i class="fab fa-whatsapp"></i></a>
+        <a class="social-link" href="#"><i class="fab fa-linkedin"></i></a>
+        <a class="social-link" href="#"><i class="fab fa-instagram"></i></a>
+        <a class="social-link" href="#"><i class="fab fa-twitter"></i></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How It Works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#roi">ROI Calculator</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Press</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="mailto:hello@tourbot.ai"><i class="fas fa-envelope"></i> hello@tourbot.ai</a></li>
+        <li><a href="https://wa.me/1234567890"><i class="fab fa-whatsapp"></i> Chat on WhatsApp</a></li>
+        <li><a href="#"><i class="fas fa-headset"></i> Support Center</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 TourBot AI by CoderScotch Technologies. All rights reserved.</p>
+    <div style="display:flex;gap:1.5rem;">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+    </div>
+  </div>
+</footer>
+
+<!-- VIDEO MODAL — iPhone 15 style, no overlay -->
+<div class="video-modal-overlay" id="videoModal">
+  <div class="iphone-wrapper" id="iphoneWrapper">
+    <button class="iphone-close-btn" id="closeVideoModal">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="iphone15">
+      <div class="iphone15-bezel">
+        <div class="iphone15-screen">
+          <div class="dynamic-island"></div>
+          <video id="demoVideo" playsinline loop>
+            <source src="videos/bookings.mp4" type="video/mp4"/>
+          </video>
+          <div class="iphone-play-overlay" id="playOverlay">
+            <div class="play-btn-circle"><i class="fas fa-play"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="iphone15-home"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+  AOS.init({ once: true, offset: 60, duration: 650, easing: 'ease-out-cubic' });
+
+  // Nav scroll effect
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.style.background = window.scrollY > 60
+      ? 'rgba(10,22,40,0.97)' : 'rgba(10,22,40,0.85)';
+  });
+
+  // Hamburger
+  document.getElementById('hamburger').addEventListener('click', () => {
+    const links = document.querySelector('.nav-links');
+    links.style.display = links.style.display === 'flex' ? 'none' : 'flex';
+    links.style.flexDirection = 'column';
+    links.style.position = 'fixed';
+    links.style.top = '64px';
+    links.style.left = '0';
+    links.style.right = '0';
+    links.style.background = 'rgba(10,22,40,0.97)';
+    links.style.padding = '1rem 5%';
+  });
+
+  // Video Modal — iPhone 15
+  const videoModal    = document.getElementById('videoModal');
+  const iphoneWrapper = document.getElementById('iphoneWrapper');
+  const demoVideo     = document.getElementById('demoVideo');
+  const openBtn       = document.getElementById('openVideoModal');
+  const closeBtn      = document.getElementById('closeVideoModal');
+  const playOverlay   = document.getElementById('playOverlay');
+
+  function openModal() {
+    videoModal.classList.add('active');
+    // Re-trigger phoneAppear animation each time
+    iphoneWrapper.style.animation = 'none';
+    iphoneWrapper.offsetHeight; // reflow
+    iphoneWrapper.style.animation = '';
+    demoVideo.playbackRate = 4.0;
+    demoVideo.play().then(() => {
+      playOverlay.classList.add('playing');
+    }).catch(() => {});
+  }
+
+  function closeModal() {
+    videoModal.classList.remove('active');
+    demoVideo.pause();
+    demoVideo.currentTime = 0;
+    playOverlay.classList.remove('playing');
+  }
+
+  // Tap phone screen to toggle play/pause
+  playOverlay.addEventListener('click', () => {
+    if (demoVideo.paused) {
+      demoVideo.play();
+      playOverlay.classList.add('playing');
+    } else {
+      demoVideo.pause();
+      playOverlay.classList.remove('playing');
+    }
+  });
+
+  openBtn.addEventListener('click', (e)  => { e.preventDefault(); openModal(); });
+  closeBtn.addEventListener('click', closeModal);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+</body>
+</html>
