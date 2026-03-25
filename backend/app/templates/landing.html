@@ -223,6 +223,66 @@
   </div>
 </section>
 
+<!-- ADMIN PREVIEW SLIDER -->
+<section class="admin-preview" id="admin-preview">
+  <div class="center" data-aos="fade-up">
+    <div class="section-label">Powerful Interface</div>
+    <h2 class="section-title">Manage Everything in One Place</h2>
+    <p class="section-sub">Experience the simplified workflow designed for tour operators. From analytics to automation control.</p>
+  </div>
+
+  <div class="slider-wrapper" data-aos="zoom-in" data-aos-delay="100">
+    <div class="slider-container">
+      <div class="slider-track" id="sliderTrack">
+        <!-- Slide 1 -->
+        <div class="slide active">
+          <img src="{{ url_for('static', path='assets/img/admin_previews/admin_dashboard.png') }}" alt="Analytics Dashboard">
+          <div class="slide-info">
+            <h3>Analytics Dashboard</h3>
+            <p>Monitor your agency's performance in real-time. Track bookings, revenue, and customer engagement at a glance.</p>
+          </div>
+        </div>
+        <!-- Slide 2 -->
+        <div class="slide">
+          <img src="{{ url_for('static', path='assets/img/admin_previews/admin_chat.png') }}" alt="WhatsApp Management">
+          <div class="slide-info">
+            <h3>WhatsApp Management</h3>
+            <p>A centralized hub for all AI-automated conversations. Jump in manually whenever your expertise is needed.</p>
+          </div>
+        </div>
+        <!-- Slide 3 -->
+        <div class="slide">
+          <img src="{{ url_for('static', path='assets/img/admin_previews/admin_bookings.png') }}" alt="Booking Management">
+          <div class="slide-info">
+            <h3>Booking Management</h3>
+            <p>Seamlessly track the status of each tour booking. From pending inquiries to confirmed payments.</p>
+          </div>
+        </div>
+        <!-- Slide 4 -->
+        <div class="slide">
+          <img src="{{ url_for('static', path='assets/img/admin_previews/admin_packages.png') }}" alt="Package Control">
+          <div class="slide-info">
+            <h3>Package Control</h3>
+            <p>Easily edit, update, or launch new tour packages. Your WhatsApp bot stays synchronized instantly.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="slider-nav">
+      <button class="slider-btn prev" id="prevBtn"><i class="fas fa-arrow-left"></i></button>
+      <button class="slider-btn next" id="nextBtn"><i class="fas fa-arrow-right"></i></button>
+    </div>
+
+    <div class="slider-dots" id="sliderDots">
+      <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+</section>
+
 <!-- BUSINESS BENEFITS -->
 <section id="benefits">
   <div class="benefits-grid">
@@ -536,6 +596,52 @@
   openBtn.addEventListener('click', (e)  => { e.preventDefault(); openModal(); });
   closeBtn.addEventListener('click', closeModal);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  // Admin Preview Slider Logic
+  const track = document.getElementById('sliderTrack');
+  const slides = Array.from(track.children);
+  const nextBtn = document.getElementById('nextBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const dotsContainer = document.getElementById('sliderDots');
+  const dots = Array.from(dotsContainer.children);
+
+  let currentSlide = 0;
+  const slideCount = slides.length;
+
+  function updateSlider(index) {
+    track.style.transform = `translateX(-${index * 25}%)`;
+    slides.forEach((s, i) => s.classList.toggle('active', i === index));
+    dots.forEach((d, i) => d.classList.toggle('active', i === index));
+    currentSlide = index;
+  }
+
+  nextBtn.addEventListener('click', () => {
+    let nextIndex = (currentSlide + 1) % slideCount;
+    updateSlider(nextIndex);
+  });
+
+  prevBtn.addEventListener('click', () => {
+    let prevIndex = (currentSlide - 1 + slideCount) % slideCount;
+    updateSlider(prevIndex);
+  });
+
+  dots.forEach((dot, index) => {
+    dot.addEventListener('click', () => updateSlider(index));
+  });
+
+  // Auto-play
+  let autoPlay = setInterval(() => {
+    nextBtn.click();
+  }, 6000);
+
+  // Pause on hover
+  const sliderWrapper = document.querySelector('.slider-wrapper');
+  sliderWrapper.addEventListener('mouseenter', () => clearInterval(autoPlay));
+  sliderWrapper.addEventListener('mouseleave', () => {
+    autoPlay = setInterval(() => {
+      nextBtn.click();
+    }, 6000);
+  });
 
   // Smooth scroll
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
