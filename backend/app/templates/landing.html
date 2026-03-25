@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TourBot AI – WhatsApp Tour Booking for Travel Agencies</title>
+  <meta name="description" content="Automate your travel agency's WhatsApp bookings 24/7. TourBot AI turns every inquiry into a confirmed booking without missing a single lead."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', path='assets/plugins/fontawesome-free/css/all.min.css') }}"/>
+  <link rel="stylesheet" href="{{ url_for('static', path='assets/plugins/aos/aos.css') }}"/>
+  <link rel="stylesheet" href="{{ url_for('static', path='css/landing.css') }}">
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav id="navbar">
+  <a href="#" class="logo">
+    <div class="logo-icon"><i class="fab fa-whatsapp"></i></div>
+    <span class="logo-text">Tour<span>Bot</span> AI</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+  <a href="#pricing" class="nav-cta">Get Started <i class="fas fa-arrow-right"></i></a>
+  <div class="hamburger" id="hamburger">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <!-- Travel Decorations -->
+    <div class="hero-deco">
+    <!-- 25+ Clouds with negative delays for immediate visibility -->
+    <div class="cloud cloud-1"  style="top: 5%;  animation-delay: -5s;"></div>
+    <div class="cloud cloud-3"  style="top: 8%;  animation-delay: -15s;"></div>
+    <div class="cloud cloud-6"  style="top: 12%; animation-delay: -2s;"></div>
+    <div class="cloud cloud-2"  style="top: 15%; animation-delay: -10s;"></div>
+    <div class="cloud cloud-10" style="top: 18%; animation-delay: -25s;"></div>
+    <div class="cloud cloud-1A" style="top: 25%; animation-delay: -8s;"></div>
+    <div class="cloud cloud-8"  style="top: 28%; animation-delay: -12s;"></div>
+    <div class="cloud cloud-4"  style="top: 32%; animation-delay: -5s;"></div>
+    <div class="cloud cloud-2"  style="top: 35%; animation-delay: -20s;"></div>
+    <div class="cloud cloud-1B" style="top: 45%; animation-delay: -14s;"></div>
+    <div class="cloud cloud-7"  style="top: 48%; animation-delay: -4s;"></div>
+    <div class="cloud cloud-4"  style="top: 52%; animation-delay: -30s;"></div>
+    <div class="cloud cloud-9"  style="top: 55%; animation-delay: -10s;"></div>
+    <div class="cloud cloud-5"  style="top: 65%; animation-delay: -18s;"></div>
+    <div class="cloud cloud-2"  style="top: 68%; animation-delay: -2s;"></div>
+    <div class="cloud cloud-8"  style="top: 72%; animation-delay: -22s;"></div>
+    <div class="cloud cloud-1A" style="top: 75%; animation-delay: -6s;"></div>
+    <div class="cloud cloud-9"  style="top: 85%; animation-delay: -12s;"></div>
+    <div class="cloud cloud-5"  style="top: 88%; animation-delay: -35s;"></div>
+    <div class="cloud cloud-10" style="top: 92%; animation-delay: -1s;"></div>
+    <div class="cloud cloud-6"  style="top: 95%; animation-delay: -20s;"></div>
+    <div class="cloud cloud-1"  style="top: 40%; left: 30%; animation-delay: -2s; opacity: 0.8;"></div>
+    <div class="cloud cloud-2"  style="top: 60%; left: 60%; animation-delay: -10s; opacity: 0.7;"></div>
+    <div class="cloud cloud-3"  style="top: 20%; right: 20%; animation-delay: -5s; opacity: 0.9;"></div>
+    <div class="cloud cloud-4"  style="top: 80%; right: 40%; animation-delay: -15s; opacity: 0.6;"></div>
+    <div class="cloud cloud-5"  style="top: 10%; left: 10%; animation-delay: -25s; opacity: 1.0;"></div>
+    <!-- Flying planes -->
+    <span class="fly-plane">✈</span>
+    <span class="fly-plane fly-plane-2">✈</span>
+    <span class="fly-plane fly-plane-3">✈</span>
+    <span class="fly-plane fly-plane-4">✈</span>
+    <span class="fly-plane fly-plane-5">✈</span>
+    <!-- Sparkles -->
+    <span class="sparkle"></span>
+    <span class="sparkle"></span>
+    <span class="sparkle"></span>
+    <span class="sparkle"></span>
+    <span class="sparkle"></span>
+  </div>
+  <div class="hero-grid">
+    <div data-aos="fade-right" data-aos-duration="800">
+      <div class="hero-badge"><i class="fab fa-whatsapp"></i> WhatsApp AI Automation</div>
+      <h1>Turn Every Inquiry Into a <span>Confirmed Booking</span>, 24/7</h1>
+      <p>The AI-powered WhatsApp booking assistant built for tour &amp; travel agencies. Never miss a lead — even while you sleep.</p>
+      <div class="hero-btns">
+        <a href="#pricing" class="btn-primary">Start Automation <i class="fas fa-arrow-right"></i></a>
+        <a href="#" class="btn-outline" id="openVideoModal"><i class="fas fa-play"></i> See How It Works</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><div class="stat-number">24/7</div><div class="stat-label">Always Online</div></div>
+        <div class="stat"><div class="stat-number">60–80%</div><div class="stat-label">Query Automation</div></div>
+        <div class="stat"><div class="stat-number">Zero</div><div class="stat-label">Missed Leads</div></div>
+      </div>
+    </div>
+    <div class="hero-visual" data-aos="fade-left" data-aos-duration="800" data-aos-delay="200">
+      <div class="hero-card">
+        <div class="online-badge"><span class="online-dot"></span> TourBot AI is Live</div>
+        <div class="chat-bubble">
+          <div class="chat-label"><i class="fas fa-user"></i> Customer</div>
+          <div class="chat-text">Hi! Do you have a Bali package for 2 adults, 3rd week of May?</div>
+        </div>
+        <div class="chat-bubble bot">
+          <div class="chat-label"><i class="fab fa-whatsapp"></i> TourBot AI</div>
+          <div class="chat-text">Yes! We have 3 Bali packages for May 17–24. 🌴<br/>7N/8D from $899/person (flights + hotel). Would you like to book or see full itinerary?</div>
+        </div>
+        <div class="chat-bubble">
+          <div class="chat-label"><i class="fas fa-user"></i> Customer</div>
+          <div class="chat-text">Let's book! Send payment link.</div>
+        </div>
+        <div class="chat-bubble bot">
+          <div class="chat-label"><i class="fab fa-whatsapp"></i> TourBot AI</div>
+          <div class="chat-text"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="problem" id="problem">
+  <div class="problem-grid">
+    <div data-aos="fade-right">
+      <div class="section-label">The Problem</div>
+      <h2 class="section-title">Travel Agencies Lose Bookings Every Day</h2>
+      <p class="section-sub">In a speed-first world, delays mean lost revenue. Here's what's costing you bookings:</p>
+      <ul class="problem-list">
+        <li class="problem-item">
+          <div class="problem-icon"><i class="fas fa-bolt"></i></div>
+          <div class="problem-text">Customers expect <span class="highlight">instant replies</span></div>
+        </li>
+        <li class="problem-item">
+          <div class="problem-icon"><i class="fas fa-globe"></i></div>
+          <div class="problem-text">Inquiries come <span class="highlight">after hours</span> &amp; across time zones</div>
+        </li>
+        <li class="problem-item">
+          <div class="problem-icon"><i class="fas fa-comment-slash"></i></div>
+          <div class="problem-text">Manual WhatsApp handling = <span class="red">missed leads</span></div>
+        </li>
+        <li class="problem-item">
+          <div class="problem-icon"><i class="fas fa-users"></i></div>
+          <div class="problem-text">Peak season can <span class="highlight">overwhelm your team</span></div>
+        </li>
+        <li class="problem-item">
+          <div class="problem-icon"><i class="fas fa-bell"></i></div>
+          <div class="problem-text">Speed decides who wins the booking</div>
+        </li>
+      </ul>
+    </div>
+    <div class="problem-img" data-aos="fade-left">
+      <img src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&q=80" alt="Stressed travel agent missing bookings"/>
+      <div class="img-overlay"></div>
+    </div>
+  </div>
+</section>
+
+<!-- OPPORTUNITY / FEATURES -->
+<section id="features">
+  <div class="opportunity-grid">
+    <div class="opp-img" data-aos="fade-right">
+      <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80" alt="Modern city high rise - opportunity"/>
+    </div>
+    <div data-aos="fade-left">
+      <div class="section-label">The Opportunity</div>
+      <h2 class="section-title">What If You Replied Instantly, Every Time?</h2>
+      <p class="section-sub">TourBot AI answers every WhatsApp message, recommends tours, and confirms bookings — automatically.</p>
+      <div class="opp-cards" style="margin-top:2rem;">
+        <div class="opp-card">
+          <div class="opp-card-icon"><i class="fas fa-clock"></i></div>
+          <h4>24/7 Availability</h4>
+          <p>Instant responses on WhatsApp any time of the day.</p>
+        </div>
+        <div class="opp-card">
+          <div class="opp-card-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+          <h4>Smart Suggestions</h4>
+          <p>Personalized tour recommendations based on user preferences.</p>
+        </div>
+        <div class="opp-card">
+          <div class="opp-card-icon"><i class="fas fa-calendar-check"></i></div>
+          <h4>Auto Booking</h4>
+          <p>Automated assistance from inquiry to payment confirmation.</p>
+        </div>
+        <div class="opp-card">
+          <div class="opp-card-icon"><i class="fas fa-sack-dollar"></i></div>
+          <h4>Cost Efficient</h4>
+          <p>Handle thousands of queries with no extra staff required.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div style="max-width:1200px;margin:0 auto;" class="center">
+    <div class="section-label" style="color:rgba(0,198,174,0.8)">How It Works</div>
+    <h2 class="section-title" data-aos="fade-up">From Inquiry to Booking in Minutes</h2>
+    <p class="section-sub" data-aos="fade-up" data-aos-delay="100">A seamless, fully automated workflow that handles the entire booking journey.</p>
+  </div>
+  <div class="steps-grid" style="margin-top:3rem;">
+    <div class="step-card" data-aos="fade-up" data-aos-delay="0">
+      <div class="step-num">1</div>
+      <div class="step-icon"><i class="fab fa-whatsapp"></i></div>
+      <h4>Customer Messages</h4>
+      <p>A traveler sends a WhatsApp message inquiring about a tour package.</p>
+    </div>
+    <div class="step-card" data-aos="fade-up" data-aos-delay="100">
+      <div class="step-num">2</div>
+      <div class="step-icon"><i class="fas fa-robot"></i></div>
+      <h4>AI Responds Instantly</h4>
+      <p>TourBot AI replies in seconds, qualifies the lead, and presents matching packages.</p>
+    </div>
+    <div class="step-card" data-aos="fade-up" data-aos-delay="200">
+      <div class="step-num">3</div>
+      <div class="step-icon"><i class="fas fa-calendar-check"></i></div>
+      <h4>Booking Confirmed</h4>
+      <p>Customer selects a package, and the bot collects details and sends a payment link.</p>
+    </div>
+    <div class="step-card" data-aos="fade-up" data-aos-delay="300">
+      <div class="step-num">4</div>
+      <div class="step-icon"><i class="fas fa-chart-line"></i></div>
+      <h4>You Get Notified</h4>
+      <p>Your dashboard updates in real-time. Review bookings, payments, and reports.</p>
+    </div>
+  </div>
+</section>
+
+<!-- BUSINESS BENEFITS -->
+<section id="benefits">
+  <div class="benefits-grid">
+    <div data-aos="fade-right">
+      <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&q=80" alt="Business growth analytics dashboard" style="border-radius:20px;width:100%;height:440px;object-fit:cover;"/>
+    </div>
+    <div data-aos="fade-left">
+      <div class="section-label">Business Benefits</div>
+      <h2 class="section-title">Why Agencies Choose TourBot AI</h2>
+      <p class="section-sub">Real results that impact your bottom line from day one.</p>
+      <div class="benefit-list">
+        <div class="benefit-item">
+          <div class="benefit-badge">20–40%</div>
+          <div class="benefit-text"><h5>Higher Conversion Rates</h5><p>Turn more lookers into bookers instantly.</p></div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-badge">60–80%</div>
+          <div class="benefit-text"><h5>Query Automation</h5><p>Handle repetitive FAQs without human help.</p></div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-badge">Zero</div>
+          <div class="benefit-text"><h5>Missed Leads</h5><p>Capture every inquiry, day or night.</p></div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-badge">Reduced</div>
+          <div class="benefit-text"><h5>Staff Workload</h5><p>Free your team to focus on VIP clients.</p></div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-badge">Instant</div>
+          <div class="benefit-text"><h5>Scaling</h5><p>Handle peak season volume effortlessly.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROI SNAPSHOT -->
+<section class="roi" id="roi">
+  <div class="center" data-aos="fade-up">
+    <div class="section-label">ROI Snapshot</div>
+    <h2 class="section-title">Monthly Cost Comparison</h2>
+  </div>
+  <div class="roi-cards">
+    <div class="roi-card" data-aos="fade-up" data-aos-delay="0">
+      <div class="roi-card-icon"><i class="fas fa-users"></i></div>
+      <h3>Manual Team</h3>
+      <div class="sub">Traditional staffing [2 staff]</div>
+      <div class="roi-row"><div class="roi-row-icon"><i class="fas fa-dollar-sign gray"></i></div><div class="roi-row-text"><div class="val">$2,000 – $2,500/mo</div><div class="desc">Monthly salary cost</div></div></div>
+      <div class="roi-row"><div class="roi-row-icon"><i class="fas fa-clock gray"></i></div><div class="roi-row-text"><div class="val">Limited Hours</div><div class="desc">No overnight coverage</div></div></div>
+      <div class="roi-row"><div class="roi-row-icon"><i class="fas fa-xmark red"></i></div><div class="roi-row-text"><div class="val" style="color:#ef4444">Missed Leads</div><div class="desc">Inquiries unanswered</div></div></div>
+    </div>
+    <div class="roi-card featured" data-aos="fade-up" data-aos-delay="100">
+      <div class="roi-card-icon"><i class="fas fa-robot"></i></div>
+      <h3>TourBot AI</h3>
+      <div class="sub">Automated Solution</div>
+      <div class="roi-row" style="background:rgba(0,198,174,0.1);"><div class="roi-row-icon"><i class="fas fa-circle-check green"></i></div><div class="roi-row-text"><div class="val">From $2,000/mo</div><div class="desc">Flat monthly subscription</div></div></div>
+      <div class="roi-row" style="background:rgba(0,198,174,0.1);"><div class="roi-row-icon"><i class="fas fa-circle-check green"></i></div><div class="roi-row-text"><div class="val">24/7 Availability</div><div class="desc">Always online &amp; responsive</div></div></div>
+      <div class="roi-row" style="background:rgba(0,198,174,0.1);"><div class="roi-row-icon"><i class="fas fa-circle-check green"></i></div><div class="roi-row-text"><div class="val" style="color:#22c55e">Near Zero</div><div class="desc">Capture every single lead</div></div></div>
+    </div>
+    <div class="roi-card" data-aos="fade-up" data-aos-delay="200">
+      <div class="roi-card-icon">💡</div>
+      <h3>The Payback</h3>
+      <div class="sub">Your ROI calculation</div>
+      <p class="roi-payback">"Even 1 extra booking per day covers the entire monthly cost"<strong>Immediate ROI<br/>Efficiency Gain</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials" id="testimonials">
+  <div class="center" data-aos="fade-up">
+    <div class="section-label" style="color:rgba(0,198,174,0.8)">Social Proof</div>
+    <h2 class="section-title">Trusted by Growing Travel Agencies</h2>
+  </div>
+  <div class="testi-grid">
+    <div class="testi-card" data-aos="fade-up" data-aos-delay="0">
+      <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+      <p class="testi-text">"TourBot AI has transformed our operations. We used to miss 30% of inquiries after 6 PM. Now we convert those into confirmed bookings while we sleep."</p>
+      <div class="testi-author">
+        <div class="avatar">RA</div>
+        <div><div class="author-name">Ravi Agarwal</div><div class="author-role">Director, SunRise Travels, India</div></div>
+      </div>
+    </div>
+    <div class="testi-card" data-aos="fade-up" data-aos-delay="100">
+      <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+      <p class="testi-text">"Peak season used to crash our team. With TourBot, we handled 3x the volume with the same staff. The ROI came within the first month."</p>
+      <div class="testi-author">
+        <div class="avatar">SP</div>
+        <div><div class="author-name">Sara Patel</div><div class="author-role">Founder, WanderLux Tours, Dubai</div></div>
+      </div>
+    </div>
+    <div class="testi-card" data-aos="fade-up" data-aos-delay="200">
+      <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+      <p class="testi-text">"The setup was incredibly smooth. Within days, our WhatsApp was fully automated. Inquiries get answered, packages get booked — all without manual intervention."</p>
+      <div class="testi-author">
+        <div class="avatar">MK</div>
+        <div><div class="author-name">Mohammed Khalil</div><div class="author-role">CEO, Elite Holidays, UAE</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="center" data-aos="fade-up">
+    <div class="section-label">Pricing</div>
+    <h2 class="section-title">Simple, Transparent Pricing</h2>
+    <p class="section-sub">One booking more than pays for itself. Pick the plan that fits your agency.</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="price-card" data-aos="fade-up" data-aos-delay="0">
+      <div class="price-label">Starter</div>
+      <div class="price-name">Starter</div>
+      <div class="price-amount">$999<span>/mo</span></div>
+      <div class="price-desc">Perfect for small travel agencies just getting started with automation.</div>
+      <ul class="price-features">
+        <li><i class="fas fa-check"></i> 1 WhatsApp Number</li>
+        <li><i class="fas fa-check"></i> Up to 1,000 conversations/mo</li>
+        <li><i class="fas fa-check"></i> AI Booking Assistant</li>
+        <li><i class="fas fa-check"></i> Basic Dashboard</li>
+        <li><i class="fas fa-check"></i> Email Support</li>
+      </ul>
+      <a href="#" class="price-btn price-btn-outline">Get Started</a>
+    </div>
+    <div class="price-card popular" data-aos="fade-up" data-aos-delay="100">
+      <div class="popular-badge">Most Popular</div>
+      <div class="price-label">Growth</div>
+      <div class="price-name">Growth</div>
+      <div class="price-amount">$2,000<span>/mo</span></div>
+      <div class="price-desc">For growing agencies that need unlimited conversations and full automation.</div>
+      <ul class="price-features">
+        <li><i class="fas fa-check"></i> Up to 3 WhatsApp Numbers</li>
+        <li><i class="fas fa-check"></i> Unlimited Conversations</li>
+        <li><i class="fas fa-check"></i> Smart Tour Recommendations</li>
+        <li><i class="fas fa-check"></i> Payment Link Integration</li>
+        <li><i class="fas fa-check"></i> Advanced Analytics</li>
+        <li><i class="fas fa-check"></i> Priority Support</li>
+      </ul>
+      <a href="#" class="price-btn price-btn-filled">Start Automation</a>
+    </div>
+    <div class="price-card" data-aos="fade-up" data-aos-delay="200">
+      <div class="price-label">Enterprise</div>
+      <div class="price-name">Enterprise</div>
+      <div class="price-amount" style="font-size:2rem;">Custom</div>
+      <div class="price-desc">For large agencies and travel groups needing custom deployments.</div>
+      <ul class="price-features">
+        <li><i class="fas fa-check"></i> Unlimited WhatsApp Numbers</li>
+        <li><i class="fas fa-check"></i> Custom AI Training</li>
+        <li><i class="fas fa-check"></i> CRM Integration</li>
+        <li><i class="fas fa-check"></i> White-Label Option</li>
+        <li><i class="fas fa-check"></i> Dedicated Account Manager</li>
+        <li><i class="fas fa-check"></i> SLA Guarantee</li>
+      </ul>
+      <a href="#" class="price-btn price-btn-outline">Contact Sales</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section class="cta-banner">
+  <div data-aos="zoom-in">
+    <h2>Ready to Never Miss a Booking Again?</h2>
+    <p>Join hundreds of travel agencies that trust TourBot AI to automate their WhatsApp bookings.</p>
+    <a href="#" class="btn-primary" style="display:inline-flex;">Start Automation <i class="fas fa-arrow-right"></i></a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="#" class="logo">
+        <div class="logo-icon"><i class="fab fa-whatsapp"></i></div>
+        <span class="logo-text">Tour<span>Bot</span> AI</span>
+      </a>
+      <p>The AI-powered WhatsApp booking assistant for modern travel agencies. Automate your inquiries and confirm bookings 24/7 with the power of TourBot AI.</p>
+      <div class="social-links">
+        <a class="social-link" href="#"><i class="fab fa-whatsapp"></i></a>
+        <a class="social-link" href="#"><i class="fab fa-linkedin-in"></i></a>
+        <a class="social-link" href="#"><i class="fab fa-instagram"></i></a>
+        <a class="social-link" href="#"><i class="fab fa-twitter"></i></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how">How It Works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Resources</h4>
+      <ul>
+        <li><a href="#">Support Center</a></li>
+        <li><a href="#">Documentation</a></li>
+        <li><a href="#">Travel Blog</a></li>
+        <li><a href="#">API Status</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Cookie Policy</a></li>
+        <li><a href="#">Security</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 TourBot AI. All rights reserved.</p>
+    <div>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#home" style="margin-left: 2rem; color: var(--teal); font-weight: 600;">Back to top <i class="fas fa-arrow-up"></i></a>
+    </div>
+  </div>
+</footer>
+
+<!-- VIDEO MODAL — iPhone 15 style, no overlay -->
+<div class="video-modal-overlay" id="videoModal">
+  <div class="iphone-wrapper" id="iphoneWrapper">
+    <button class="iphone-close-btn" id="closeVideoModal">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="iphone15">
+      <div class="iphone15-bezel">
+        <div class="iphone15-screen">
+          <div class="dynamic-island"></div>
+          <video id="demoVideo" playsinline loop>
+            <source src="{{ url_for('static', path='videos/bookings.mp4') }}" type="video/mp4"/>
+          </video>
+          <div class="iphone-play-overlay" id="playOverlay">
+            <div class="play-btn-circle"><i class="fas fa-play"></i></div>
+          </div>
+        </div>
+      </div>
+      <!-- <div class="iphone15-home"></div> -->
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', path='assets/plugins/aos/aos.js') }}"></script>
+<script>
+  AOS.init({ once: true, offset: 60, duration: 650, easing: 'ease-out-cubic' });
+
+  // Nav scroll effect
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    const nav = document.getElementById('navbar');
+    if (window.scrollY > 50) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
+    }
+  });
+
+  // Hamburger
+  document.getElementById('hamburger').addEventListener('click', () => {
+    const links = document.querySelector('.nav-links');
+    links.style.display = links.style.display === 'flex' ? 'none' : 'flex';
+    links.style.flexDirection = 'column';
+    links.style.position = 'fixed';
+    links.style.top = '64px';
+    links.style.left = '0';
+    links.style.right = '0';
+    links.style.background = 'rgba(10,22,40,0.97)';
+    links.style.padding = '1rem 5%';
+  });
+
+  // Video Modal — iPhone 15
+  const videoModal    = document.getElementById('videoModal');
+  const iphoneWrapper = document.getElementById('iphoneWrapper');
+  const demoVideo     = document.getElementById('demoVideo');
+  const openBtn       = document.getElementById('openVideoModal');
+  const closeBtn      = document.getElementById('closeVideoModal');
+  const playOverlay   = document.getElementById('playOverlay');
+
+  function openModal() {
+    videoModal.classList.add('active');
+    // Re-trigger phoneAppear animation each time
+    iphoneWrapper.style.animation = 'none';
+    iphoneWrapper.offsetHeight; // reflow
+    iphoneWrapper.style.animation = '';
+    demoVideo.playbackRate = 4.0;
+    demoVideo.play().then(() => {
+      playOverlay.classList.add('playing');
+    }).catch(() => {});
+  }
+
+  function closeModal() {
+    videoModal.classList.remove('active');
+    demoVideo.pause();
+    demoVideo.currentTime = 0;
+    playOverlay.classList.remove('playing');
+  }
+
+  // Tap phone screen to toggle play/pause
+  playOverlay.addEventListener('click', () => {
+    if (demoVideo.paused) {
+      demoVideo.play();
+      playOverlay.classList.add('playing');
+    } else {
+      demoVideo.pause();
+      playOverlay.classList.remove('playing');
+    }
+  });
+
+  openBtn.addEventListener('click', (e)  => { e.preventDefault(); openModal(); });
+  closeBtn.addEventListener('click', closeModal);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+</body>
+</html>

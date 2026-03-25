@@ -12,6 +12,10 @@ from app.models.vehicle import Vehicle
 router = APIRouter(tags=["Public Website"])
 templates = Jinja2Templates(directory="app/templates")
 
+@router.get("/", response_class=HTMLResponse)
+async def landing_page(request: Request):
+    return templates.TemplateResponse("landing.html", {"request": request})
+
 @router.get("/{company_slug}", response_class=HTMLResponse)
 async def public_home(request: Request, company_slug: str, db: Session = Depends(get_db)):
     company = db.query(Company).filter(Company.slug == company_slug, Company.is_deleted == False).first()
