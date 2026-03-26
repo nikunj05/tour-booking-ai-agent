@@ -79,8 +79,8 @@ a:hover {
     padding: 7.2px 16px;
     width: auto;
     border-radius: 4px;
-    border: 1px solid #15717e;
-    background: #15717e;
+    border: 1px solid #153f7e;
+    background: #153f7e;
     white-space: nowrap;
     font-weight: 500;
     color: white;
@@ -92,19 +92,19 @@ a:hover {
 }
 
 .btn-submit:hover {
-    background: #fff;
-    color: #15717e;
+    background: #ffffff;
+    color: #153f7e;
 }
 
 .button-secondary {
     padding: 8px 16px;
     width: auto;
     border-radius: 4px;
-    border: 1px solid #15717e;
-    background: #fff;
+    border: 1px solid #153f7e;
+    background: #ffffff;
     white-space: nowrap;
     font-weight: 500;
-    color: #15717e;
+    color: #153f7e;
     text-align: center;
     display: inline-flex;
     justify-content: center;
@@ -113,8 +113,8 @@ a:hover {
 }
 
 .button-secondary:hover {
-    background: #15717e;
-    color: #fff;
+    background: #153f7e;
+    color: #ffffff;
 }
 
 input {
@@ -130,13 +130,13 @@ input:focus,
 select:focus,
 .select2-container--default.select2-container--focus .select2-selection--single,
 .select2-container--default.select2-container--open .select2-selection--single {
-    border-color: #15717e !important;
+    border-color: #153f7e !important;
     box-shadow: none !important;
     outline: none;
 }
 
 .cash-payment {
-    color: #15717e;
+    color: #153f7e;
 }
 
 .cursor-initial {
@@ -147,7 +147,7 @@ select:focus,
     padding: 8px 16px;
     width: auto;
     border-radius: 4px;
-    border: 1px solid #15717e;
+    border: 1px solid #153f7e;
     text-align: center;
     background-color: white;
     white-space: nowrap;
@@ -225,7 +225,7 @@ select:focus,
 }
 
 input:checked+.slider {
-    background-color: #15717e;
+    background-color: #153f7e;
 }
 
 input:checked+.slider:before {
@@ -297,7 +297,7 @@ input:checked+.slider:before {
     justify-content: center;
     padding: 15px;
     position: relative;
-    background: linear-gradient(180deg, #159957 0%, #155799 100%);
+    background: linear-gradient(180deg, #153f7e 0%, #15717e 100%);
 }
 
 .login-logo .auth-effect-bottom-img {
@@ -348,7 +348,7 @@ input:checked+.slider:before {
 .form-fields textarea {
     padding: 8px 12px;
     border: 2px solid #e5e5e5;
-    background-color: #fff;
+    background-color: #ffffff;
     height: auto;
     font-size: 15px;
     border-radius: 4px !important;
@@ -359,7 +359,7 @@ input:checked+.slider:before {
 .form-fields .form-control:focus,
 .form-fields input:focus,
 .form-fields textarea:focus {
-    border-color: #15717e;
+    border-color: #153f7e;
 }
 
 .form-fields .form-control::placeholder,
@@ -376,11 +376,11 @@ input:checked+.slider:before {
     font-size: 15px;
     color: #ffffff;
     font-weight: 500;
-    background-color: #15717e;
+    background-color: #153f7e;
     padding: 6px 15px;
     border-radius: 4px;
     transition: 0.5s;
-    border-color: #15717e;
+    border-color: #153f7e;
 }
 
 .button-default:hover {
@@ -468,7 +468,7 @@ button:focus {
 
 /* Dashboard Design css start */
 .main-sidebar {
-    background: linear-gradient(174.78deg, #159957 -39.25%, #155799 179.4%);
+    background: linear-gradient(174.78deg, #153f7e -39.25%, #15717e 179.4%);
     box-shadow: none !important;
 }
 
@@ -533,13 +533,13 @@ button:focus {
 .sidebar-nav-menu .nav-item .nav-link:hover,
 .sidebar-nav-menu .nav-item .nav-link.active {
     background: #ffffff !important;
-    color: #15717e !important;
+    color: #153f7e !important;
     box-shadow: none !important;
 }
 
 .sidebar-nav-menu .nav-item .nav-link:hover svg path,
 .sidebar-nav-menu .nav-item .nav-link.active svg path {
-    fill: #15717e !important;
+    fill: #153f7e !important;
 }
 
 .main-sidebar .sidebar .os-content {
@@ -666,7 +666,7 @@ button:focus {
     font-weight: 500;
     font-size: 13px;
     line-height: 16px;
-    color: #15717e;
+    color: #153f7e;
 }
 
 .layout-fixed {
@@ -685,7 +685,7 @@ button:focus {
 }
 
 .card .card-header {
-    background: #fff;
+    background: #ffffff;
     border-radius: 20px 20px 0 0;
     padding: 24px 24px 0 24px;
     border: none;
@@ -733,7 +733,7 @@ button:focus {
     height: 36;
     padding: 8px, 16px;
     border-radius: 4px;
-    background: #15717e1a;
+    background: #153f7e1a;
 }
 
 .border-dashed {
@@ -750,7 +750,7 @@ button:focus {
     height: 40px;
     border-radius: 4px;
     padding: 8px 16px;
-    border: 2px solid #15717e;
+    border: 2px solid #153f7e;
 }
 
 .small-text {
@@ -807,7 +807,7 @@ table.table-bordered.dataTable thead th,
 table.table-bordered.dataTable tbody td {
     vertical-align: middle;
     padding: 16px 20px 16px 20px !important;
-    background: #fff;
+    background: #ffffff;
     box-shadow: none;
     border: none;
     position: relative;
@@ -882,9 +882,9 @@ div.dataTables_wrapper div.dataTables_info {
 
 .pagination .page-item .page-link:hover,
 .pagination .page-item.active .page-link {
-    background: #15717e;
-    border-color: #15717e;
-    color: #fff;
+    background: #153f7e;
+    border-color: #153f7e;
+    color: #ffffff;
 }
 
 #labelsContainer .pagination-container .next {
@@ -905,7 +905,7 @@ div.dataTables_wrapper div.dataTables_info {
     width: auto;
     height: auto;
     background: #e5e5e5;
-    border: 1px solid #15717e;
+    border: 1px solid #153f7e;
     border-radius: 6px;
     margin-right: 2px;
     transition: all 0.5s;
@@ -1006,7 +1006,7 @@ div.dataTables_wrapper div.dataTables_filter input[type="search"] {
 }
 
 .main-footer .text-dark {
-    color: #15717e !important;
+    color: #153f7e !important;
 }
 
 .main-footer strong {
@@ -1014,7 +1014,7 @@ div.dataTables_wrapper div.dataTables_filter input[type="search"] {
 }
 
 .main-footer .text-dark:hover {
-    color: #15717e !important;
+    color: #153f7e !important;
 }
 
 form.rounded,
@@ -1059,7 +1059,7 @@ form select[name="country_code"] {
 }
 
 select.form-select {
-    background: #fff url("../../../assets/icon/shorting-arrow-icon_updated.svg") no-repeat center;
+    background: #ffffff url("../../../assets/icon/shorting-arrow-icon_updated.svg") no-repeat center;
     background-position: calc(100% - 10px);
     background-size: 20px;
     cursor: pointer;
@@ -1129,7 +1129,7 @@ select.form-select+.form-control {
     display: inline-block;
     position: absolute;
     left: 0;
-    background: #15717e;
+    background: #153f7e;
     border-radius: 50%;
     top: 3px;
 }
@@ -1141,7 +1141,7 @@ select.form-select+.form-control {
     left: 10px;
     height: 100%;
     width: 0px;
-    border-right: 1px solid #15717e;
+    border-right: 1px solid #153f7e;
 }
 
 .tracking-list li:last-child {
@@ -1170,7 +1170,7 @@ select.form-select+.form-control {
 }
 
 .date-piker-icon {
-    background: #fff url("../../../icon/calendar-date-icon.svg") no-repeat calc(100% - 10px) center !important;
+    background: #ffffff url("../../../icon/calendar-date-icon.svg") no-repeat calc(100% - 10px) center !important;
     background-size: 20px !important;
 }
 
@@ -1377,7 +1377,7 @@ div.ui-datepicker select.ui-datepicker-year {
     flex-wrap: wrap;
     flex-direction: column;
     padding: 15px;
-    background: #15717e33;
+    background: #153f7e33;
     border-radius: 8px;
     overflow: hidden;
 }
@@ -1387,7 +1387,7 @@ div.ui-datepicker select.ui-datepicker-year {
     width: 100%;
     margin-bottom: 10px;
     line-height: 1.2;
-    color: #15717e;
+    color: #153f7e;
     font-size: 17px;
 }
 
@@ -1413,7 +1413,7 @@ div.ui-datepicker select.ui-datepicker-year {
 .driver-side-pickup-sheet .empty-box-delivery-change-price b {
     margin-bottom: 10px;
     display: block;
-    color: #15717e;
+    color: #153f7e;
 }
 
 .driver-side-pickup-sheet .pickup-sheet-box-delivery-details .driver_notes_fields {
@@ -1432,8 +1432,8 @@ div.ui-datepicker select.ui-datepicker-year {
 
 .driver-side-pickup-sheet .driver_notes_fields .preview .image-container {
     padding: 0.25rem;
-    background-color: #fff;
-    border: 1px solid #15717e;
+    background-color: #ffffff;
+    border: 1px solid #153f7e;
     border-radius: 0.25rem;
     display: flex !important;
     align-items: center;
@@ -1456,7 +1456,7 @@ div.ui-datepicker select.ui-datepicker-year {
 }
 
 .driver-order-details-tabs {
-    border-color: #15717e;
+    border-color: #153f7e;
     border: none !important;
 }
 
@@ -1468,19 +1468,19 @@ div.ui-datepicker select.ui-datepicker-year {
 
 .driver-order-details-tabs .nav-item.show .nav-link,
 .driver-order-details-tabs .nav-link.active {
-    border-color: #15717e #15717e #ffffff;
-    color: #15717e;
+    border-color: #153f7e #153f7e #ffffff;
+    color: #153f7e;
 }
 
 .driver-order-details-tab-content .driver-side-tabs-content {
-    border-color: #15717e !important;
+    border-color: #153f7e !important;
     border-radius: 0 0 20px 20px;
     padding-top: 16px;
 }
 
 .driver-order-details-tabs .nav-link:focus,
 .driver-order-details-tabs .nav-link:hover {
-    border-color: #15717e #15717e transparent;
+    border-color: #153f7e #153f7e transparent;
 }
 
 .driver-side-pickup-sheet {
@@ -1532,41 +1532,41 @@ body {
 
 .button-white-style {
     background: #ffffff !important;
-    color: #15717e !important;
+    color: #153f7e !important;
     transition: all 0.5s;
 }
 
 .button-white-style:hover {
-    background: #15717e !important;
+    background: #153f7e !important;
     color: #ffffff !important;
 }
 
 .button-white-style .spinner-border {
-    color: #15717e !important;
+    color: #153f7e !important;
 }
 
 .button-white-style:hover .spinner-border {
-    color: #fff !important;
+    color: #ffffff !important;
 }
 
 .button-green-style {
-    background: #159957 !important;
-    color: #fff !important;
-    border-color: #159957 !important;
+    background: #153f7e !important;
+    color: #ffffff !important;
+    border-color: #153f7e !important;
     transition: all 0.5s;
 }
 
 .button-green-style:hover {
-    background: #fff !important;
-    color: #159957 !important;
+    background: #ffffff !important;
+    color: #153f7e !important;
 }
 
 .button-green-style .spinner-border {
-    color: #159957 !important;
+    color: #153f7e !important;
 }
 
 .button-green-style:hover .spinner-border {
-    color: #fff !important;
+    color: #ffffff !important;
 }
 
 .badge-delivery {
@@ -1662,40 +1662,40 @@ body {
     width: 100%;
     text-align: center;
     transition: background 0.2s ease;
-    border-color: #15717e !important;
+    border-color: #153f7e !important;
 }
 
 .day-pill.today {
     background: #099d7a;
-    color: #fff;
+    color: #ffffff;
 }
 
 .day-pill.today .text-muted {
-    color: #fff !important;
+    color: #ffffff !important;
 }
 
 .day-pill:hover {
     background: #034f3d !important;
-    color: #fff !important;
+    color: #ffffff !important;
     border-color: #034f3d !important;
     cursor: pointer;
 }
 
 .day-pill:hover .text-muted {
-    color: #fff !important;
+    color: #ffffff !important;
 }
 
 .day-pill.active {
-    background: #15717e !important;
-    color: #fff !important;
+    background: #153f7e !important;
+    color: #ffffff !important;
 }
 
 .day-pill.active:hover {
-    border-color: #15717e !important;
+    border-color: #153f7e !important;
 }
 
 .day-pill.active .text-muted {
-    color: #fff !important;
+    color: #ffffff !important;
 }
 
 .select-driver-with-calendar .select2-container {
@@ -1721,15 +1721,15 @@ body {
 }
 
 .select-driver-with-calendar .driver-select-calendar-year button {
-    border-color: #15717e;
-    color: #15717e;
+    border-color: #153f7e;
+    color: #153f7e;
     font-size: 24px;
     line-height: 1;
 }
 
 .select-driver-with-calendar .driver-select-calendar-year button:hover {
-    background: #15717e;
-    color: #fff;
+    background: #153f7e;
+    color: #ffffff;
 }
 
 .select-driver-with-calendar .driver-select-calendar-year button:active {
@@ -1751,7 +1751,7 @@ body {
 }
 
 .driver-select-calendar-section table.table-bordered.dataTable {
-    background-color: #fff !important;
+    background-color: #ffffff !important;
 }
 
 /* smart tour css start */
@@ -1770,7 +1770,7 @@ div.dataTables_wrapper .dataTables_paginate {
     width: auto;
     height: auto;
     background: #e5e5e5;
-    border: 1px solid #15717e !important;
+    border: 1px solid #153f7e !important;
     border-radius: 6px;
     margin: 0px;
     transition: all 0.5s;
@@ -1778,7 +1778,7 @@ div.dataTables_wrapper .dataTables_paginate {
 
 .dataTables_wrapper .dataTables_paginate .previous.paginate_button:hover,
 .dataTables_wrapper .dataTables_paginate .next.paginate_button:hover {
-    background: #fff;
+    background: #ffffff;
     border-color: inherit;
 }
 
@@ -1800,7 +1800,7 @@ div.dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
     cursor: not-allowed;
     color: inherit !important;
     background: #e5e5e5;
-    border: 1px solid #15717e;
+    border: 1px solid #153f7e;
     box-shadow: none;
 }
 
@@ -1831,9 +1831,9 @@ div.dataTables_wrapper .dataTables_paginate .paginate_button {
 div.dataTables_wrapper .dataTables_paginate span .paginate_button.current,
 div.dataTables_wrapper .dataTables_paginate span .paginate_button.current:hover,
 div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
-    background: #15717e !important;
-    border-color: #15717e !important;
-    color: #fff !important;
+    background: #153f7e !important;
+    border-color: #153f7e !important;
+    color: #ffffff !important;
 }
 
 .table-responsive {
@@ -1876,7 +1876,7 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 .modal-confirm h4 {
     text-align: center;
     font-size: 21px;
-    color: #000;
+    color: #000000;
     margin: 0px 0 0px;
 }
 
@@ -1888,7 +1888,7 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 }
 
 .modal-confirm .modal-body {
-    color: #000;
+    color: #000000;
     padding: 0px;
 }
 
@@ -1922,7 +1922,7 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 }
 
 .modal-confirm .btn-submit {
-    border: 1px solid #15717e !important;
+    border: 1px solid #153f7e !important;
 }
 
 .trigger-btn {
@@ -1946,7 +1946,7 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 
 
 .tour-packages-card .tour-card {
-    background: #fff;
+    background: #ffffff;
     border-radius: 12px;
     display: flex;
     flex-direction: column;
@@ -1958,7 +1958,7 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 }
 
 .tour-packages-card .tour-card:hover {
-    border-color: #15717e;
+    border-color: #153f7e;
 }
 
 .tour-packages-card .tour-cover {
@@ -1989,9 +1989,9 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
     padding: 4px 10px;
     font-weight: 500;
     font-size: 11px;
-    border: 1px solid #fff;
+    border: 1px solid #ffffff;
     border-radius: 20px;
-    color: #fff;
+    color: #ffffff;
     text-transform: uppercase;
 }
 
@@ -2023,14 +2023,14 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
     font-size: 14px;
     gap: 10px;
     flex-direction: column;
-    color: #000;
+    color: #000000;
     margin-bottom: 15px;
 }
 
 .tour-packages-card .price {
     font-weight: 600;
     font-size: 16px;
-    color: #000;
+    color: #000000;
 }
 
 .tour-packages-card .tour-gallery {
@@ -2088,8 +2088,8 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 
 .tour-packages-card .tour-actions .tour-actions-inner-bottom .btn {
     padding: 8px;
-    background: #fff;
-    border: 1px solid #000;
+    background: #ffffff;
+    border: 1px solid #000000;
     border-radius: 50%;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12),
         0 0px 6px rgba(0, 0, 0, 0.15);
@@ -2097,7 +2097,7 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 }
 
 .tour-packages-card .tour-actions .tour-actions-inner-bottom .btn:hover {
-    border-color: #15717e;
+    border-color: #153f7e;
 }
 
 .tour-packages-card .no-tours-found p {
@@ -2174,7 +2174,7 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 }
 
 .create-tour-assi-drivers .select2.select2-container--focus .select2-selection {
-    border-color: #15717e;
+    border-color: #153f7e;
 }
 
 .create-tour-assi-drivers .select2 .select2-selection__rendered {
@@ -2184,7 +2184,7 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 .create-tour-assi-drivers .select2 .select2-selection__rendered .select2-selection__choice {
     margin: 5px 6px 0 0 !important;
     background-color: transparent;
-    color: #000;
+    color: #000000;
     font-size: 14px;
 }
 
@@ -2258,7 +2258,7 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 }
 
 .fc-toolbar {
-    background: linear-gradient(175deg, #159957, #155799);
+    background: linear-gradient(175deg, #153f7e, #15717e);
     padding: 14px 18px !important;
     border-radius: 8px 8px 0 0;
 }
@@ -2275,7 +2275,7 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 
 .fc-button {
     background: #ffffff !important;
-    color: #155799 !important;
+    color: #153f7e !important;
     border: none !important;
     font-weight: 600;
     border-radius: 6px !important;
@@ -2287,7 +2287,7 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 }
 
 .fc-button-active {
-    color: #159957 !important;
+    color: #153f7e !important;
 }
 
 .fc-daygrid-day {
@@ -2333,13 +2333,13 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 .fc-col-header-cell {
     background: #f1f8ff;
     font-weight: 600;
-    color: #155799;
+    color: #153f7e;
 }
 
 
 .fc-daygrid-day-number {
     font-weight: 600;
-    color: #155799;
+    color: #153f7e;
 }
 
 
@@ -2348,12 +2348,12 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 }
 
 .fc-day-today .fc-daygrid-day-number {
-    color: #159957;
+    color: #153f7e;
 }
 
 .fc-event {
-    /* background: linear-gradient(175deg, #159957, #155799) !important; */
-    background: #15717e;
+    background: linear-gradient(175deg, #153f7e, #15717e) !important;
+    /* background: #153f7e; */
     border: none !important;
     border-radius: 6px;
     padding: 2px 4px;
@@ -2372,18 +2372,18 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 .fc-guest-name {
     font-size: 14px;
     font-weight: 600;
-    color: #fff;
+    color: #ffffff;
     margin-bottom: 5px;
 }
 
 .fc-pickup {
     font-size: 12px;
-    color: #fff;
+    color: #ffffff;
     margin-bottom: 3px;
 }
 
 .fc i {
-    color: #fff !important;
+    color: #ffffff !important;
     margin-right: 3px;
 }
 
@@ -2604,7 +2604,7 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
     height: 40px;
     border-width: 1px;
     padding-top: 8px;
-    color: #15717e;
+    color: #153f7e;
     padding-right: 16px;
     padding-bottom: 8px;
     padding-left: 16px;
@@ -3700,9 +3700,9 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
     color: #888;
 }
 .company-tabs .nav-link.active {
-    color: #159957;
+    color: #153f7e;
     font-weight: 600;
-    border-bottom: 2px solid #159957;
+    border-bottom: 2px solid #153f7e;
 }
 
 /* Vehicle Form and tour form */
@@ -3761,8 +3761,8 @@ div.dataTables_wrapper .dataTables_paginate span .paginate_button:hover {
 }
 
 .large-switch:checked {
-    background-color: #15717e;   /* Green */
-    border-color: #15717e;
+    background-color: #153f7e;   /* Green */
+    border-color: #153f7e;
 }
 
 /* Focus color */
