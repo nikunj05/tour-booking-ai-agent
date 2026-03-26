@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TourBot AI – WhatsApp Tour Booking for Travel Agencies</title>
-  <meta name="description" content="Automate your travel agency's WhatsApp bookings 24/7. TourBot AI turns every inquiry into a confirmed booking without missing a single lead."/>
+  <title>Travixa AI – WhatsApp Tour Booking for Travel Agencies</title>
+  <meta name="description" content="Automate your travel agency's WhatsApp bookings 24/7. Travixa AI turns every inquiry into a confirmed booking without missing a single lead."/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
@@ -17,8 +17,7 @@
 <!-- NAVIGATION -->
 <nav id="navbar">
   <a href="#" class="logo">
-    <div class="logo-icon"><i class="fab fa-whatsapp"></i></div>
-    <span class="logo-text">Tour<span>Bot</span> AI</span>
+    <img src="{{ url_for('static', path='assets/dist/img/logo.png') }}" alt="Travixa AI Logo" style="height: 55px;">
   </a>
   <ul class="nav-links">
     <li><a href="#problem">Problem</a></li>
@@ -96,13 +95,13 @@
     </div>
     <div class="hero-visual" data-aos="fade-left" data-aos-duration="800" data-aos-delay="200">
       <div class="hero-card">
-        <div class="online-badge"><span class="online-dot"></span> TourBot AI is Live</div>
+        <div class="online-badge"><span class="online-dot"></span> Travixa AI is Live</div>
         <div class="chat-bubble">
           <div class="chat-label"><i class="fas fa-user"></i> Customer</div>
           <div class="chat-text">Hi! Do you have a Bali package for 2 adults, 3rd week of May?</div>
         </div>
         <div class="chat-bubble bot">
-          <div class="chat-label"><i class="fab fa-whatsapp"></i> TourBot AI</div>
+          <div class="chat-label"><i class="fab fa-whatsapp"></i> Travixa AI</div>
           <div class="chat-text">Yes! We have 3 Bali packages for May 17–24. 🌴<br/>7N/8D from $899/person (flights + hotel). Would you like to book or see full itinerary?</div>
         </div>
         <div class="chat-bubble">
@@ -110,7 +109,7 @@
           <div class="chat-text">Let's book! Send payment link.</div>
         </div>
         <div class="chat-bubble bot">
-          <div class="chat-label"><i class="fab fa-whatsapp"></i> TourBot AI</div>
+          <div class="chat-label"><i class="fab fa-whatsapp"></i> Travixa AI</div>
           <div class="chat-text"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>
         </div>
       </div>
@@ -164,7 +163,7 @@
     <div data-aos="fade-left">
       <div class="section-label">The Opportunity</div>
       <h2 class="section-title">What If You Replied Instantly, Every Time?</h2>
-      <p class="section-sub">TourBot AI answers every WhatsApp message, recommends tours, and confirms bookings — automatically.</p>
+      <p class="section-sub">Travixa AI answers every WhatsApp message, recommends tours, and confirms bookings — automatically.</p>
       <div class="opp-cards" style="margin-top:2rem;">
         <div class="opp-card">
           <div class="opp-card-icon"><i class="fas fa-clock"></i></div>
@@ -209,7 +208,7 @@
       <div class="step-num">2</div>
       <div class="step-icon"><i class="fas fa-robot"></i></div>
       <h4>AI Responds Instantly</h4>
-      <p>TourBot AI replies in seconds, qualifies the lead, and presents matching packages.</p>
+      <p>Travixa AI replies in seconds, qualifies the lead, and presents matching packages.</p>
     </div>
     <div class="step-card" data-aos="fade-up" data-aos-delay="200">
       <div class="step-num">3</div>
@@ -227,7 +226,8 @@
 </section>
 
 <!-- ADMIN PREVIEW SLIDER -->
-<!-- <section class="admin-preview" id="admin-preview">
+<section class="admin-preview" id="admin-preview">
+
   <div class="center" data-aos="fade-up">
     <div class="section-label">Powerful Interface</div>
     <h2 class="section-title">Manage Everything in One Place</h2>
@@ -238,28 +238,28 @@
     <div class="slider-container">
       <div class="slider-track" id="sliderTrack">
         <div class="slide active">
-          <img src="{{ url_for('static', path='assets/img/admin_previews/admin_dashboard.png') }}" alt="Analytics Dashboard">
+          <img src="{{ url_for('static', path='assets/img/admin_previews/t1.png') }}" alt="Analytics Dashboard">
           <div class="slide-info">
             <h3>Analytics Dashboard</h3>
             <p>Monitor your agency's performance in real-time. Track bookings, revenue, and customer engagement at a glance.</p>
           </div>
         </div>
         <div class="slide">
-          <img src="{{ url_for('static', path='assets/img/admin_previews/admin_chat.png') }}" alt="WhatsApp Management">
+          <img src="{{ url_for('static', path='assets/img/admin_previews/t2.png') }}" alt="WhatsApp Management">
           <div class="slide-info">
             <h3>WhatsApp Management</h3>
             <p>A centralized hub for all AI-automated conversations. Jump in manually whenever your expertise is needed.</p>
           </div>
         </div>
         <div class="slide">
-          <img src="{{ url_for('static', path='assets/img/admin_previews/admin_bookings.png') }}" alt="Booking Management">
+          <img src="{{ url_for('static', path='assets/img/admin_previews/t3.png') }}" alt="Booking Management">
           <div class="slide-info">
             <h3>Booking Management</h3>
             <p>Seamlessly track the status of each tour booking. From pending inquiries to confirmed payments.</p>
           </div>
         </div>
         <div class="slide">
-          <img src="{{ url_for('static', path='assets/img/admin_previews/admin_packages.png') }}" alt="Package Control">
+          <img src="{{ url_for('static', path='assets/img/admin_previews/t4.png') }}" alt="Package Control">
           <div class="slide-info">
             <h3>Package Control</h3>
             <p>Easily edit, update, or launch new tour packages. Your WhatsApp bot stays synchronized instantly.</p>
@@ -278,9 +278,9 @@
       <div class="dot"></div>
       <div class="dot"></div>
       <div class="dot"></div>
-    </div>
   </div>
-</section> -->
+</section>
+
 
 <!-- BUSINESS BENEFITS -->
 <section id="benefits">
@@ -290,7 +290,7 @@
     </div>
     <div data-aos="fade-left">
       <div class="section-label">Business Benefits</div>
-      <h2 class="section-title">Why Agencies Choose TourBot AI</h2>
+      <h2 class="section-title">Why Agencies Choose Travixa AI</h2>
       <p class="section-sub">Real results that impact your bottom line from day one.</p>
       <div class="benefit-list">
         <div class="benefit-item">
@@ -335,7 +335,7 @@
     </div>
     <div class="roi-card featured" data-aos="fade-up" data-aos-delay="100">
       <div class="roi-card-icon"><i class="fas fa-robot"></i></div>
-      <h3>TourBot AI</h3>
+      <h3>Travixa AI</h3>
       <div class="sub">Automated Solution</div>
       <div class="roi-row" style="background:rgba(0,198,174,0.1);"><div class="roi-row-icon"><i class="fas fa-circle-check green"></i></div><div class="roi-row-text"><div class="val">From $500/mo</div><div class="desc">Flat monthly subscription</div></div></div>
       <div class="roi-row" style="background:rgba(0,198,174,0.1);"><div class="roi-row-icon"><i class="fas fa-circle-check green"></i></div><div class="roi-row-text"><div class="val">24/7 Availability</div><div class="desc">Always online &amp; responsive</div></div></div>
@@ -359,7 +359,7 @@
   <div class="testi-grid">
     <div class="testi-card" data-aos="fade-up" data-aos-delay="0">
       <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-      <p class="testi-text">"TourBot AI has transformed our operations. We used to miss 30% of inquiries after 6 PM. Now we convert those into confirmed bookings while we sleep."</p>
+      <p class="testi-text">"Travixa AI has transformed our operations. We used to miss 30% of inquiries after 6 PM. Now we convert those into confirmed bookings while we sleep."</p>
       <div class="testi-author">
         <div class="avatar">RA</div>
         <div><div class="author-name">Ravi Agarwal</div><div class="author-role">Director, SunRise Travels, India</div></div>
@@ -367,7 +367,7 @@
     </div>
     <div class="testi-card" data-aos="fade-up" data-aos-delay="100">
       <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-      <p class="testi-text">"Peak season used to crash our team. With TourBot, we handled 3x the volume with the same staff. The ROI came within the first month."</p>
+      <p class="testi-text">"Peak season used to crash our team. With Travixa, we handled 3x the volume with the same staff. The ROI came within the first month."</p>
       <div class="testi-author">
         <div class="avatar">SP</div>
         <div><div class="author-name">Sara Patel</div><div class="author-role">Founder, WanderLux Tours, Dubai</div></div>
@@ -444,7 +444,7 @@
 <section class="cta-banner">
   <div data-aos="zoom-in">
     <h2>Ready to Never Miss a Booking Again?</h2>
-    <p>Join hundreds of travel agencies that trust TourBot AI to automate their WhatsApp bookings.</p>
+    <p>Join hundreds of travel agencies that trust Travixa AI to automate their WhatsApp bookings.</p>
     <a href="#" class="btn-primary" style="display:inline-flex;">Start Automation <i class="fas fa-arrow-right"></i></a>
   </div>
 </section>
@@ -454,10 +454,9 @@
   <div class="footer-grid">
     <div class="footer-brand">
       <a href="#" class="logo">
-        <div class="logo-icon"><i class="fab fa-whatsapp"></i></div>
-        <span class="logo-text">Tour<span>Bot</span> AI</span>
+        <img src="{{ url_for('static', path='assets/dist/img/logo.png') }}" alt="Travixa AI Logo" style="height: 45px;">
       </a>
-      <p>The AI-powered WhatsApp booking assistant for modern travel agencies. Automate your inquiries and confirm bookings 24/7 with the power of TourBot AI.</p>
+      <p>The AI-powered WhatsApp booking assistant for modern travel agencies. Automate your inquiries and confirm bookings 24/7 with the power of Travixa AI.</p>
       <div class="social-links">
         <a class="social-link" href="#"><i class="fab fa-whatsapp"></i></a>
         <a class="social-link" href="#"><i class="fab fa-linkedin-in"></i></a>
@@ -494,7 +493,7 @@
     </div>
   </div>
   <div class="footer-bottom">
-    <p>&copy; 2026 TourBot AI. All rights reserved.</p>
+    <p>&copy; 2026 Travixa AI. All rights reserved.</p>
     <div>
       <a href="#">Privacy</a>
       <a href="#">Terms</a>
