@@ -26,8 +26,10 @@
     <li><a href="#how">How It Works</a></li>
     <li><a href="#pricing">Pricing</a></li>
   </ul>
-  <a href="#pricing" class="nav-cta">Get Started <i class="fas fa-arrow-right"></i></a>
-  <div class="hamburger" id="hamburger">
+  <div class="nav-btns">
+    <a href="auth/login" class="nav-link login-btn">Login</a>
+    <a href="#pricing" class="nav-cta">Get Started <i class="fas fa-arrow-right"></i></a>
+  </div>  <div class="hamburger" id="hamburger">
     <span></span><span></span><span></span>
   </div>
 </nav>
@@ -224,7 +226,7 @@
 </section>
 
 <!-- ADMIN PREVIEW SLIDER -->
-<section class="admin-preview" id="admin-preview">
+<!-- <section class="admin-preview" id="admin-preview">
   <div class="center" data-aos="fade-up">
     <div class="section-label">Powerful Interface</div>
     <h2 class="section-title">Manage Everything in One Place</h2>
@@ -234,7 +236,6 @@
   <div class="slider-wrapper" data-aos="zoom-in" data-aos-delay="100">
     <div class="slider-container">
       <div class="slider-track" id="sliderTrack">
-        <!-- Slide 1 -->
         <div class="slide active">
           <img src="{{ url_for('static', path='assets/img/admin_previews/admin_dashboard.png') }}" alt="Analytics Dashboard">
           <div class="slide-info">
@@ -242,7 +243,6 @@
             <p>Monitor your agency's performance in real-time. Track bookings, revenue, and customer engagement at a glance.</p>
           </div>
         </div>
-        <!-- Slide 2 -->
         <div class="slide">
           <img src="{{ url_for('static', path='assets/img/admin_previews/admin_chat.png') }}" alt="WhatsApp Management">
           <div class="slide-info">
@@ -250,7 +250,6 @@
             <p>A centralized hub for all AI-automated conversations. Jump in manually whenever your expertise is needed.</p>
           </div>
         </div>
-        <!-- Slide 3 -->
         <div class="slide">
           <img src="{{ url_for('static', path='assets/img/admin_previews/admin_bookings.png') }}" alt="Booking Management">
           <div class="slide-info">
@@ -258,7 +257,6 @@
             <p>Seamlessly track the status of each tour booking. From pending inquiries to confirmed payments.</p>
           </div>
         </div>
-        <!-- Slide 4 -->
         <div class="slide">
           <img src="{{ url_for('static', path='assets/img/admin_previews/admin_packages.png') }}" alt="Package Control">
           <div class="slide-info">
@@ -281,7 +279,7 @@
       <div class="dot"></div>
     </div>
   </div>
-</section>
+</section> -->
 
 <!-- BUSINESS BENEFITS -->
 <section id="benefits">
@@ -330,7 +328,7 @@
       <div class="roi-card-icon"><i class="fas fa-users"></i></div>
       <h3>Manual Team</h3>
       <div class="sub">Traditional staffing [2 staff]</div>
-      <div class="roi-row"><div class="roi-row-icon"><i class="fas fa-dollar-sign gray"></i></div><div class="roi-row-text"><div class="val">$2,000 – $2,500/mo</div><div class="desc">Monthly salary cost</div></div></div>
+      <div class="roi-row"><div class="roi-row-icon"><i class="fas fa-dollar-sign gray"></i></div><div class="roi-row-text"><div class="val">$200 – $500/mo</div><div class="desc">Monthly salary cost</div></div></div>
       <div class="roi-row"><div class="roi-row-icon"><i class="fas fa-clock gray"></i></div><div class="roi-row-text"><div class="val">Limited Hours</div><div class="desc">No overnight coverage</div></div></div>
       <div class="roi-row"><div class="roi-row-icon"><i class="fas fa-xmark red"></i></div><div class="roi-row-text"><div class="val" style="color:#ef4444">Missed Leads</div><div class="desc">Inquiries unanswered</div></div></div>
     </div>
@@ -338,7 +336,7 @@
       <div class="roi-card-icon"><i class="fas fa-robot"></i></div>
       <h3>TourBot AI</h3>
       <div class="sub">Automated Solution</div>
-      <div class="roi-row" style="background:rgba(0,198,174,0.1);"><div class="roi-row-icon"><i class="fas fa-circle-check green"></i></div><div class="roi-row-text"><div class="val">From $2,000/mo</div><div class="desc">Flat monthly subscription</div></div></div>
+      <div class="roi-row" style="background:rgba(0,198,174,0.1);"><div class="roi-row-icon"><i class="fas fa-circle-check green"></i></div><div class="roi-row-text"><div class="val">From $500/mo</div><div class="desc">Flat monthly subscription</div></div></div>
       <div class="roi-row" style="background:rgba(0,198,174,0.1);"><div class="roi-row-icon"><i class="fas fa-circle-check green"></i></div><div class="roi-row-text"><div class="val">24/7 Availability</div><div class="desc">Always online &amp; responsive</div></div></div>
       <div class="roi-row" style="background:rgba(0,198,174,0.1);"><div class="roi-row-icon"><i class="fas fa-circle-check green"></i></div><div class="roi-row-text"><div class="val" style="color:#22c55e">Near Zero</div><div class="desc">Capture every single lead</div></div></div>
     </div>
