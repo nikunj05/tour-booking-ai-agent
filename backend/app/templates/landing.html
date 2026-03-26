@@ -18,7 +18,9 @@
 <nav id="navbar">
   <a href="#" class="logo">
     <img src="{{ url_for('static', path='assets/dist/img/logo.png') }}" alt="Travixa AI Logo" style="height: 55px;">
-  </a>
+<h2 style="font-weight:700; font-size:28px; letter-spacing:1px;">
+  <span style="color:#ffffff;">Tra</span><span style="color:#00C6AE;">vixa</span>
+</h2>  </a>
   <ul class="nav-links">
     <li><a href="#problem">Problem</a></li>
     <li><a href="#features">Features</a></li>
@@ -259,13 +261,33 @@
           </div>
         </div>
         <div class="slide">
-          <img src="{{ url_for('static', path='assets/img/admin_previews/t4.png') }}" alt="Package Control">
+          <img src="{{ url_for('static', path='assets/img/admin_previews/t4.png') }}" alt="Driver Management">
           <div class="slide-info">
             <h3>Driver Management</h3>
             <p>Easily manage your drivers and tour assignments. Keep track of your team and ensure smooth operations.</p>
           </div>
         </div>
-        
+        <div class="slide">
+          <img src="{{ url_for('static', path='assets/img/admin_previews/t5.png') }}" alt="Revenue Management">
+          <div class="slide-info">
+            <h3>Financial Reports</h3>
+            <p>Generate detailed financial reports. Track revenue, expenses, and profitability with ease.</p>
+          </div>
+        </div>
+        <div class="slide">
+          <img src="{{ url_for('static', path='assets/img/admin_previews/t6.png') }}" alt="Customer Profiles">
+          <div class="slide-info">
+            <h3>Tour Bookings</h3>
+            <p>Manage all your tour bookings in one place. Track payments, dates, and customer details effortlessly.</p>
+          </div>
+        </div>
+        <div class="slide">
+          <img src="{{ url_for('static', path='assets/img/admin_previews/t7.png') }}" alt="System Settings">
+          <div class="slide-info">
+            <h3>Vehicle Management</h3>
+            <p>Maintain your fleet effortlessly. Track assignments and vehicle statuses in real time.</p>
+          </div>
+        </div>
         
       </div>
     </div>
@@ -277,6 +299,9 @@
 
     <div class="slider-dots" id="sliderDots">
       <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
       <div class="dot"></div>
       <div class="dot"></div>
       <div class="dot"></div>
@@ -609,7 +634,7 @@
   const slideCount = slides.length;
 
   function updateSlider(index) {
-    track.style.transform = `translateX(-${index * 25}%)`;
+    track.style.transform = `translateX(-${index * (100 / slideCount)}%)`;
     slides.forEach((s, i) => s.classList.toggle('active', i === index));
     dots.forEach((d, i) => d.classList.toggle('active', i === index));
     currentSlide = index;
