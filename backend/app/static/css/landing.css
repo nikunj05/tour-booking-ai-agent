@@ -12,8 +12,8 @@
   --gradient: linear-gradient(135deg, #0a1628 0%, #0f3460 60%, #00C6AE22 100%);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body { font-family: 'Inter', sans-serif; color: var(--text); background: var(--white); overflow-x: hidden; }
+html { scroll-behavior: smooth; overflow-x: hidden; max-width: 100vw; }
+body { font-family: 'Inter', sans-serif; color: var(--text); background: var(--white); overflow-x: hidden; max-width: 100vw; }
 
 /* NAV — Blue Glassmorphism */
 nav {
