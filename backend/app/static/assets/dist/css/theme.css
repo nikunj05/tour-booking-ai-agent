@@ -1,0 +1,123 @@
+:root {
+  /* Restored Original Colors */
+  --teal: #15717e;
+  --teal-dark: #105a65;
+  --teal-light: #e8f3f4;
+  
+  --navy: #343a40; /* Standard AdminLTE Dark */
+  --navy-mid: #2c3136;
+  --navy-light: #4b545c;
+  
+  /* Neutral Colors */
+  --white: #ffffff;
+  --black: #000000;
+  --gray-bg: #f4f6f9;
+  --gray-light: #dee2e6;
+  --gray: #6c757d;
+  --text: #212529;
+  --border-color: #ced4da;
+  
+  /* Gradients - Reverted to Subtle/None */
+  --admin-gradient: #f4f6f9;
+  --sidebar-gradient: #343a40;
+}
+
+/* Global Overrides - Restoring Original Feel */
+body {
+  color: var(--text) !important;
+  background-color: var(--gray-bg) !important;
+}
+
+a {
+  color: var(--teal) !important;
+}
+
+a:hover {
+  color: var(--teal-dark) !important;
+}
+
+/* Sidebar Overrides - Restoring Original Dark Sidebar */
+.main-sidebar {
+  background: var(--sidebar-gradient) !important;
+  border-right: none !important;
+}
+
+.sidebar {
+  background-color: transparent !important;
+}
+
+.nav-sidebar .nav-item > .nav-link {
+  color: #c2c7d0 !important;
+}
+
+/* Sidebar Active -> Original Teal */
+.nav-sidebar .nav-item > .nav-link.active {
+  background-color: var(--teal) !important;
+  color: var(--white) !important;
+  box-shadow: none !important;
+}
+
+.nav-sidebar .nav-item > .nav-link:hover:not(.active) {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--white) !important;
+}
+
+.nav-sidebar .nav-link i {
+  color: #c2c7d0 !important;
+}
+
+.nav-link.active i {
+  color: var(--white) !important;
+}
+
+/* Header & Navbar */
+.main-header {
+  background-color: var(--white) !important;
+  border-bottom: 1px solid var(--gray-light) !important;
+}
+
+/* Buttons -> Original Teal */
+.btn-primary, 
+.btn-submit,
+.bg-primary {
+  background-color: var(--teal) !important;
+  border-color: var(--teal) !important;
+  color: var(--white) !important;
+}
+
+.btn-primary:hover, 
+.btn-submit:hover {
+  background-color: var(--teal-dark) !important;
+  border-color: var(--teal-dark) !important;
+  color: var(--white) !important;
+}
+
+.btn-outline-primary {
+  color: var(--teal) !important;
+  border-color: var(--teal) !important;
+}
+
+.text-primary {
+  color: var(--teal) !important;
+}
+
+/* Card Headers & Badges */
+.card-primary.card-outline {
+  border-top: 3px solid var(--teal) !important;
+}
+
+.badge-primary {
+  background-color: var(--teal) !important;
+}
+
+/* Form Controls */
+input:focus, 
+.form-control:focus {
+  border-color: var(--teal) !important;
+}
+
+/* Login Page Overrides - Reverting to Original Background */
+.login-page, .register-page {
+  background: var(--gray-bg) !important;
+  color: var(--text) !important;
+}
