@@ -539,58 +539,87 @@ footer {
 .iphone-close-btn:hover { background: #fee2e2; transform: scale(1.15); }
 .iphone-close-btn i { font-size: 0.8rem; color: #e53e3e; line-height: 1; }
 
-/* iPhone 15 shell */
-.iphone15 {
+/* iPhone 17 Pro Mockup */
+.iphone17 {
   position: relative;
-  width: 310px;
-  background: linear-gradient(160deg, #d4d4d4 0%, #b0b0b0 40%, #c8c8c8 100%);
-  border-radius: 28px;
-  padding: 8px 6px;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.6) inset,
-    0 0 0 1px #999,
-    0 20px 60px rgba(0,0,0,0.35),
-    0 4px 16px rgba(0,0,0,0.2);
-  animation: iPhoneFloat 3.5s ease-in-out infinite 0.5s;
+  width: 320px;
+  background: #2a2b2c; /* Sleeker, darker titanium frame */
+  border-radius: 56px; /* Slightly rounder for 17 */
+  padding: 8px; /* Thinner bezels for 17 */
+  box-shadow: 
+    inset 0 0 4px 2px rgba(255,255,255,0.2),
+    inset 0 0 0 4px #000,
+    0 0 0 1px #444,
+    0 30px 60px rgba(0,200,170,0.2);
+  animation: iPhoneFloat 4s ease-in-out infinite 0.5s;
+  z-index: 10000;
 }
 @keyframes iPhoneFloat {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-8px); }
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50%       { transform: translateY(-10px) rotate(-0.5deg); }
 }
-/* Side buttons */
-.iphone15::before {
+/* Hardware Buttons */
+.iphone17::before {
   content: '';
   position: absolute;
-  right: -3.5px; top: 90px;
-  width: 3px; height: 68px;
-  background: linear-gradient(to right, #999, #bbb);
-  border-radius: 0 3px 3px 0;
-  box-shadow: 0 50px 0 #aaa;
+  left: -2px; top: 110px;
+  width: 2px; height: 26px; /* solid state buttons */
+  background: #555;
+  border-radius: 2px 0 0 2px;
+  box-shadow: 
+    0 50px 0 0 #555,
+    0 110px 0 0 #555;
 }
-.iphone15::after {
+.iphone17::after {
   content: '';
   position: absolute;
-  left: -3.5px; top: 100px;
-  width: 3px; height: 38px;
-  background: linear-gradient(to left, #aaa, #bbb);
-  border-radius: 3px 0 0 3px;
-  box-shadow: 0 52px 0 #aaa, 0 -52px 0 #aaa;
+  right: -2px; top: 130px;
+  width: 2px; height: 70px;
+  background: #555;
+  border-radius: 0 2px 2px 0;
 }
-/* Screen bezel */
-.iphone15-bezel {
-  border-radius: 32px;
-  background: #000;
-  padding: 2px;
-  overflow: hidden;
-  box-shadow: 0 0 0 1px #222 inset;
-}
-/* Screen area */
-.iphone15-screen {
-  border-radius: 30px;
-  overflow: hidden;
-  background: #000;
+/* Screen Bezel */
+.iphone17-bezel {
+  width: 100%;
+  border-radius: 48px; /* Thinner bezel radius */
+  background: #ece1e1;
   position: relative;
+  overflow: hidden;
+}
+/* Screen Display Area */
+.iphone17-screen {
+  width: 100%;
+  height: 100%;
+  background: #111;
+  position: relative;
+  border-radius: 46px; /* Thinner screen radius */
+  overflow: hidden;
   aspect-ratio: 9 / 19.5;
+}
+/* Dynamic Island */
+.dynamic-island {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 32px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 100;
+  box-shadow: inset 0 0 3px rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 12px;
+}
+/* tiny camera lens in dynamic island */
+.dynamic-island::after {
+  content: '';
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: #111;
+  box-shadow: inset 0 0 4px #000, inset 0 0 2px rgba(100,100,200,0.4);
 }
 .iphone15-screen video {
   width: 100%;
