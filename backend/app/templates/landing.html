@@ -237,8 +237,9 @@
     <p class="section-sub">Experience the simplified workflow designed for tour operators. From analytics to automation control.</p>
   </div>
 
-  <div class="slider-wrapper" data-aos="zoom-in" data-aos-delay="100">
-    <div class="slider-container">
+  <div class="slider-outer" style="position: relative; max-width: 1024px; margin: 0 auto; width: 100%;" data-aos="zoom-in" data-aos-delay="100">
+    <div class="slider-wrapper">
+      <div class="slider-container">
       <div class="slider-track" id="sliderTrack">
         <div class="slide active">
           <img src="{{ url_for('static', path='assets/img/admin_previews/t1.png') }}" alt="Analytics Dashboard">
@@ -292,6 +293,7 @@
         
       </div>
     </div>
+    </div> <!-- /slider-wrapper -->
     
     <div class="slider-nav">
       <button class="slider-btn prev" id="prevBtn"><i class="fas fa-arrow-left"></i></button>
@@ -306,7 +308,8 @@
       <div class="dot"></div>
       <div class="dot"></div>
       <div class="dot"></div>
-  </div>
+    </div>
+  </div> <!-- /slider-outer -->
 </section>
 
 
